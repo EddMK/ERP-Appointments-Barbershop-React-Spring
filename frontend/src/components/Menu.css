@@ -1,0 +1,19 @@
+nav ul{
+	list-style-type :none;
+}
+
+nav ul li{
+	float : right;
+	width : 10%;
+}
+
+nav a{
+	color: black;
+	outline: none;
+	display : block;
+	text-decoration : none;
+}
+
+li.logo{
+	float : left;
+}

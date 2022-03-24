@@ -1,12 +1,31 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import Signup from './components/Signup.js';
+import App from './components/App';
+import Login from './components/Login';
+import Agenda from './components/Agenda';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+          <nav >
+				<ul>
+					<li><Link to="/signup">Sign Up</Link></li>
+					<li><Link to="/login">Log In</Link></li>
+					<li><Link to="/agenda">Agenda</Link></li>
+              		<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
+				</ul>
+			</nav>
+			<Routes>
+				<Route path="/" element={<App />} />
+				<Route path="/signup" element={<Signup />} />
+				<Route path="/login" element={<Login />} />
+				<Route path="/agenda" element={<Agenda />} />
+			</Routes>
+		</BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')
 );
