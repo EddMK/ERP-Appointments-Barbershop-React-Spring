@@ -7,18 +7,12 @@ import Signup from './components/Signup.js';
 import App from './components/App';
 import Login from './components/Login';
 import Agenda from './components/Agenda';
+import Menu from './components/Menu';
 
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-          <nav >
-				<ul>
-					<li><Link to="/signup">Sign Up</Link></li>
-					<li><Link to="/login">Log In</Link></li>
-					<li><Link to="/agenda">Agenda</Link></li>
-              		<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
-				</ul>
-			</nav>
+          	<Menu />
 			<Routes>
 				<Route path="/" element={<App />} />
 				<Route path="/signup" element={<Signup />} />

@@ -1,20 +1,19 @@
 import './Menu.css';
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
+
 
 class Menu extends React.Component{
 	render(){
 		return(
-			<div className="menu">
-					<nav >
-						<ul>
-							<li className="logo"><a className="logo" href="#">Ed Barbershop</a></li>
-							<li><a href="#">Les tarifs</a></li>
-							<li><a href="#">Les salons</a></li>
-							<li><a href="#">S'inscrire</a></li>
-							<li><a href="#">Se connecter</a></li>
-						</ul>
-					</nav>
-			</div>
+				<nav >
+					<ul className='menu'>
+						<li><Link to="/signup">Sign Up</Link></li>
+						<li><Link to="/login">Log In</Link></li>
+						<li><Link to="/agenda">Agenda</Link></li>
+						<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
+					</ul>
+				</nav>
 		)
 	}
 }
