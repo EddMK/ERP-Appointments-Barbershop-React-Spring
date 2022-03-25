@@ -33,8 +33,27 @@ class Agenda extends React.Component{
 		var max = moment().add(2, 'months');
 		this.state = { 
 			today:  today,
-			max : max
+			max : max,
+			coiffeur : null
 		};
+		this.handleChange = this.handleChange.bind(this);
+		this.handleDateChange = this.handleDateChange.bind(this);
+		this.handleClick = this.handleClick.bind(this);
+	}
+
+	handleChange(value) {
+		alert(value );
+		//this.setState({ coiffeur: e.target.value });
+	}
+
+	handleDateChange(value) {
+		alert(value );
+		//this.setState({ coiffeur: e.target.value });
+	}
+
+	handleClick() {
+		alert("clicked !");
+		//this.setState({ coiffeur: e.target.value });
 	}
 
 	render(){
@@ -45,6 +64,11 @@ class Agenda extends React.Component{
 					<Autocomplete
 						disablePortal
 						id="combo-box-demo"
+						onChange={(event, newValue) => {
+							this.handleChange(newValue);
+						  }}
+						defaultValue="pas de preference"
+            			value={this.state.coiffeur}
 						options={top100Films}
 						sx={{ width: 300 }}
 						renderInput={(params) => <TextField {...params} label="Choisissez un coiffeur" />}
@@ -57,14 +81,16 @@ class Agenda extends React.Component{
 							minDate={this.state.today}
 							maxDate = {this.state.max}
 							defaultCalendarMonth={null}
-							value={null}
-							onChange= {new Date()}
+							
+							onChange={(newValue) => {
+								this.handleDateChange(newValue);
+							}}
 							orientation = "portrait"
 							renderInput={(params) => <TextField {...params} />}
 						/>
 				</LocalizationProvider>
 				<div className="Bouton">
-					<Button variant="contained">Confirm</Button>
+					<Button variant="contained" onClick={() => { this.handleClick() ;}}>Confirm</Button>
 				</div>
 			</div>
 		)
