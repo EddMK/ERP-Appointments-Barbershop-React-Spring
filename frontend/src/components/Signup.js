@@ -76,21 +76,8 @@ class Signup extends React.Component{
 					<TextField 
 						fullWidth 
 						id="outlined-basic" 
-						label="Picture" 
-						InputProps={{
-							startAdornment: (
-								<InputAdornment position="start">
-									<InsertPhotoIcon />
-								</InputAdornment>
-							),
-						}} 
-						variant="outlined" />
-				</div>
-				<div className="textfield">
-					<TextField 
-						fullWidth 
-						id="outlined-basic" 
 						label="Password" 
+						type="password"
 						InputProps={{
 							startAdornment: (
 								<InputAdornment position="start">
@@ -105,6 +92,7 @@ class Signup extends React.Component{
 						fullWidth 
 						id="outlined-basic" 
 						label="Confirm Password" 
+						type="password"
 						InputProps={{
 							startAdornment: (
 								<InputAdornment position="start">
@@ -114,7 +102,7 @@ class Signup extends React.Component{
 						}} 
 						variant="outlined" />
 				</div>
-				<div className="Bouton">
+				<div className="bouton">
 					<Button variant="contained" onClick={() => { this.handleClick() ;}}>Confirm</Button>
 				</div>
 			</div>
