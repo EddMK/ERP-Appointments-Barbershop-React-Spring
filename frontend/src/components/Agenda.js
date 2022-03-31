@@ -13,17 +13,22 @@ class Agenda extends React.Component{
 			showSchedule : false
 		};
 		this.handleDisplaySchedule = this.handleDisplaySchedule.bind(this);
+		this.handleDisplayDate = this.handleDisplayDate.bind(this);
 	}
 
 	handleDisplaySchedule(value) {
 		this.setState({ showSchedule: true, returnDate : false });
 	}
 
+	handleDisplayDate(value) {
+		this.setState({ showSchedule: false, returnDate : true });
+	}
+
 	render(){
 		return(
 			<div className="Agenda">
 				{ this.state.returnDate ? <ChosenDate  click={this.handleDisplaySchedule}  /> : null }
-				{ this.state.showSchedule ? <Schedule/> : null }
+				{ this.state.showSchedule ? <Schedule  click={this.handleDisplayDate}  /> : null }
 			</div>
 		)
 	}

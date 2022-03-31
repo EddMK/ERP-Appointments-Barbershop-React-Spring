@@ -12,13 +12,12 @@ import {
   Appointments,
   CurrentTimeIndicator
 } from '@devexpress/dx-react-scheduler-material-ui';
+import DateAdapter from '@mui/lab/AdapterMoment';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import TimePicker from '@mui/lab/TimePicker';
 
 const top100Films = ['coupe','barbe'];
-const currentDate = '2022-03-31';
-const schedulerData = [
-  { startDate: '2022-03-31T10:20', endDate: '2022-03-31T11:00', title: 'taken' },
-  { startDate: '2022-03-31T12:00', endDate: '2022-03-31T13:30', title: 'taken' },
-];
+const currentDate = '2022-04-01';
 const Appointment = ({
     children, style, isShaded, ...restProps
   }) => (
@@ -36,59 +35,83 @@ const Appointment = ({
   );
 
 class Schedule extends React.Component{
+
+    constructor(props){
+      super();
+      this.state={
+        schedulerData : [
+          { startDate: '2022-04-01T10:20', endDate: '2022-04-01T11:00', title: 'taken' },
+          { startDate: '2022-04-01T12:00', endDate: '2022-04-01T13:30', title: 'taken' },
+        ]
+      }
+      this.handleTimePicker = this.handleTimePicker.bind(this);
+      this.handleCancel = this.handleCancel.bind(this);
+      this.handleConfirm = this.handleConfirm.bind(this);
+    }
+
+    handleTimePicker(value){
+      //schedulerData.concat({startDate:"2022-04-01T15:20",endDate:"2022-04-01T16:20", title:"token"});
+      //alert(value);
+    }
+
+    handleConfirm(){
+      //schedulerData(...{startDate:"2022-04-01T15:20",endDate:"2022-04-01T16:20", title:"token"});
+      this.setState({
+        schedulerData : [...this.state.schedulerData,{startDate:"2022-04-01T15:20",endDate:"2022-04-01T16:20", title:"token"}]
+      });
+    }
+
+    handleCancel(){
+      this.props.click();
+    }
+
     render(){
         return(
             <div className="Schedule">
               <h1>Schedule</h1>
+              <div className="form">
+                  <p>Choose service and time</p>
+                  <Autocomplete
+                    id="combo-box-demo"
+                    options={top100Films}
+                    style={{ width: 300 }}
+                    renderInput={(params) => <TextField {...params} label="Choose the service" variant="outlined" />}
+                  />
+                  <p>Time Picker</p>
+                  <LocalizationProvider dateAdapter={DateAdapter}>
+                    <TimePicker
+                      label="Basic example"
+                      onChange={(newValue) => {
+                        this.handleTimePicker(newValue);
+                        }}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                </LocalizationProvider>
+                </div>
                 <div className="hour">
                 <Box
                   sx={{
                     width: 400,
                     height: 500,
-                    marginLeft : 5,
-                    display : "inline-block"
                   }}
                 >
-                  <Scheduler data={schedulerData} >
+                  <Scheduler data={this.state.schedulerData} >
                       <ViewState currentDate={currentDate} />
-                      <DayView
-                          startDayHour={10}
-                          endDayHour={20}
-                      />
-                      <Appointments
-                          appointmentComponent={Appointment}
-                      />
+                      <DayView startDayHour={10} endDayHour={20} />
+                      <Appointments appointmentComponent={Appointment} />
                       <CurrentTimeIndicator
                         shadePreviousCells={true}
                         shadePreviousAppointments={true}
                         updateInterval={true}
                       />
-                    </Scheduler>
-                  </Box>
-                </div>
-                <Box
-                  component="div"
-                  sx={{
-                    width: 400,
-                    height: 500,
-                    marginLeft : 70,
-                    marginTop : -50
-                  }}
-                >
-                <div className="form">
-                  <p>Choose service and time</p>
-                  <Autocomplete
-                    id="combo-box-demo"
-                    options={top100Films}
-                    
-                    style={{ width: 300 }}
-                    renderInput={(params) => <TextField {...params} label="Choose the service" variant="outlined" />}
-                  />
-                  <p>Time Picker</p>
-                </div>
+                  </Scheduler>
                 </Box>
-                <Button variant="contained" color="success">Confirm</Button>
-                <Button variant="contained" color="error">Cancel</Button>
+                </div>
+                
+                <div className="buttons">
+                  <Button variant="contained" color="success"  onClick={() => { this.handleConfirm() ;}} >Confirm</Button>
+                  <Button variant="contained" color="error"  onClick={() => { this.handleCancel() ;}}  >Cancel</Button>
+                </div>
             </div>
 
         )
