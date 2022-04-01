@@ -9,8 +9,7 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 
 import Autocomplete from '@mui/material/Autocomplete';
 
-const top100Films = ['Rachid','Jean'];
-
+const top100Films = ['The Godfather','Pirates des Caraibes' ,'Pulp Fiction', 'Harry Potter'];
 class ChosenDate extends React.Component{
 
     constructor(props){
@@ -29,18 +28,21 @@ class ChosenDate extends React.Component{
 	}
 
     handleHairdressChange(value) {
-		alert(value );
-		//this.setState({ coiffeur: value });
+		//alert(value);
+		this.setState({ coiffeur: value });
 	}
 
 	handleDateChange(value) {
-		alert(value );
+		//alert(value );
 		this.setState({ date: value });
 	}
 
 	handleClick() {
-        this.props.click();
-		//this.setState({ coiffeur: e.target.value });
+		alert(this.state.coiffeur);
+		alert(this.state.date);
+		if(this.state.coiffeur != null &&  this.state.date != null){
+			this.props.click();
+		}
 	}
 
 
@@ -49,18 +51,16 @@ class ChosenDate extends React.Component{
 			<div className="Agenda">
 				<h1>Make an appointment</h1>
 				<div className="Coiffeur">
-					<Autocomplete
-						disablePortal
-						id="combo-box-demo"
-						onChange={(newValue) => {
-							this.handleHairdressChange(newValue);
-						  }}
-						defaultValue="pas de preference"
-            			value={this.state.coiffeur}
-						options={top100Films}
-						sx={{ width: 300 }}
-						renderInput={(params) => <TextField {...params} label="Choisissez un coiffeur" />}
-					/>
+				<Autocomplete
+					disablePortal
+					id="combo-box-demo"
+					options={top100Films}
+					sx={{ width: 300 }}
+					onChange={(event,newValue) => {
+						this.handleHairdressChange(newValue);
+					}}
+					renderInput={(params) => <TextField {...params} label="Movie" />}
+				/>
 				</div>
 				<LocalizationProvider dateAdapter={DateAdapter}>
 						<StaticDatePicker
