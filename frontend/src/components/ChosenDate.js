@@ -9,7 +9,7 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 
 import Autocomplete from '@mui/material/Autocomplete';
 
-const top100Films = ['The Godfather','Pirates des Caraibes' ,'Pulp Fiction', 'Harry Potter'];
+const top100Films = ['Pas de préfèrence','The Godfather','Pirates des Caraibes' ,'Pulp Fiction', 'Harry Potter'];
 class ChosenDate extends React.Component{
 
     constructor(props){
@@ -38,10 +38,8 @@ class ChosenDate extends React.Component{
 	}
 
 	handleClick() {
-		alert(this.state.coiffeur);
-		alert(this.state.date);
 		if(this.state.coiffeur != null &&  this.state.date != null){
-			this.props.click();
+			this.props.click(this.state.date, this.state.coiffeur);
 		}
 	}
 

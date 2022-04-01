@@ -10,14 +10,20 @@ class Agenda extends React.Component{
 		super();
 		this.state = { 
 			returnDate : true,
-			showSchedule : false
+			showSchedule : false,
+			choosenDate : null,
+			hairDresser : null
 		};
 		this.handleDisplaySchedule = this.handleDisplaySchedule.bind(this);
 		this.handleDisplayDate = this.handleDisplayDate.bind(this);
 	}
 
-	handleDisplaySchedule(value) {
-		this.setState({ showSchedule: true, returnDate : false });
+	handleDisplaySchedule(choosendate, hairdresser) {
+		this.setState({ showSchedule: true, 
+						returnDate : false ,
+						choosenDate : choosendate,
+						hairDresser : hairdresser
+		});
 	}
 
 	handleDisplayDate(value) {
@@ -28,7 +34,7 @@ class Agenda extends React.Component{
 		return(
 			<div className="Agenda">
 				{ this.state.returnDate ? <ChosenDate  click={this.handleDisplaySchedule}  /> : null }
-				{ this.state.showSchedule ? <Schedule  click={this.handleDisplayDate}  /> : null }
+				{ this.state.showSchedule ? <Schedule  click={this.handleDisplayDate} date={this.state.choosenDate} hairdresser={this.state.hairDresser}/> : null }
 			</div>
 		)
 	}
