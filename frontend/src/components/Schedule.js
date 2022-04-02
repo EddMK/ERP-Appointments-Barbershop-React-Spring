@@ -16,6 +16,7 @@ import {
 import DateAdapter from '@mui/lab/AdapterMoment';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import TimePicker from '@mui/lab/TimePicker';
+import moment from 'moment';
 
 const top100Films = ['coupe','barbe'];
 //const currentDate = '2022-04-01';
@@ -47,7 +48,7 @@ class Schedule extends React.Component{
         date : this.props.date,
         hairdresser : this.props.hairdresser,
         service : null,
-        startAppointement : null,
+        startAppointement : this.props.date,
         endAppointement : null
       }
       this.handleTimePicker = this.handleTimePicker.bind(this);
@@ -70,10 +71,12 @@ class Schedule extends React.Component{
         this.state.startAppointement.set('year', this.state.date.year());
         this.state.startAppointement.set('month', this.state.date.month());
         this.state.startAppointement.set('date', this.state.date.date());
-        console.log(this.state.startAppointement);
-        console.log(this.state.startAppointement.add(30, 'minutes').calendar());
+        var temps = moment(this.state.startAppointement);
+        console.log(temps);
+        var temps2 = moment(temps, "hh:mm A").add(30, 'minutes');
+        console.log(temps2);
         this.setState({
-          schedulerData : [...this.state.schedulerData,{startDate: this.state.startAppointement ,endDate: this.state.startAppointement.add(30, 'minutes'), title:"token"}]
+          schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token"}]
         });
       }
       /*
