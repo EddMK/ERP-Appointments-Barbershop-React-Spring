@@ -1,5 +1,6 @@
 import * as React from "react";
 import './Schedule.css';
+import { Rendezvous } from '../model/Appointment';
 import TextField from '@mui/material/TextField';
 import Input from '@mui/material/Input';
 import Button from '@mui/material/Button';
@@ -18,8 +19,15 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import TimePicker from '@mui/lab/TimePicker';
 import moment from 'moment';
 
+/*
+-Il faut afficher l'horaire du coiffeur comme étant occupé 
+- Afficher differentes couleurs
+-Il ne peut pas ajouter un rendez-vous si le coiffeur en a deja un
+-Essayer de combler les trous 
+-barbe 5 min et coupe 15 min
+*/
+
 const top100Films = ['coupe','barbe'];
-//const currentDate = '2022-04-01';
 const Appointment = ({
     children, style, isShaded, ...restProps
   }) => (
@@ -67,22 +75,41 @@ class Schedule extends React.Component{
     handleConfirm(){
       //schedulerData(...{startDate:"2022-04-01T15:20",endDate:"2022-04-01T16:20", title:"token"});
       //if(this.state.startAppointement != null &&  this.state.service != null){
-      if(this.state.startAppointement != null){
-        this.state.startAppointement.set('year', this.state.date.year());
-        this.state.startAppointement.set('month', this.state.date.month());
-        this.state.startAppointement.set('date', this.state.date.date());
-        var temps = moment(this.state.startAppointement);
-        console.log(temps);
-        var temps2 = moment(temps, "hh:mm A").add(30, 'minutes');
-        console.log(temps2);
-        this.setState({
-          schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token"}]
-        });
-      }
-      /*
+      this.state.startAppointement.set('year', this.state.date.year());
+      this.state.startAppointement.set('month', this.state.date.month());
+      this.state.startAppointement.set('date', this.state.date.date());
+      this.state.startAppointement = moment(this.state.startAppointement);
       this.setState({
-        schedulerData : [...this.state.schedulerData,{startDate:"2022-04-01T15:20",endDate:"2022-04-01T16:20", title:"token"}]
-      });*/
+        startAppointement : moment(this.state.startAppointement)
+      });
+      if(this.state.startAppointement != null){
+        if(this.valid()){
+          var temps = moment(this.state.startAppointement);
+          var temps2 = moment(temps, "hh:mm A").add(30, 'minutes');
+          this.setState({
+            schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token"}]
+          });
+        }
+      }
+
+    }
+
+    valid(){
+      console.log("clique sur validation !");
+      /*
+      for (let i = 0; i< this.state.schedulerData.length; i++) {
+        console.log(this.state.schedulerData[i]);
+      }*/
+      this.state.schedulerData.forEach(element => {
+        var tmpStart = moment(element.startDate)
+        var tmpEnd = moment(element.endDate)
+
+        //console.log(tmp<this.state.startAppointement);
+        //console.log(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement);
+        if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
+          return false;
+        }
+      });
     }
 
     handleCancel(){
