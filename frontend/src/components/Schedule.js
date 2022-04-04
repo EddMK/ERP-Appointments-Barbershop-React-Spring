@@ -21,13 +21,11 @@ import moment from 'moment';
 import { blue } from "@mui/material/colors";
 
 /*
--Il faut afficher l'horaire du coiffeur comme étant occupé 
+-Il faut afficher l'horaire du client
 -Utiliser une classe pour mettre dans les tableaux de schedulerData
 -Afficher differentes couleurs
 -Essayer de combler les trous 
 -Analyser les temps libres
--barbe 5 min et coupe 15 min
--CSS
 -Coiffeur Sans préférence.. regarder comment faire 
 */
 
