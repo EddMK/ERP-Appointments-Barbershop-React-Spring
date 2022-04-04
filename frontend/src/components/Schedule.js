@@ -48,6 +48,7 @@ const Appointment = ({
 
 class Schedule extends React.Component{
 
+  
     constructor(props){
       super(props);
       this.state={
