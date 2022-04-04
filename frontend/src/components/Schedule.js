@@ -1,6 +1,6 @@
 import * as React from "react";
 import './Schedule.css';
-import { Rendezvous } from '../model/Appointment';
+import Rendezvous  from '../model/Rendezvous';
 import TextField from '@mui/material/TextField';
 import Input from '@mui/material/Input';
 import Button from '@mui/material/Button';
@@ -18,13 +18,17 @@ import DateAdapter from '@mui/lab/AdapterMoment';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import TimePicker from '@mui/lab/TimePicker';
 import moment from 'moment';
+import { blue } from "@mui/material/colors";
 
 /*
 -Il faut afficher l'horaire du coiffeur comme étant occupé 
-- Afficher differentes couleurs
--Il ne peut pas ajouter un rendez-vous si le coiffeur en a deja un
+-Utiliser une classe pour mettre dans les tableaux de schedulerData
+-Afficher differentes couleurs
 -Essayer de combler les trous 
+-Analyser les temps libres
 -barbe 5 min et coupe 15 min
+-CSS
+-Coiffeur Sans préférence.. regarder comment faire 
 */
 
 const top100Films = ['coupe','barbe'];
@@ -52,6 +56,7 @@ class Schedule extends React.Component{
         schedulerData : [
           { startDate: '2022-04-09T10:20', endDate: '2022-04-09T11:10', title: 'taken' },
           { startDate: '2022-04-09T12:00', endDate: '2022-04-09T13:30', title: 'taken' },
+          new Rendezvous('2022-04-09T14:00','2022-04-09T14:30','taken')
         ],
         date : this.props.date,
         hairdresser : this.props.hairdresser,
@@ -69,14 +74,8 @@ class Schedule extends React.Component{
       this.setState({
         startAppointement : value
       });
-      //schedulerData.concat({startDate:"2022-04-01T15:20",endDate:"2022-04-01T16:20", title:"token"});
       console.log(value.hours(), value.minutes());
     }
-
-    /*
-    ERREUR AVEC LES IMPLEMENTATIONS DES DATES 
-    A REVOIR 
-    */
 
     handleConfirm(){
       this.state.startAppointement.set('year', this.state.date.year());
@@ -130,9 +129,14 @@ class Schedule extends React.Component{
     render(){
         return(
             <div className="Schedule">
-              <h1>Schedule</h1>
-              <div className="form">
-                  {this.state.hairdresser}
+              <h1>Schedule for {this.state.hairdresser} </h1>
+              <table class="center">
+              <tr>
+                <td>
+              <Box sx={{ 
+                
+              }}  >
+                  <p>To make an appointment, complete the followings input:</p>
                   <Autocomplete
                     id="combo-box-demo"
                     options={top100Films}
@@ -141,15 +145,16 @@ class Schedule extends React.Component{
                   />
                   <LocalizationProvider dateAdapter={DateAdapter}>
                     <TimePicker
-                      label="Basic example"
                       onChange={(newValue) => {
                         this.handleTimePicker(newValue);
                         }}
-                      renderInput={(params) => <TextField {...params} />}
+                      renderInput={(params) => <TextField style={{ width: 300 }} {...params} />}
                     />
                   </LocalizationProvider>
-                </div>
-                <div className="hour">
+                </Box>
+                </td>
+                <td>
+                <Paper elevation={5}>
                 <Box
                   sx={{
                     width: 400,
@@ -167,12 +172,14 @@ class Schedule extends React.Component{
                       />
                   </Scheduler>
                 </Box>
-                </div>
-                
-                <div className="buttons">
-                  <Button variant="contained" color="success"  onClick={() => { this.handleConfirm() ;}} >Confirm</Button>
-                  <Button variant="contained" color="error"  onClick={() => { this.handleCancel() ;}}  >Cancel</Button>
-                </div>
+                </Paper>
+                </td>
+                </tr>
+            </table>
+            <div class="buttons">
+              <Button variant="contained" color="success"  onClick={() => { this.handleConfirm() ;}} >Confirm</Button>
+              <Button variant="contained" color="error"  onClick={() => { this.handleCancel() ;}}  >Cancel</Button>
+            </div>
             </div>
 
         )
