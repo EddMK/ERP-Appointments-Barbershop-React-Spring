@@ -72,20 +72,25 @@ class Schedule extends React.Component{
       console.log(value.hours(), value.minutes());
     }
 
+    /*
+    ERREUR AVEC LES IMPLEMENTATIONS DES DATES 
+    A REVOIR 
+
+    */
+
     handleConfirm(){
-      //schedulerData(...{startDate:"2022-04-01T15:20",endDate:"2022-04-01T16:20", title:"token"});
-      //if(this.state.startAppointement != null &&  this.state.service != null){
       this.state.startAppointement.set('year', this.state.date.year());
       this.state.startAppointement.set('month', this.state.date.month());
       this.state.startAppointement.set('date', this.state.date.date());
-      this.state.startAppointement = moment(this.state.startAppointement);
+      var temps = moment(this.state.startAppointement);
+      var temps2 = moment(this.state.startAppointement, "hh:mm A").add(30, 'minutes');
       this.setState({
-        startAppointement : moment(this.state.startAppointement)
+        startAppointement : temps,
+        endAppointement : temps2
       });
       if(this.state.startAppointement != null){
+        console.log(this.valid());
         if(this.valid()){
-          var temps = moment(this.state.startAppointement);
-          var temps2 = moment(temps, "hh:mm A").add(30, 'minutes');
           this.setState({
             schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token"}]
           });
@@ -94,22 +99,26 @@ class Schedule extends React.Component{
 
     }
 
+
+    /*
+    Il manque la validation quand le rendez vous se termine alors que il y en a deja un qui va commencer
+    */
     valid(){
-      console.log("clique sur validation !");
-      /*
-      for (let i = 0; i< this.state.schedulerData.length; i++) {
-        console.log(this.state.schedulerData[i]);
-      }*/
+      var valid = true;
+      console.log(this.state.startAppointement);
+      console.log(this.state.endAppointement);
       this.state.schedulerData.forEach(element => {
         var tmpStart = moment(element.startDate)
         var tmpEnd = moment(element.endDate)
-
-        //console.log(tmp<this.state.startAppointement);
-        //console.log(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement);
         if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
-          return false;
+          valid = false;
+        }
+        if(tmpStart<this.state.endAppointement &&  tmpEnd>this.state.endAppointement){
+          valid = false;
         }
       });
+      return valid;
+
     }
 
     handleCancel(){
