@@ -50,7 +50,7 @@ class Schedule extends React.Component{
       super(props);
       this.state={
         schedulerData : [
-          { startDate: '2022-04-09T10:20', endDate: '2022-04-09T11:00', title: 'taken' },
+          { startDate: '2022-04-09T10:20', endDate: '2022-04-09T11:10', title: 'taken' },
           { startDate: '2022-04-09T12:00', endDate: '2022-04-09T13:30', title: 'taken' },
         ],
         date : this.props.date,
@@ -62,6 +62,7 @@ class Schedule extends React.Component{
       this.handleTimePicker = this.handleTimePicker.bind(this);
       this.handleCancel = this.handleCancel.bind(this);
       this.handleConfirm = this.handleConfirm.bind(this);
+      this.valid = this.valid.bind(this);
     }
 
     handleTimePicker(value){
@@ -75,7 +76,6 @@ class Schedule extends React.Component{
     /*
     ERREUR AVEC LES IMPLEMENTATIONS DES DATES 
     A REVOIR 
-
     */
 
     handleConfirm(){
@@ -85,11 +85,9 @@ class Schedule extends React.Component{
       var temps = moment(this.state.startAppointement);
       var temps2 = moment(this.state.startAppointement, "hh:mm A").add(30, 'minutes');
       this.setState({
-        startAppointement : temps,
-        endAppointement : temps2
+        startAppointement : moment(this.state.startAppointement), 
       });
       if(this.state.startAppointement != null){
-        console.log(this.valid());
         if(this.valid()){
           this.setState({
             schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token"}]
@@ -106,14 +104,18 @@ class Schedule extends React.Component{
     valid(){
       var valid = true;
       console.log(this.state.startAppointement);
-      console.log(this.state.endAppointement);
+      var endingApp = moment(this.state.startAppointement, "hh:mm A").add(30, 'minutes');
+      console.log("end : ", endingApp);
       this.state.schedulerData.forEach(element => {
         var tmpStart = moment(element.startDate)
         var tmpEnd = moment(element.endDate)
         if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
           valid = false;
         }
-        if(tmpStart<this.state.endAppointement &&  tmpEnd>this.state.endAppointement){
+        if(tmpStart<endingApp &&  tmpEnd>endingApp){
+          valid = false;
+        }
+        if(tmpStart.isSame(this.state.startAppointement)){
           valid = false;
         }
       });
