@@ -66,7 +66,23 @@ class Schedule extends React.Component{
       this.handleTimePicker = this.handleTimePicker.bind(this);
       this.handleCancel = this.handleCancel.bind(this);
       this.handleConfirm = this.handleConfirm.bind(this);
-      this.valid = this.valid.bind(this);
+      this.validationAppointment = this.validationAppointment.bind(this);
+      this.addAppointmentBackend = this.addAppointmentBackend.bind(this);
+      console.log("CONSTRUCTOR!");
+    }
+
+    componentDidMount() {
+      console.log("REFRESH!");
+      fetch(
+        "http://localhost:8080/appointment/all")
+                    .then((res) => res.json())
+                    .then((json) => {
+                        console.log(json);
+                        this.setState({
+                          schedulerData: json
+                        });
+                        console.log("scheduler :",this.state.schedulerData);
+                    })
     }
 
     handleTimePicker(value){
@@ -86,20 +102,39 @@ class Schedule extends React.Component{
         startAppointement : moment(this.state.startAppointement), 
       });
       if(this.state.startAppointement != null){
-        if(this.valid()){
+        if(this.validationAppointment()){
           this.setState({
             schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token"}]
           });
+          //AJOUTER DANS LE BACKEND
+          this.addAppointmentBackend(temps,temps2);
         }
       }
+    }
 
+    async addAppointmentBackend(start, end){
+        var titre = "2emetest";
+        const requestOptions = {
+          method: 'POST',
+          headers: { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json' 
+          },
+          body: JSON.stringify({ title : titre , startDate : start, endDate : end})
+        };
+        const response = await fetch( 'http://localhost:8080/appointment/add',requestOptions);
+        const data = await response.text();
+        console.log(response);
+        console.log(data);
     }
 
 
     /*
     Il manque la validation quand le rendez vous se termine alors que il y en a deja un qui va commencer
+    Attention pas rajouter un rendez vous a la fin de la journée
+    AFFICHER DIALOGUE
     */
-    valid(){
+    validationAppointment(){
       var valid = true;
       console.log(this.state.startAppointement);
       var endingApp = moment(this.state.startAppointement, "hh:mm A").add(30, 'minutes');
@@ -129,7 +164,8 @@ class Schedule extends React.Component{
         return(
             <div className="Schedule">
               <h1>Schedule for {this.state.hairdresser} </h1>
-              <table class="center">
+              <table className="center">
+              <tbody>
               <tr>
                 <td>
               <Box sx={{ 
@@ -174,8 +210,9 @@ class Schedule extends React.Component{
                 </Paper>
                 </td>
                 </tr>
+                </tbody>
             </table>
-            <div class="buttons">
+            <div className="buttons">
               <Button variant="contained" color="success"  onClick={() => { this.handleConfirm() ;}} >Confirm</Button>
               <Button variant="contained" color="error"  onClick={() => { this.handleCancel() ;}}  >Cancel</Button>
             </div>

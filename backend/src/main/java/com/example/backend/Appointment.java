@@ -7,15 +7,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity // This tells Hibernate to make a table out of this class
 public class Appointment {
   @Id
   @GeneratedValue(strategy=GenerationType.AUTO)
   private Integer id;
 
-  private Timestamp start;
+  private Timestamp startDate;
 
-  private Timestamp end;
+  private Timestamp endDate;
 
   private String title;
 
@@ -27,22 +29,25 @@ public class Appointment {
     this.id = id;
   }
 
+  @JsonProperty("startDate")
   public Timestamp getStart() {
-    return start;
+    return startDate;
   }
 
   public void setStart(Timestamp date) {
-    this.start = date;
+    this.startDate = date;
   }
 
+  @JsonProperty("endDate")
   public Timestamp getEnd() {
-    return end;
+    return endDate;
   }
 
   public void setEnd(Timestamp date) {
-    this.end = date;
+    this.endDate = date;
   }
 
+  @JsonProperty("title")
   public String getTitle() {
     return title;
   }
