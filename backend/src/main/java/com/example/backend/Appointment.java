@@ -1,15 +1,13 @@
 package com.example.backend;
 
 import java.sql.Timestamp;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Entity // This tells Hibernate to make a table out of this class
+@Entity 
 public class Appointment {
   @Id
   @GeneratedValue(strategy=GenerationType.AUTO)

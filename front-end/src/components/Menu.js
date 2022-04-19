@@ -10,7 +10,7 @@ class Menu extends React.Component{
 					<ul className='menu'>
 						<li><Link to="/signup">Sign Up</Link></li>
 						<li><Link to="/login">Log In</Link></li>
-						<li><Link to="/agenda">Agenda</Link></li>
+						<li><Link to="/agenda">Make an appointment</Link></li>
 						<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
 					</ul>
 				</nav>
