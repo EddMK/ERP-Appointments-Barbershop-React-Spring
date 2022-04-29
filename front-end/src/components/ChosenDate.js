@@ -7,8 +7,11 @@ import StaticDatePicker from '@mui/lab/StaticDatePicker';
 import TextField from '@mui/material/TextField';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import Autocomplete from '@mui/material/Autocomplete';
+import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
 
-const top100Films = ['Pas de préfèrence','The Godfather','Pirates des Caraibes' ,'Pulp Fiction', 'Harry Potter'];
+
+
 class ChosenDate extends React.Component{
 
     constructor(){
@@ -18,15 +21,18 @@ class ChosenDate extends React.Component{
 		this.state = { 
 			today:  today,
 			max : max,
-			coiffeur : null,
+			localisation : null,
+			employee : null,
             date : null,
-			barbershops : null,
-			hairdressers : null
+			barbershops : [],
+			hairdressers : [],//ATTENTION NE PAS OUBLIER LE PAS DE PREFERENCE,
+			showDialogConfirm : false
 		};
 		this.handleHairdressChange = this.handleHairdressChange.bind(this);
 		this.handleBarbershopChange = this.handleBarbershopChange.bind(this);
 		this.handleDateChange = this.handleDateChange.bind(this);
 		this.handleClick = this.handleClick.bind(this);
+		this.handleCloseDialog = this.handleCloseDialog.bind(this);
 		this.setHairdresserList = this.setHairdresserList.bind(this);
 	}
 
@@ -39,17 +45,22 @@ class ChosenDate extends React.Component{
 
 	handleBarbershopChange(value) {
 		//alert(value);
+		this.setState({localisation : value});
 		console.log(value.id);
 		this.setHairdresserList(value.id);
 	}
 
 	setHairdresserList(id){
 		console.log("GET THE HAIRDRESSERS FROM ");
+		fetch('http://localhost:8080/user/hairdressByBarbershop/'+id)
+        .then(response => response.json())
+        .then(data => this.setState({hairdressers : data}));
 	}
 
     handleHairdressChange(value) {
 		//alert(value);
-		this.setState({ coiffeur: value });
+		this.setState({ employee: value.lastName });
+		console.log("coiffeur : "+value);
 	}
 
 	handleDateChange(value) {
@@ -57,9 +68,15 @@ class ChosenDate extends React.Component{
 		this.setState({ date: value });
 	}
 
+	handleCloseDialog(){
+		this.setState({showDialogConfirm : false});
+	}
+
 	handleClick() {
-		if(this.state.coiffeur != null &&  this.state.date != null){
+		if(this.state.localisation != null &&  this.state.date != null && this.state.employee != null){
 			this.props.click(this.state.date, this.state.coiffeur);
+		}else{
+			this.setState({showDialogConfirm : true});
 		}
 	}
 
@@ -83,7 +100,8 @@ class ChosenDate extends React.Component{
 					<Autocomplete
 						disablePortal
 						id="hairdresser"
-						options={top100Films}
+						options={this.state.hairdressers}
+						getOptionLabel={(option) => option.lastName+" "+option.firstName}
 						sx={{ width: 300 , marginTop : 2 }}
 						onChange={(event,newValue) => {
 							this.handleHairdressChange(newValue);
@@ -109,6 +127,7 @@ class ChosenDate extends React.Component{
 				<div className="Button">
 					<Button variant="contained" onClick={() => { this.handleClick() ;}}>Confirm</Button>
 				</div>
+				{this.state.showDialogConfirm ? <Dialog onClose={this.handleCloseDialog}  open={this.state.showDialogConfirm}><Alert variant="filled" severity="warning">You have to complete the inputs and choose a date to continue</Alert></Dialog> : null } 
 			</div>
 		)
     }

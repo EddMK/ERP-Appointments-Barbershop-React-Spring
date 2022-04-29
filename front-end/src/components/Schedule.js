@@ -21,15 +21,17 @@ import moment from 'moment';
 import { blue } from "@mui/material/colors";
 
 /*
+VALIDATIONS QUAND ON CLIQUE SUR CONFIRMER
+VERIFIER D AVOIR CHOISI LE SERVICE
+AFFICHER LES MESSAGES D ERREURS 
 -Il faut afficher l'horaire du client
 -Utiliser une classe pour mettre dans les tableaux de schedulerData
--Afficher differentes couleurs
+-Afficher differentes couleurs(le rendez vous du client different des autres)
 -Essayer de combler les trous 
 -Analyser les temps libres
 -Coiffeur Sans préférence.. regarder comment faire 
 */
 
-const top100Films = ['coupe','barbe'];
 const Appointment = ({
     children, style, isShaded, ...restProps
   }) => (
@@ -59,7 +61,7 @@ class Schedule extends React.Component{
         ],
         date : this.props.date,
         hairdresser : this.props.hairdresser,
-        service : null,
+        services :  [],
         startAppointement : this.props.date,
         endAppointement : null
       }
@@ -68,21 +70,22 @@ class Schedule extends React.Component{
       this.handleConfirm = this.handleConfirm.bind(this);
       this.validationAppointment = this.validationAppointment.bind(this);
       this.addAppointmentBackend = this.addAppointmentBackend.bind(this);
-      console.log("CONSTRUCTOR!");
     }
 
     componentDidMount() {
-      console.log("REFRESH!");
-      fetch(
-        "http://localhost:8080/appointment/all")
-                    .then((res) => res.json())
-                    .then((json) => {
-                        console.log(json);
-                        this.setState({
-                          schedulerData: json
-                        });
-                        console.log("scheduler :",this.state.schedulerData);
-                    })
+      //UNE AUTRE METHODE 
+      //OBTENIR LES RENDEZ VOUS DU JOURS CHOISI
+      fetch("http://localhost:8080/appointment/all").then((res) => res.json())
+                                                    .then((json) => {
+                                                        console.log(json);
+                                                        this.setState({
+                                                          schedulerData: json
+                                                        });
+                                                        console.log("scheduler :",this.state.schedulerData);
+      });
+      fetch("http://localhost:8080/service/all").then((res) => res.json())
+                                                .then((json) => this.setState({ services : json }) );
+
     }
 
     handleTimePicker(value){
@@ -174,7 +177,8 @@ class Schedule extends React.Component{
                   <p>To make an appointment, complete the followings input:</p>
                   <Autocomplete
                     id="combo-box-demo"
-                    options={top100Films}
+                    options={this.state.services}
+                    getOptionLabel={(option) => option.name}
                     style={{ width: 300 }}
                     renderInput={(params) => <TextField {...params} label="Choose the service" variant="outlined" />}
                   />
