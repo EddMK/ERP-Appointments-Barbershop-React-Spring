@@ -1,4 +1,4 @@
-package com.example.backend;
+package com.example.backend.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -6,6 +6,9 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
@@ -28,6 +31,9 @@ public class User {
     @Enumerated(EnumType.STRING) 
     private Role role;
 
+    @ManyToOne
+    @JoinColumn(name = "barbershop_id", nullable = true)
+    private Barbershop barbershop;
 
 
     public Integer getId() {
@@ -92,6 +98,14 @@ public class User {
         this.role = Role.valueOf(role);
     }
 
-    
+    @JsonProperty("barbershop")
+    public Barbershop getBarbershop() {
+        if(this.barbershop == null){
+            return null;
+        }
+        return barbershop;
+    }
+
+
 }
 

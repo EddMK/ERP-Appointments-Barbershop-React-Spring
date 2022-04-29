@@ -1,4 +1,6 @@
-package com.example.backend;
+package com.example.backend.repository;
+
+import com.example.backend.entity.Appointment;
 
 import org.springframework.data.repository.CrudRepository;
 

@@ -1,9 +1,15 @@
-package com.example.backend;
+package com.example.backend.entity;
+
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.JoinColumn;
+
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
@@ -11,17 +17,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Barbershop {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    private Integer id;
+    private Long id;
 
     private String name;
 
     private String address;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
+
+    @OneToMany
+    @JoinColumn(name = "barbershop_id")
+    private Set<User> hairdressers;
     
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
