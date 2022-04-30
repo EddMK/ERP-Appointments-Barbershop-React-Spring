@@ -2,7 +2,6 @@ import * as React from "react";
 import './Schedule.css';
 import Rendezvous  from '../model/Rendezvous';
 import TextField from '@mui/material/TextField';
-import Input from '@mui/material/Input';
 import Button from '@mui/material/Button';
 import Autocomplete from '@mui/material/Autocomplete';
 import Paper from '@mui/material/Paper';
@@ -18,12 +17,14 @@ import DateAdapter from '@mui/lab/AdapterMoment';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import TimePicker from '@mui/lab/TimePicker';
 import moment from 'moment';
-import { blue } from "@mui/material/colors";
+import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
 
 /*
-VALIDATIONS QUAND ON CLIQUE SUR CONFIRMER
-VERIFIER D AVOIR CHOISI LE SERVICE
-AFFICHER LES MESSAGES D ERREURS 
+-ADAPETER LE BACKEND APPOINTMENT
+-AJOUTER LA DURER DU SERVICE
+-OBTENIR LES RENDEZ VOUS DU JOURS CHOISI
+-Ajouter des flèches à droite et à gauche pour changer de jours
 -Il faut afficher l'horaire du client
 -Utiliser une classe pour mettre dans les tableaux de schedulerData
 -Afficher differentes couleurs(le rendez vous du client different des autres)
@@ -62,11 +63,15 @@ class Schedule extends React.Component{
         date : this.props.date,
         hairdresser : this.props.hairdresser,
         services :  [],
+        service : null,
+        error : null,
+        showDialogConfirm : false,
         startAppointement : this.props.date,
         endAppointement : null
       }
       this.handleTimePicker = this.handleTimePicker.bind(this);
       this.handleCancel = this.handleCancel.bind(this);
+      this.handleCloseDialog = this.handleCloseDialog.bind(this);
       this.handleConfirm = this.handleConfirm.bind(this);
       this.validationAppointment = this.validationAppointment.bind(this);
       this.addAppointmentBackend = this.addAppointmentBackend.bind(this);
@@ -77,11 +82,7 @@ class Schedule extends React.Component{
       //OBTENIR LES RENDEZ VOUS DU JOURS CHOISI
       fetch("http://localhost:8080/appointment/all").then((res) => res.json())
                                                     .then((json) => {
-                                                        console.log(json);
-                                                        this.setState({
-                                                          schedulerData: json
-                                                        });
-                                                        console.log("scheduler :",this.state.schedulerData);
+                                                        this.setState({ schedulerData: json });
       });
       fetch("http://localhost:8080/service/all").then((res) => res.json())
                                                 .then((json) => this.setState({ services : json }) );
@@ -92,27 +93,26 @@ class Schedule extends React.Component{
       this.setState({
         startAppointement : value
       });
-      console.log(value.hours(), value.minutes());
+    }
+
+    handleServiceChoosen(value){
+      this.setState({ service : value });
     }
 
     handleConfirm(){
-      this.state.startAppointement.set('year', this.state.date.year());
-      this.state.startAppointement.set('month', this.state.date.month());
-      this.state.startAppointement.set('date', this.state.date.date());
-      var temps = moment(this.state.startAppointement);
-      var temps2 = moment(this.state.startAppointement, "hh:mm A").add(30, 'minutes');
-      this.setState({
-        startAppointement : moment(this.state.startAppointement), 
-      });
-      if(this.state.startAppointement != null){
-        if(this.validationAppointment()){
-          this.setState({
-            schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token"}]
-          });
-          //AJOUTER DANS LE BACKEND
-          this.addAppointmentBackend(temps,temps2);
-        }
-      }
+      if(this.validationAppointment()){
+        this.state.startAppointement.set('year', this.state.date.year());
+        this.state.startAppointement.set('month', this.state.date.month());
+        this.state.startAppointement.set('date', this.state.date.date());
+        var temps = moment(this.state.startAppointement);
+        var temps2 = moment(this.state.startAppointement, "hh:mm A").add(30, 'minutes');//AJOUTER LA DURER DU SERVICE
+        this.setState({ startAppointement : moment(this.state.startAppointement) });
+        this.setState({
+          schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token"}]
+        });
+        //AJOUTER DANS LE BACKEND
+        this.addAppointmentBackend(temps,temps2);
+      }      
     }
 
     async addAppointmentBackend(start, end){
@@ -127,40 +127,46 @@ class Schedule extends React.Component{
         };
         const response = await fetch( 'http://localhost:8080/appointment/add',requestOptions);
         const data = await response.text();
-        console.log(response);
-        console.log(data);
     }
 
 
     /*
     Il manque la validation quand le rendez vous se termine alors que il y en a deja un qui va commencer
-    Attention pas rajouter un rendez vous a la fin de la journée
-    AFFICHER DIALOGUE
+    Attention pas rajouter un rendez vous a la fin de la journée et faut voir pour le debut de journée
     */
     validationAppointment(){
       var valid = true;
-      console.log(this.state.startAppointement);
       var endingApp = moment(this.state.startAppointement, "hh:mm A").add(30, 'minutes');
-      console.log("end : ", endingApp);
-      this.state.schedulerData.forEach(element => {
-        var tmpStart = moment(element.startDate)
-        var tmpEnd = moment(element.endDate)
-        if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
-          valid = false;
-        }
-        if(tmpStart<endingApp &&  tmpEnd>endingApp){
-          valid = false;
-        }
-        if(tmpStart.isSame(this.state.startAppointement)){
-          valid = false;
-        }
-      });
+      if(this.state.service != null ){
+        this.state.schedulerData.forEach(element => {
+          var tmpStart = moment(element.startDate)
+          var tmpEnd = moment(element.endDate)
+          if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
+            valid = false;
+            this.setState({error : "You cannot make an appointment when an other has already start."});
+          }
+          if(tmpStart<endingApp &&  tmpEnd>endingApp){
+            valid = false;
+            this.setState({error : "The appointment cannot encroach on the next."});
+          }
+          if(tmpStart.isSame(this.state.startAppointement)){
+            valid = false;
+            this.setState({error : "There is already an appointment at this time."});
+          }
+        });
+      }else{
+        valid = false;
+        this.setState({error : "You have to choose a service to confirm the appointment."});
+      }
       return valid;
-
     }
 
     handleCancel(){
       this.props.click();
+    }
+
+    handleCloseDialog(){
+      this.setState({error : null});
     }
 
     render(){
@@ -179,6 +185,9 @@ class Schedule extends React.Component{
                     id="combo-box-demo"
                     options={this.state.services}
                     getOptionLabel={(option) => option.name}
+                    onChange={(event,newValue) => {
+                      this.handleServiceChoosen(newValue);
+                    }}
                     style={{ width: 300 }}
                     renderInput={(params) => <TextField {...params} label="Choose the service" variant="outlined" />}
                   />
@@ -215,11 +224,12 @@ class Schedule extends React.Component{
                 </td>
                 </tr>
                 </tbody>
-            </table>
-            <div className="buttons">
-              <Button variant="contained" color="success"  onClick={() => { this.handleConfirm() ;}} >Confirm</Button>
-              <Button variant="contained" color="error"  onClick={() => { this.handleCancel() ;}}  >Cancel</Button>
-            </div>
+              </table>
+              <div className="buttons">
+                <Button variant="contained" color="success"  onClick={() => { this.handleConfirm() ;}} >Confirm</Button>
+                <Button variant="contained" color="error"  onClick={() => { this.handleCancel() ;}}  >Cancel</Button>
+              </div>
+              <Dialog onClose={this.handleCloseDialog}  open={this.state.error != null}><Alert variant="filled" severity="warning">{this.state.error}</Alert></Dialog>
             </div>
 
         )

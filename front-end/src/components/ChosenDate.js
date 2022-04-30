@@ -10,8 +10,9 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 
-
-
+/*
+Mettre des couleurs dans le calendriers pour indiquer si un jour possède plus de places pour des rendez-vous
+*/
 class ChosenDate extends React.Component{
 
     constructor(){
@@ -58,13 +59,11 @@ class ChosenDate extends React.Component{
 	}
 
     handleHairdressChange(value) {
-		//alert(value);
 		this.setState({ employee: value.lastName });
 		console.log("coiffeur : "+value);
 	}
 
 	handleDateChange(value) {
-		//alert(value );
 		this.setState({ date: value });
 	}
 
@@ -127,7 +126,7 @@ class ChosenDate extends React.Component{
 				<div className="Button">
 					<Button variant="contained" onClick={() => { this.handleClick() ;}}>Confirm</Button>
 				</div>
-				{this.state.showDialogConfirm ? <Dialog onClose={this.handleCloseDialog}  open={this.state.showDialogConfirm}><Alert variant="filled" severity="warning">You have to complete the inputs and choose a date to continue</Alert></Dialog> : null } 
+				<Dialog onClose={this.handleCloseDialog} open={this.state.showDialogConfirm}><Alert variant="filled" severity="warning">You have to complete the inputs and choose a date to continue</Alert></Dialog> 
 			</div>
 		)
     }
