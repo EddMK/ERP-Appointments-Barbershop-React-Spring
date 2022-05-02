@@ -47,12 +47,12 @@ class ChosenDate extends React.Component{
 	handleBarbershopChange(value) {
 		//alert(value);
 		this.setState({localisation : value});
-		console.log(value.id);
+		//console.log(value.id);
 		this.setHairdresserList(value.id);
 	}
 
 	setHairdresserList(id){
-		console.log("GET THE HAIRDRESSERS FROM ");
+		//console.log("GET THE HAIRDRESSERS FROM ");
 		fetch('http://localhost:8080/user/hairdressByBarbershop/'+id)
         .then(response => response.json())
         .then(data => this.setState({hairdressers : data}));
@@ -60,7 +60,7 @@ class ChosenDate extends React.Component{
 
     handleHairdressChange(value) {
 		this.setState({ employee: value.lastName });
-		console.log("coiffeur : "+value);
+		console.log("coiffeur : ",value);
 	}
 
 	handleDateChange(value) {
