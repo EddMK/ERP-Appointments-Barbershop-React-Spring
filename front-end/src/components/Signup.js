@@ -33,6 +33,7 @@ class Signup extends React.Component{
 			confirm:'',
 			errorConfirm : false,
 			helperConfirm : null,
+			disableButton : true
 		  }
 		this.handleLastName = this.handleLastName.bind(this);
 		this.handleFirstName = this.handleFirstName.bind(this);
@@ -40,6 +41,26 @@ class Signup extends React.Component{
 		this.handlePhoneNumber = this.handlePhoneNumber.bind(this);
 		this.handlePassword = this.handlePassword.bind(this);
 		this.handleConfirmPassword = this.handleConfirmPassword.bind(this);
+		this.handleClick = this.handleClick.bind(this);
+		this.handleDisable = this.handleDisable.bind(this);
+	}
+
+	async handleClick(){
+		console.log("Cliqué !");
+		const requestOptions = {
+			method: 'POST',
+			headers: { 
+			  'Accept': 'application/json',
+			  'Content-Type': 'application/json' 
+			},
+			body: JSON.stringify({	lastName : this.state.lastName,
+									firstName : this.state.firstName,
+									email : this.state.email,
+									phoneNumber : this.state.phoneNumber,
+									password : this.state.password	})
+		  };
+		  const response = await fetch( 'http://localhost:8080/user/addCustomer',requestOptions);
+		  const data = await response.text();
 	}
 
 	handleLastName(event){
@@ -48,6 +69,7 @@ class Signup extends React.Component{
 		}else{
 			this.setState({ lastName: event.value , errorLastName : false, helperLastName: null})
 		}
+		this.handleDisable();
 	}
 
 	handleFirstName(event){
@@ -56,6 +78,7 @@ class Signup extends React.Component{
 		}else{
 			this.setState({ firstName: event.value , errorFirstName : false, helperFirstName: null})
 		}
+		this.handleDisable();
 	}
 
 	handleEmail(event){
@@ -66,6 +89,7 @@ class Signup extends React.Component{
 		}else{
 			this.setState({ email: event.value , errorEmail : false, helperEmail: null})
 		}
+		this.handleDisable();
 	}
 
 	handlePhoneNumber(event){
@@ -77,6 +101,7 @@ class Signup extends React.Component{
 		}else{
 			this.setState({ phoneNumber: event.value , errorPhone : false, helperPhone: null})
 		}
+		this.handleDisable();
 	}
 	// IL FAUT CHOISIR UN REGEX
 	handlePassword(event){
@@ -86,6 +111,7 @@ class Signup extends React.Component{
 		}else{
 			this.setState({ password : password , errorPassword : false, helperPassword:null})
 		}
+		this.handleDisable();
 	}
 
 	handleConfirmPassword(event){
@@ -97,6 +123,15 @@ class Signup extends React.Component{
 			this.setState({ errorConfirm : true, helperConfirm:"It is not the same as the password"})
 		}else{
 			this.setState({ confirm : confirm , errorConfirm : false, helperConfirm:null})
+		}
+		this.handleDisable();
+	}
+
+	handleDisable(){
+		if(this.state.errorFirstName || this.state.errorLastName || this.state.errorEmail || this.state.errorPhone || this.state.errorPassword ||  this.state.errorConfirm){
+			this.setState({disableButton : true});
+		}else{
+			this.setState({disableButton : false});
 		}
 	}
 
@@ -210,7 +245,7 @@ class Signup extends React.Component{
 						variant="outlined" />
 				</div>
 				<div className="bouton">
-					<Button variant="contained" onClick={() => { this.handleClick() ;}}>Confirm</Button>
+					<Button disabled={this.state.disableButton} variant="contained" onClick={() => { this.handleClick() ;}}>Confirm</Button>
 				</div>
 			</div>
 		)

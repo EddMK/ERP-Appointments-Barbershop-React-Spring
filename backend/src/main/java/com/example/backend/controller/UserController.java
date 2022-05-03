@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import java.util.List;
@@ -22,8 +23,8 @@ public class UserController {
   private UserRepository userRepository;
 
   @CrossOrigin
-  @PostMapping(path="/add") 
-  public @ResponseBody String addNewUser (@RequestBody User user){
+  @PostMapping(path="/addCustomer") 
+  public @ResponseBody String addNewCustomer (@RequestBody User user){
 
     User u = new User();
     u.setLastName(user.getLastName());
@@ -31,7 +32,7 @@ public class UserController {
     u.setEmail(user.getEmail());
     u.setPhoneNumber(user.getPhoneNumber());
     u.setPassword(user.getPassword());
-    u.setRole(user.getRole());
+    u.setRole(Role.CUSTOMER.toString());
     userRepository.save(u);
     return "Saved";
   }
