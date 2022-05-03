@@ -193,9 +193,7 @@ class Schedule extends React.Component{
                   />
                   <LocalizationProvider dateAdapter={DateAdapter}>
                     <TimePicker
-                      onChange={(newValue) => {
-                        this.handleTimePicker(newValue);
-                        }}
+                      onChange={(newValue) => { this.handleTimePicker(newValue); }}
                       renderInput={(params) => <TextField style={{ width: 300 }} {...params} />}
                     />
                   </LocalizationProvider>
