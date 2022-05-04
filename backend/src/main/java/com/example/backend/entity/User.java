@@ -8,7 +8,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
+import javax.persistence.OneToMany;
+import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
@@ -34,6 +35,9 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "barbershop_id", nullable = true)
     private Barbershop barbershop;
+
+    @OneToMany
+    private Set<Appointment> hairdressers;
 
 
     public Integer getId() {

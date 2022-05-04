@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/appointment") // This means URL's start with /demo (after Application path)
-public class MainController {
+public class AppointmentController {
   
   @Autowired 
   private AppointmentRepository appointmentRepository;
@@ -23,14 +23,12 @@ public class MainController {
   @CrossOrigin
   @PostMapping(path="/add") // Map ONLY POST Requests
   public @ResponseBody String addNewAppointment (@RequestBody Appointment appointment){
-     //Ò , @RequestBody Timestamp startDate, @RequestBody Timestamp endDate) {
-    // @ResponseBody means the returned String is the response, not a view name
-    // @RequestParam means it is a parameter from the GET or POST request
-
     Appointment a = new Appointment();
     a.setTitle(appointment.getTitle());
     a.setStart(appointment.getStart());
     a.setEnd(appointment.getEnd());
+    a.setCustomer(appointment.getCustomer());
+    a.setHairdresser(appointment.getHairdresser());
     appointmentRepository.save(a);
     return "Saved";
   }
@@ -38,7 +36,6 @@ public class MainController {
   @CrossOrigin
   @GetMapping(path="/all")
   public @ResponseBody Iterable<Appointment> getAllAppointments() {
-    // This returns a JSON or XML with the users
     return appointmentRepository.findAll();
   }
 }

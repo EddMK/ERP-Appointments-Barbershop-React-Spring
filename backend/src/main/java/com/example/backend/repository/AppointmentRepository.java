@@ -2,6 +2,9 @@ package com.example.backend.repository;
 
 import com.example.backend.entity.Appointment;
 
+import java.sql.Date;
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 
 //import com.example.backend.Appointment;
@@ -10,5 +13,5 @@ import org.springframework.data.repository.CrudRepository;
 // CRUD refers Create, Read, Update, Delete
 
 public interface AppointmentRepository extends CrudRepository<Appointment, Integer> {
-
+    List<Appointment> findByStartDate(Date startDate);
 }

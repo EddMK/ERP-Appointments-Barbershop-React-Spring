@@ -8,7 +8,11 @@ import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import PasswordIcon from '@mui/icons-material/Password';
 import Button from '@mui/material/Button';
 
-
+/*
+-AJOUTER REGEX POUR LE PASSWORD
+-REVOIR LA DISABLE BUTTON
+-SE CONNCETER APRES  S ETRE INSCRIT
+*/
 
 class Signup extends React.Component{
 
