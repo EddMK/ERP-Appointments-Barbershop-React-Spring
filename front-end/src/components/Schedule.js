@@ -75,9 +75,11 @@ class Schedule extends React.Component{
 
     componentDidMount() {
       //UNE AUTRE METHODE 
-      //OBTENIR LES RENDEZ VOUS DU JOURS CHOISI
-      fetch("http://localhost:8080/appointment/all").then((res) => res.json())
-                                                    .then((json) => this.setState({ schedulerData: json }) );
+      //OBTENIR LES RENDEZ VOUS DU JOURS CHOISI ET DU COIFFEUR CHOISI
+      console.log("coiffeur choisi ",this.state.hairdresser);
+      var timestamp = this.state.date.valueOf()/1000;
+      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp).then((res) => res.json())
+                                                                        .then((json) => this.setState({ schedulerData: json }) );
       fetch("http://localhost:8080/service/all").then((res) => res.json())
                                                 .then((json) => this.setState({ services : json }) );
 
@@ -134,8 +136,8 @@ class Schedule extends React.Component{
       var valid = true;
       if(this.state.service != null ){
         var endingApp = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');
-        console.log("DEBUT : "+moment(this.state.startAppointement).format());
-        console.log("FIN : "+moment(endingApp).format());
+        //console.log("DEBUT : "+moment(this.state.startAppointement).format());
+        //console.log("FIN : "+moment(endingApp).format());
         this.state.schedulerData.forEach(element => {
           var tmpStart = moment(element.startDate)
           var tmpEnd = moment(element.endDate)

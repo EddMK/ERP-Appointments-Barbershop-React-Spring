@@ -2,6 +2,8 @@ import * as React from "react";
 import './Agenda.css';
 import ChosenDate from './ChosenDate';
 import Schedule from './Schedule';
+import moment from 'moment';
+
 
 
 class Agenda extends React.Component{
@@ -19,6 +21,7 @@ class Agenda extends React.Component{
 	}
 
 	handleDisplaySchedule(choosendate, hairdresser) {
+		
 		this.setState({ showSchedule: true, 
 						returnDate : false ,
 						choosenDate : choosendate,

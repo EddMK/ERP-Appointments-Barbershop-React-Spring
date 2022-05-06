@@ -21,7 +21,7 @@ public class Appointment {
   private Timestamp endDate;
 
   private String title;
-
+ 
   @ManyToOne
   @JoinColumn(name = "customer_id", nullable = true)
   private User customer;

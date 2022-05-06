@@ -36,8 +36,11 @@ public class User {
     @JoinColumn(name = "barbershop_id", nullable = true)
     private Barbershop barbershop;
 
-    @OneToMany
-    private Set<Appointment> hairdressers;
+    @OneToMany(mappedBy = "customer")
+    private Set<Appointment> appointmentCustomers;
+
+    @OneToMany(mappedBy = "hairdresser")
+    private Set<Appointment> appointmentEmployees;
 
 
     public Integer getId() {

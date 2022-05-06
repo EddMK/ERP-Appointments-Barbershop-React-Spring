@@ -3,15 +3,18 @@ package com.example.backend.controller;
 
 import com.example.backend.entity.Appointment;
 import com.example.backend.repository.AppointmentRepository;
-
+import java.sql.Timestamp;
+import java.sql.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import java.util.List;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/appointment") // This means URL's start with /demo (after Application path)
@@ -37,5 +40,11 @@ public class AppointmentController {
   @GetMapping(path="/all")
   public @ResponseBody Iterable<Appointment> getAllAppointments() {
     return appointmentRepository.findAll();
+  }
+
+  @CrossOrigin
+  @GetMapping(path="/byStartDate/{timestamp}")
+  public @ResponseBody List<Appointment> getAppointmentsByDate(@PathVariable long timestamp) {
+    return appointmentRepository.findByStartDate(timestamp);
   }
 }
