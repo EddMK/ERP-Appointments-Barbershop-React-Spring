@@ -60,7 +60,7 @@ class ChosenDate extends React.Component{
 
     handleHairdressChange(value) {
 		this.setState({ employee: value });
-		console.log("coiffeur : ",value);
+		//console.log("coiffeur : ",value);
 	}
 
 	handleDateChange(value) {

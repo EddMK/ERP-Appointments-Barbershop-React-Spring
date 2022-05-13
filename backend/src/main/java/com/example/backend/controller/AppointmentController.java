@@ -3,8 +3,6 @@ package com.example.backend.controller;
 
 import com.example.backend.entity.Appointment;
 import com.example.backend.repository.AppointmentRepository;
-import java.sql.Timestamp;
-import java.sql.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -30,9 +28,8 @@ public class AppointmentController {
     a.setTitle(appointment.getTitle());
     a.setStart(appointment.getStart());
     a.setEnd(appointment.getEnd());
-    //a.setCustomer(appointment.getCustomer());
     a.setHairdresser(appointment.getHairdresser());
-    System.out.println("coiffeur : "+appointment.getHairdresser());
+    //CUSTOMER !!
     appointmentRepository.save(a);
     return "Saved";
   }

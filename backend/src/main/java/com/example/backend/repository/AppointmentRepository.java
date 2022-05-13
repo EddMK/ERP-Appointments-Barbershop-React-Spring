@@ -2,8 +2,7 @@ package com.example.backend.repository;
 
 import com.example.backend.entity.Appointment;
 
-import java.sql.Timestamp;
-import java.sql.Date;
+
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;

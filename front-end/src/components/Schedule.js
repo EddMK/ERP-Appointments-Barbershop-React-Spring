@@ -1,18 +1,12 @@
 import * as React from "react";
 import './Schedule.css';
-import Rendezvous  from '../model/Rendezvous';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Autocomplete from '@mui/material/Autocomplete';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { ViewState } from '@devexpress/dx-react-scheduler';
-import {
-  Scheduler,
-  DayView,
-  Appointments,
-  CurrentTimeIndicator
-} from '@devexpress/dx-react-scheduler-material-ui';
+import { Scheduler, DayView, Resources, Appointments, CurrentTimeIndicator } from '@devexpress/dx-react-scheduler-material-ui';
 import DateAdapter from '@mui/lab/AdapterMoment';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import TimePicker from '@mui/lab/TimePicker';
@@ -23,7 +17,6 @@ import Dialog from '@mui/material/Dialog';
 /*
 -PRENDRE UN RENDEZ VOUS QU UNE FOIS PAR SEMAINE
 -ADAPETER LE BACKEND APPOINTMENT
--OBTENIR LES RENDEZ VOUS DU JOURS CHOISI
 -Ajouter des flèches à droite et à gauche pour changer de jours
 -Il faut afficher l'horaire du client
 -Utiliser une classe pour mettre dans les tableaux de schedulerData
@@ -32,7 +25,7 @@ import Dialog from '@mui/material/Dialog';
 -Analyser les temps libres
 -Coiffeur Sans préférence.. regarder comment faire 
 */
-
+/*
 const Appointment = ({
     children, style, isShaded, ...restProps
   }) => (
@@ -48,6 +41,15 @@ const Appointment = ({
       {children}
     </Appointments.Appointment>
   );
+*/
+const resources = [{
+    fieldName: 'type',
+    title: 'Type',
+    instances: [
+      { id: 'own', text: 'Own', color: '#EC407A' },
+      { id: 'all', text: 'All', color: '#7E57C2' },
+    ],
+  }];
 
 class Schedule extends React.Component{
 
@@ -76,7 +78,7 @@ class Schedule extends React.Component{
     componentDidMount() {
       //UNE AUTRE METHODE 
       //OBTENIR LES RENDEZ VOUS DU JOURS CHOISI ET DU COIFFEUR CHOISI
-      console.log("coiffeur choisi  id : ",this.state.hairdresser.id);
+      //console.log("coiffeur choisi  id : ",this.state.hairdresser.id);
       var id = this.state.hairdresser.id;
       var timestamp = this.state.date.valueOf()/1000;
       fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json())
@@ -102,11 +104,11 @@ class Schedule extends React.Component{
       this.state.startAppointement.set('date', this.state.date.date());
       if(this.validationAppointment()){
         var temps = moment(this.state.startAppointement);
-        console.log("minutes : "+this.state.service.duration);
+        //console.log("minutes : "+this.state.service.duration);
         var temps2 = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');//AJOUTER LA DURER DU SERVICE
         this.setState({ startAppointement : moment(this.state.startAppointement) });
         this.setState({
-          schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token"}]
+          schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token", type:'all'}]
         });
         //AJOUTER DANS LE BACKEND
         this.addAppointmentBackend(temps,temps2);
@@ -114,7 +116,7 @@ class Schedule extends React.Component{
     }
 
     async addAppointmentBackend(start, end){
-        var titre = "2emetest";
+        var titre = this.state.service.name;
         var json =  JSON.stringify({ title : titre , startDate : start, endDate : end, hairdresser_id : this.state.hairdresser});
         console.log(json);
         const requestOptions = {
@@ -144,8 +146,8 @@ class Schedule extends React.Component{
         this.state.schedulerData.forEach(element => {
           var tmpStart = moment(element.startDate)
           var tmpEnd = moment(element.endDate)
-          console.log("rendez-vous debut : "+moment(tmpStart).format());
-          console.log("rendez-vous fin : "+moment(tmpEnd).format());
+          //console.log("rendez-vous debut : "+moment(tmpStart).format());
+          //console.log("rendez-vous fin : "+moment(tmpEnd).format());
           if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
             valid = false;
             this.setState({error : "You cannot make an appointment when an other has already start."});
@@ -215,7 +217,8 @@ class Schedule extends React.Component{
                   <Scheduler data={this.state.schedulerData} >
                       <ViewState currentDate={this.state.date} />
                       <DayView startDayHour={10} endDayHour={20} cellDuration={15} />
-                      <Appointments appointmentComponent={Appointment} />
+                      <Appointments />
+                      <Resources data={resources} />
                       <CurrentTimeIndicator
                         shadePreviousCells={true}
                         shadePreviousAppointments={true}
