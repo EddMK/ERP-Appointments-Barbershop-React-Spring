@@ -30,8 +30,9 @@ public class AppointmentController {
     a.setTitle(appointment.getTitle());
     a.setStart(appointment.getStart());
     a.setEnd(appointment.getEnd());
-    a.setCustomer(appointment.getCustomer());
+    //a.setCustomer(appointment.getCustomer());
     a.setHairdresser(appointment.getHairdresser());
+    System.out.println("coiffeur : "+appointment.getHairdresser());
     appointmentRepository.save(a);
     return "Saved";
   }
@@ -43,8 +44,8 @@ public class AppointmentController {
   }
 
   @CrossOrigin
-  @GetMapping(path="/byStartDate/{timestamp}")
-  public @ResponseBody List<Appointment> getAppointmentsByDate(@PathVariable long timestamp) {
-    return appointmentRepository.findByStartDate(timestamp);
+  @GetMapping(path="/byStartDate/{timestamp}/{id}")
+  public @ResponseBody List<Appointment> getAppointmentsByDate(@PathVariable long timestamp, @PathVariable int id ) {
+    return appointmentRepository.findByStartDate(timestamp, id);
   }
 }

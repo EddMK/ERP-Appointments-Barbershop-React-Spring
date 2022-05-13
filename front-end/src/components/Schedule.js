@@ -76,9 +76,10 @@ class Schedule extends React.Component{
     componentDidMount() {
       //UNE AUTRE METHODE 
       //OBTENIR LES RENDEZ VOUS DU JOURS CHOISI ET DU COIFFEUR CHOISI
-      console.log("coiffeur choisi ",this.state.hairdresser);
+      console.log("coiffeur choisi  id : ",this.state.hairdresser.id);
+      var id = this.state.hairdresser.id;
       var timestamp = this.state.date.valueOf()/1000;
-      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp).then((res) => res.json())
+      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json())
                                                                         .then((json) => this.setState({ schedulerData: json }) );
       fetch("http://localhost:8080/service/all").then((res) => res.json())
                                                 .then((json) => this.setState({ services : json }) );
@@ -114,13 +115,15 @@ class Schedule extends React.Component{
 
     async addAppointmentBackend(start, end){
         var titre = "2emetest";
+        var json =  JSON.stringify({ title : titre , startDate : start, endDate : end, hairdresser_id : this.state.hairdresser});
+        console.log(json);
         const requestOptions = {
           method: 'POST',
           headers: { 
             'Accept': 'application/json',
             'Content-Type': 'application/json' 
           },
-          body: JSON.stringify({ title : titre , startDate : start, endDate : end})
+          body: json
         };
         const response = await fetch( 'http://localhost:8080/appointment/add',requestOptions);
         const data = await response.text();

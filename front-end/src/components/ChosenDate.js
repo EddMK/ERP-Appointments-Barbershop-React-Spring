@@ -59,7 +59,7 @@ class ChosenDate extends React.Component{
 	}
 
     handleHairdressChange(value) {
-		this.setState({ employee: value.lastName });
+		this.setState({ employee: value });
 		console.log("coiffeur : ",value);
 	}
 
@@ -73,7 +73,7 @@ class ChosenDate extends React.Component{
 
 	handleClick() {
 		if(this.state.localisation != null &&  this.state.date != null && this.state.employee != null){
-			this.props.click(this.state.date, this.state.coiffeur);
+			this.props.click(this.state.date, this.state.employee);
 		}else{
 			this.setState({showDialogConfirm : true});
 		}
