@@ -15,39 +15,23 @@ import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 
 /*
+-AFFICHER LE RENDEZ VOUS D UN CLIENT ET LE METTRE EN EVIDENCE
 -PRENDRE UN RENDEZ VOUS QU UNE FOIS PAR SEMAINE
 -ADAPETER LE BACKEND APPOINTMENT
 -Ajouter des flèches à droite et à gauche pour changer de jours
 -Il faut afficher l'horaire du client
 -Utiliser une classe pour mettre dans les tableaux de schedulerData
--Afficher differentes couleurs(le rendez vous du client different des autres)
 -Essayer de combler les trous 
 -Analyser les temps libres
 -Coiffeur Sans préférence.. regarder comment faire 
 */
-/*
-const Appointment = ({
-    children, style, isShaded, ...restProps
-  }) => (
-    <Appointments.Appointment
-      {...restProps}
-      
-      style={{
-        ...style,
-        backgroundColor: '#939393',
-        borderRadius: '8px',
-      }}
-    >
-      {children}
-    </Appointments.Appointment>
-  );
-*/
+
 const resources = [{
     fieldName: 'type',
     title: 'Type',
     instances: [
       { id: 'own', text: 'Own', color: '#EC407A' },
-      { id: 'all', text: 'All', color: '#7E57C2' },
+      { id: 'all', text: 'All', color: '#6B6B6B' },
     ],
   }];
 
@@ -73,19 +57,33 @@ class Schedule extends React.Component{
       this.handleConfirm = this.handleConfirm.bind(this);
       this.validationAppointment = this.validationAppointment.bind(this);
       this.addAppointmentBackend = this.addAppointmentBackend.bind(this);
+      this.handleJsonReturn = this.handleJsonReturn.bind(this);
     }
 
     componentDidMount() {
-      //UNE AUTRE METHODE 
-      //OBTENIR LES RENDEZ VOUS DU JOURS CHOISI ET DU COIFFEUR CHOISI
-      //console.log("coiffeur choisi  id : ",this.state.hairdresser.id);
+      //POUR LES AUTRES RENDEZ VOUS METTRE Token Pour le connecte Votre rendez-vous
+      //OBTENIR LE RENDEZ VOUS DU CLIENT ET LE METTRE EN EVIDENCE
       var id = this.state.hairdresser.id;
       var timestamp = this.state.date.valueOf()/1000;
       fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json())
-                                                                        .then((json) => this.setState({ schedulerData: json }) );
+                                                                              .then( (json) => this.handleJsonReturn(json) );//type:'all'
       fetch("http://localhost:8080/service/all").then((res) => res.json())
                                                 .then((json) => this.setState({ services : json }) );
 
+    }
+
+    handleJsonReturn(value){
+      /*
+      { this.setState({ schedulerData: json }); 
+        json.map(x =>{ x.title = "busy"; ({ ...x, type: 'all' }); } ); }
+      */
+     value.forEach( (element) =>{
+        element.title = "busy";
+        element.type='all';
+     })
+     this.setState({
+      schedulerData : value
+     })
     }
 
     handleTimePicker(value){
@@ -134,6 +132,7 @@ class Schedule extends React.Component{
 
 
     /*
+    A verifier
     Il manque la validation quand le rendez vous se termine alors que il y en a deja un qui va commencer
     Attention pas rajouter un rendez vous a la fin de la journée et faut voir pour le debut de journée
     */
