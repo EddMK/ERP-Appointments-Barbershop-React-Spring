@@ -3,6 +3,7 @@ import './Schedule.css';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Autocomplete from '@mui/material/Autocomplete';
+import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { ViewState } from '@devexpress/dx-react-scheduler';
@@ -13,6 +14,8 @@ import TimePicker from '@mui/lab/TimePicker';
 import moment from 'moment';
 import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
+import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
+import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 
 /*
 -AFFICHER LE RENDEZ VOUS D UN CLIENT ET LE METTRE EN EVIDENCE
@@ -41,7 +44,7 @@ class Schedule extends React.Component{
     constructor(props){
       super(props);
       this.state={
-        schedulerData : [],//{startDate: "2022-05-10T11:30:00+02:00" ,endDate: "2022-05-10T11:45:00+02:00" , title:"ESAI"}
+        schedulerData : [],
         date : this.props.date,
         hairdresser : this.props.hairdresser,
         services :  [],
@@ -58,32 +61,54 @@ class Schedule extends React.Component{
       this.validationAppointment = this.validationAppointment.bind(this);
       this.addAppointmentBackend = this.addAppointmentBackend.bind(this);
       this.handleJsonReturn = this.handleJsonReturn.bind(this);
+      this.handleChangeDate = this.handleChangeDate.bind(this);
+      this.handleDataSchedule = this.handleDataSchedule.bind(this);
     }
 
     componentDidMount() {
       //POUR LES AUTRES RENDEZ VOUS METTRE Token Pour le connecte Votre rendez-vous
       //OBTENIR LE RENDEZ VOUS DU CLIENT ET LE METTRE EN EVIDENCE
+      /*
       var id = this.state.hairdresser.id;
       var timestamp = this.state.date.valueOf()/1000;
-      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json())
-                                                                              .then( (json) => this.handleJsonReturn(json) );//type:'all'
-      fetch("http://localhost:8080/service/all").then((res) => res.json())
-                                                .then((json) => this.setState({ services : json }) );
+      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json) );//type:'all'
+      */ 
+      this.handleDataSchedule();                                   
+      fetch("http://localhost:8080/service/all").then((res) => res.json()).then((json) => this.setState({ services : json }) );
+    }
 
+    handleDataSchedule(){
+      var id = this.state.hairdresser.id;
+      var timestamp = this.state.date.valueOf()/1000;
+      console.log("timestamp : "+timestamp);
+      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json) );
     }
 
     handleJsonReturn(value){
-      /*
-      { this.setState({ schedulerData: json }); 
-        json.map(x =>{ x.title = "busy"; ({ ...x, type: 'all' }); } ); }
-      */
-     value.forEach( (element) =>{
-        element.title = "busy";
-        element.type='all';
-     })
-     this.setState({
-      schedulerData : value
-     })
+      value.forEach( (element) =>{
+          element.title = "busy";
+          element.type='all';
+      })
+      console.log(value);
+      this.setState({
+        schedulerData : value
+      })
+    }
+
+    async handleChangeDate(value){
+      //VALIDATION !!!!
+      var newDate = moment(this.state.date).add(value, 'days');
+      console.log("newDate : "+newDate);
+      await this.setState({  
+          date : newDate,
+          service : null,
+          error : null,
+          showDialogConfirm : false,  
+          startAppointement : newDate,
+          endAppointement : null
+      });
+      console.log("Avant la methode data : "+this.state.date);
+      this.handleDataSchedule(); 
     }
 
     handleTimePicker(value){
@@ -183,6 +208,11 @@ class Schedule extends React.Component{
               <tbody>
               <tr>
                 <td>
+                  <IconButton size="large" onClick={() => this.handleChangeDate(-1) }  >
+                    <ArrowCircleLeftIcon/>
+                  </IconButton>
+                </td>
+                <td>
               <Box sx={{ 
                 
               }}  >
@@ -218,14 +248,15 @@ class Schedule extends React.Component{
                       <DayView startDayHour={10} endDayHour={20} cellDuration={15} />
                       <Appointments />
                       <Resources data={resources} />
-                      <CurrentTimeIndicator
-                        shadePreviousCells={true}
-                        shadePreviousAppointments={true}
-                        updateInterval={true}
-                      />
+                      <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true} updateInterval={true} />
                   </Scheduler>
                 </Box>
                 </Paper>
+                </td>
+                <td>
+                  <IconButton size="large" onClick={() => this.handleChangeDate(1) } >
+                    <ArrowCircleRightIcon/>
+                  </IconButton>
                 </td>
                 </tr>
                 </tbody>
