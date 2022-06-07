@@ -2,7 +2,6 @@ import * as React from "react";
 import './Agenda.css';
 import ChosenDate from './ChosenDate';
 import Schedule from './Schedule';
-import moment from 'moment';
 
 
 

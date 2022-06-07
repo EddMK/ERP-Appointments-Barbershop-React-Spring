@@ -43,6 +43,12 @@ class Schedule extends React.Component{
   
     constructor(props){
       super(props);
+      var max = moment().add(2, 'months').format('L');
+      var dateAujourdhui = moment().format('L');
+      var dateChoisi = moment(this.props.date).format('L');
+      console.log("COMPARE ", dateAujourdhui === dateChoisi);
+      console.log("DATE MAX ", max);
+      console.log("DATE AUJ ", dateAujourdhui);
       this.state={
         schedulerData : [],
         date : this.props.date,
@@ -52,7 +58,9 @@ class Schedule extends React.Component{
         error : null,
         showDialogConfirm : false,
         startAppointement : this.props.date,
-        endAppointement : null
+        endAppointement : null,
+        disableRight : ( moment().add(2, 'months').format('L') === moment(this.props.date).format('L')) ? true : false ,
+        disableLeft : ( moment().format('L') === moment(this.props.date).format('L')) ? true : false ,
       }
       this.handleTimePicker = this.handleTimePicker.bind(this);
       this.handleCancel = this.handleCancel.bind(this);
@@ -68,11 +76,6 @@ class Schedule extends React.Component{
     componentDidMount() {
       //POUR LES AUTRES RENDEZ VOUS METTRE Token Pour le connecte Votre rendez-vous
       //OBTENIR LE RENDEZ VOUS DU CLIENT ET LE METTRE EN EVIDENCE
-      /*
-      var id = this.state.hairdresser.id;
-      var timestamp = this.state.date.valueOf()/1000;
-      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json) );//type:'all'
-      */ 
       this.handleDataSchedule();                                   
       fetch("http://localhost:8080/service/all").then((res) => res.json()).then((json) => this.setState({ services : json }) );
     }
@@ -80,7 +83,6 @@ class Schedule extends React.Component{
     handleDataSchedule(){
       var id = this.state.hairdresser.id;
       var timestamp = this.state.date.valueOf()/1000;
-      console.log("timestamp : "+timestamp);
       fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json) );
     }
 
@@ -89,7 +91,6 @@ class Schedule extends React.Component{
           element.title = "busy";
           element.type='all';
       })
-      console.log(value);
       this.setState({
         schedulerData : value
       })
@@ -98,6 +99,7 @@ class Schedule extends React.Component{
     async handleChangeDate(value){
       //VALIDATION !!!!
       var newDate = moment(this.state.date).add(value, 'days');
+      var newDateFormat = newDate.format('L');
       console.log("newDate : "+newDate);
       await this.setState({  
           date : newDate,
@@ -105,7 +107,9 @@ class Schedule extends React.Component{
           error : null,
           showDialogConfirm : false,  
           startAppointement : newDate,
-          endAppointement : null
+          endAppointement : null,
+          disableRight : ( moment().add(2, 'months').format('L') === newDateFormat ) ? true : false ,
+          disableLeft : ( moment().format('L') === newDateFormat  ) ? true : false
       });
       console.log("Avant la methode data : "+this.state.date);
       this.handleDataSchedule(); 
@@ -152,6 +156,7 @@ class Schedule extends React.Component{
         };
         const response = await fetch( 'http://localhost:8080/appointment/add',requestOptions);
         const data = await response.text();
+        console.log('data add backend : '+data)
         //AFFICHER LA REPONSE
     }
 
@@ -165,13 +170,9 @@ class Schedule extends React.Component{
       var valid = true;
       if(this.state.service != null ){
         var endingApp = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');
-        //console.log("DEBUT : "+moment(this.state.startAppointement).format());
-        //console.log("FIN : "+moment(endingApp).format());
         this.state.schedulerData.forEach(element => {
           var tmpStart = moment(element.startDate)
           var tmpEnd = moment(element.endDate)
-          //console.log("rendez-vous debut : "+moment(tmpStart).format());
-          //console.log("rendez-vous fin : "+moment(tmpEnd).format());
           if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
             valid = false;
             this.setState({error : "You cannot make an appointment when an other has already start."});
@@ -208,58 +209,51 @@ class Schedule extends React.Component{
               <tbody>
               <tr>
                 <td>
-                  <IconButton size="large" onClick={() => this.handleChangeDate(-1) }  >
+                  <IconButton size="large" onClick={() => this.handleChangeDate(-1) } disabled={this.state.disableLeft} >
                     <ArrowCircleLeftIcon/>
                   </IconButton>
                 </td>
                 <td>
-              <Box sx={{ 
-                
-              }}  >
-                  <p>To make an appointment, complete the followings input:</p>
-                  <Autocomplete
-                    id="combo-box-demo"
-                    options={this.state.services}
-                    getOptionLabel={(option) => option.name}
-                    onChange={(event,newValue) => {
-                      this.handleServiceChoosen(newValue);
-                    }}
-                    style={{ width: 300 }}
-                    renderInput={(params) => <TextField {...params} label="Choose the service" variant="outlined" />}
-                  />
-                  <LocalizationProvider dateAdapter={DateAdapter}>
-                    <TimePicker
-                      onChange={(newValue) => { this.handleTimePicker(newValue); }}
-                      renderInput={(params) => <TextField style={{ width: 300 }} {...params} />}
+                  <Box>
+                    <p>To make an appointment, complete the followings input:</p>
+                    <Autocomplete
+                      id="combo-box-demo"
+                      options={this.state.services}
+                      getOptionLabel={(option) => option.name}
+                      onChange={(event,newValue) => {
+                        this.handleServiceChoosen(newValue);
+                      }}
+                      style={{ width: 300 }}
+                      renderInput={(params) => <TextField {...params} label="Choose the service" variant="outlined" />}
                     />
-                  </LocalizationProvider>
-                </Box>
+                    <LocalizationProvider dateAdapter={DateAdapter}>
+                      <TimePicker
+                        onChange={(newValue) => { this.handleTimePicker(newValue); }}
+                        renderInput={(params) => <TextField style={{ width: 300 }} {...params} />}
+                      />
+                    </LocalizationProvider>
+                  </Box>
                 </td>
                 <td>
-                <Paper elevation={5}>
-                <Box
-                  sx={{
-                    width: 400,
-                    height: 500,
-                  }}
-                >
-                  <Scheduler data={this.state.schedulerData} >
-                      <ViewState currentDate={this.state.date} />
-                      <DayView startDayHour={10} endDayHour={20} cellDuration={15} />
-                      <Appointments />
-                      <Resources data={resources} />
-                      <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true} updateInterval={true} />
-                  </Scheduler>
-                </Box>
-                </Paper>
+                  <Paper elevation={5}>
+                    <Box sx={{ width: 400, height: 500, }} >
+                      <Scheduler data={this.state.schedulerData} >
+                          <ViewState currentDate={this.state.date} />
+                          <DayView startDayHour={10} endDayHour={20} cellDuration={15} />
+                          <Appointments />
+                          <Resources data={resources} />
+                          <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true} updateInterval={true} />
+                      </Scheduler>
+                    </Box>
+                  </Paper>
                 </td>
                 <td>
-                  <IconButton size="large" onClick={() => this.handleChangeDate(1) } >
+                  <IconButton size="large" onClick={() => this.handleChangeDate(1) }   disabled={this.state.disableRight} >
                     <ArrowCircleRightIcon/>
                   </IconButton>
                 </td>
-                </tr>
-                </tbody>
+              </tr>
+              </tbody>
               </table>
               <div className="buttons">
                 <Button variant="contained" color="success"  onClick={() => { this.handleConfirm() ;}} >Confirm</Button>
@@ -267,7 +261,6 @@ class Schedule extends React.Component{
               </div>
               <Dialog onClose={this.handleCloseDialog}  open={this.state.error != null}><Alert variant="filled" severity="warning">{this.state.error}</Alert></Dialog>
             </div>
-
         )
     }
 }
