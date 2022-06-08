@@ -43,12 +43,6 @@ class Schedule extends React.Component{
   
     constructor(props){
       super(props);
-      var max = moment().add(2, 'months').format('L');
-      var dateAujourdhui = moment().format('L');
-      var dateChoisi = moment(this.props.date).format('L');
-      console.log("COMPARE ", dateAujourdhui === dateChoisi);
-      console.log("DATE MAX ", max);
-      console.log("DATE AUJ ", dateAujourdhui);
       this.state={
         schedulerData : [],
         date : this.props.date,
@@ -97,10 +91,8 @@ class Schedule extends React.Component{
     }
 
     async handleChangeDate(value){
-      //VALIDATION !!!!
       var newDate = moment(this.state.date).add(value, 'days');
       var newDateFormat = newDate.format('L');
-      console.log("newDate : "+newDate);
       await this.setState({  
           date : newDate,
           service : null,
@@ -111,7 +103,6 @@ class Schedule extends React.Component{
           disableRight : ( moment().add(2, 'months').format('L') === newDateFormat ) ? true : false ,
           disableLeft : ( moment().format('L') === newDateFormat  ) ? true : false
       });
-      console.log("Avant la methode data : "+this.state.date);
       this.handleDataSchedule(); 
     }
 
@@ -131,7 +122,6 @@ class Schedule extends React.Component{
       this.state.startAppointement.set('date', this.state.date.date());
       if(this.validationAppointment()){
         var temps = moment(this.state.startAppointement);
-        //console.log("minutes : "+this.state.service.duration);
         var temps2 = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');//AJOUTER LA DURER DU SERVICE
         this.setState({ startAppointement : moment(this.state.startAppointement) });
         this.setState({
