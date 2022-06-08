@@ -16,6 +16,8 @@ import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
+import CircularProgress from '@mui/material/CircularProgress';
+
 
 /*
 -AFFICHER LE RENDEZ VOUS D UN CLIENT ET LE METTRE EN EVIDENCE
@@ -51,6 +53,7 @@ class Schedule extends React.Component{
         service : null,
         error : null,
         showDialogConfirm : false,
+        showProgress : false,
         startAppointement : this.props.date,
         endAppointement : null,
         disableRight : ( moment().add(2, 'months').format('L') === moment(this.props.date).format('L')) ? true : false ,
@@ -91,6 +94,7 @@ class Schedule extends React.Component{
     }
 
     async handleChangeDate(value){
+      this.setState({showProgress : true});
       var newDate = moment(this.state.date).add(value, 'days');
       var newDateFormat = newDate.format('L');
       await this.setState({  
@@ -104,6 +108,7 @@ class Schedule extends React.Component{
           disableLeft : ( moment().format('L') === newDateFormat  ) ? true : false
       });
       this.handleDataSchedule(); 
+      this.setState({showProgress : false});
     }
 
     handleTimePicker(value){
@@ -227,6 +232,7 @@ class Schedule extends React.Component{
                 <td>
                   <Paper elevation={5}>
                     <Box sx={{ width: 400, height: 500, }} >
+                    { this.state.showProgress ? <CircularProgress />   :
                       <Scheduler data={this.state.schedulerData} >
                           <ViewState currentDate={this.state.date} />
                           <DayView startDayHour={10} endDayHour={20} cellDuration={15} />
@@ -234,6 +240,7 @@ class Schedule extends React.Component{
                           <Resources data={resources} />
                           <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true} updateInterval={true} />
                       </Scheduler>
+                     }
                     </Box>
                   </Paper>
                 </td>
