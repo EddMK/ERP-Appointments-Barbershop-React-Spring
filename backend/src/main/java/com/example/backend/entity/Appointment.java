@@ -30,6 +30,18 @@ public class Appointment {
   @JoinColumn(name = "hairdresser_id", nullable = true)
   private User hairdresser;
 
+  public Appointment(Timestamp startDate,Timestamp endDate,String title, User customer, User hairdresser){
+    this.startDate = startDate;
+    this.endDate = endDate; 
+    this.title = title;
+    this.customer = customer;   
+    this.hairdresser = hairdresser;    
+  }
+
+  public Appointment(){
+
+  }
+
   public Integer getId() {
     return id;
   }
