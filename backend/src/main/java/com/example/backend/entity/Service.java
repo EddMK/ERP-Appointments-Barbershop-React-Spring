@@ -18,6 +18,16 @@ public class Service{
 
     private Long duration;
 
+    public Service(String name, Long duration){
+        this.name = name;
+        this.duration = duration;
+    }
+
+    public Service(){
+        this.name = null;
+        this.duration = null;
+    }
+
     public Long getId() {
         return id;
     }

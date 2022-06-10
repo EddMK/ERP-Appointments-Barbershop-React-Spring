@@ -36,6 +36,20 @@ public class User {
     @JoinColumn(name = "barbershop_id", nullable = true)
     private Barbershop barbershop;
 
+    public User(String lastName, String firstName, String email, String phoneNumber, String password, Role role, Barbershop barbershop){
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.password = password;
+        this.role = role;
+        this.barbershop = barbershop;
+    }
+    
+    public User(){
+
+    }
+
     @OneToMany(mappedBy = "customer")
     private Set<Appointment> appointmentCustomers;
 

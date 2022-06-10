@@ -7,12 +7,27 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import com.example.backend.repository.AppointmentRepository;
+import com.example.backend.repository.BarbershopRepository;
+import com.example.backend.repository.ServiceRepository;
+import com.example.backend.repository.UserRepository;
+
 
 @SpringBootApplication
 public class BackendApplication  {
 
 	@Autowired 
   	private AppointmentRepository appointmentRepository;
+
+	@Autowired 
+  	private BarbershopRepository barbershopRepository;
+
+	@Autowired 
+  	private ServiceRepository serviceRepository;
+
+	@Autowired 
+  	private UserRepository userRepository;
+	
+	
 
 	public static void main(String[] args) {
 		SpringApplication.run(BackendApplication.class, args);
@@ -29,6 +44,6 @@ public class BackendApplication  {
 
 	@Bean
 	public Runner schedulerRunner() {
-		return new Runner(appointmentRepository);
+		return new Runner(appointmentRepository, barbershopRepository, serviceRepository, userRepository);
 	}
 }

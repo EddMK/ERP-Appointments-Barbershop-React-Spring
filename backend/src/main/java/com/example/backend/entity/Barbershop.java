@@ -20,6 +20,16 @@ public class Barbershop {
 
     private String address;
 
+    public Barbershop (String name, String address){
+        this.name = name;
+        this.address = address;
+    }
+
+    public Barbershop (){
+        this.name = null;
+        this.address = null;
+    }
+
     public Long getId() {
         return id;
     }
