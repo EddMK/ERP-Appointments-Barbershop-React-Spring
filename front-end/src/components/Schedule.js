@@ -49,6 +49,8 @@ class Schedule extends React.Component{
         schedulerData : [],
         date : this.props.date,
         hairdresser : this.props.hairdresser,
+        startDay : 10,
+        endDay : 18,
         services :  [],
         service : null,
         error : null,
@@ -130,7 +132,7 @@ class Schedule extends React.Component{
         var temps2 = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');//AJOUTER LA DURER DU SERVICE
         this.setState({ startAppointement : moment(this.state.startAppointement) });
         this.setState({
-          schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token", type:'all'}]
+          schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token", type:'own'}]//type:'all',
         });
         //AJOUTER DANS LE BACKEND
         this.addAppointmentBackend(temps,temps2);
@@ -165,6 +167,7 @@ class Schedule extends React.Component{
       var valid = true;
       if(this.state.service != null ){
         var endingApp = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');
+        this.validationSchedule()
         this.state.schedulerData.forEach(element => {
           var tmpStart = moment(element.startDate)
           var tmpEnd = moment(element.endDate)
@@ -186,6 +189,45 @@ class Schedule extends React.Component{
         this.setState({error : "You have to choose a service to confirm the appointment."});
       }
       return valid;
+    }
+
+    validationSchedule(){
+      //var valid = true;
+      console.log("START APPOINTMENT", this.state.startAppointement)
+      if(moment().format('L') === moment(this.state.startAppointement).format('L')){
+        if(moment(this.state.startAppointement) <= moment()){
+          console.log("You cannot make an appointment in the past");
+          //valid = false;
+        }
+      }else{
+        //DELIMITER LES HEURES EN FONTION DE L HEURE
+        var limit = moment();
+        limit.set({'year': this.state.startAppointement.year(),
+                    'month': this.state.startAppointement.month(), 
+                    'date': this.state.startAppointement.date(), 
+                    'hour': this.state.startDay,
+                    'minute': 0,
+                    'second': 0
+                  });
+        if(moment(this.state.startAppointement) <= limit){
+          console.log("You cannot make an appointment when we do not work");  
+        }
+      }
+
+      var limitMax = moment();
+      limitMax.set({'year': this.state.startAppointement.year(),
+                    'month': this.state.startAppointement.month(), 
+                    'date': this.state.startAppointement.date(), 
+                    'hour': this.state.endDay,
+                    'minute': 0,
+                    'second': 0
+                  });
+      console.log("LIMIT MAX",limitMax)
+      //isSameOrAfter
+      if(limitMax === this.state.startAppointement ){
+          console.log("You cannot make an appointment when we do not work");  
+      }
+      //return valid;
     }
 
     handleCancel(){
@@ -235,7 +277,7 @@ class Schedule extends React.Component{
                     { this.state.showProgress ? <CircularProgress />   :
                       <Scheduler data={this.state.schedulerData} >
                           <ViewState currentDate={this.state.date} />
-                          <DayView startDayHour={10} endDayHour={20} cellDuration={15} />
+                          <DayView startDayHour={this.state.startDay} endDayHour={this.state.endDay} cellDuration={15} />
                           <Appointments />
                           <Resources data={resources} />
                           <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true} updateInterval={true} />

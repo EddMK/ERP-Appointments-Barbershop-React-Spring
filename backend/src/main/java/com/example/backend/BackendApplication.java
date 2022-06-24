@@ -41,9 +41,10 @@ public class BackendApplication  {
 			}
 		};
 	}
-
+/* 
 	@Bean
 	public Runner schedulerRunner() {
 		return new Runner(appointmentRepository, barbershopRepository, serviceRepository, userRepository);
 	}
+*/
 }

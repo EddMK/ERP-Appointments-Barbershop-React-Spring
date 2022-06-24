@@ -1,6 +1,5 @@
 package com.example.backend;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.example.backend.entity.Appointment;
@@ -75,12 +74,21 @@ public class Runner implements CommandLineRunner {
         userRepository.save(hairdresser4);
         userRepository.save(hairdresser5);
         userRepository.save(hairdresser6);
-        
-
+        //User[] hairdressers = {hairdresser1,hairdresser2,hairdresser3,hairdresser4,hairdresser5,hairdresser6}; 
+        //this.busyToday(hairdressers);
+        /* 
         LocalDateTime today = LocalDateTime.now();
         LocalDateTime tomorrowStart = today.plusDays(1).withMinute(0).withSecond(0).withNano(0);
         appointmentRepository.save(new Appointment(Timestamp.valueOf(tomorrowStart.withHour(11)),Timestamp.valueOf(tomorrowStart.withHour(16)), "test",null,hairdresser2));
         appointmentRepository.save(new Appointment(Timestamp.valueOf(tomorrowStart.withHour(10)),Timestamp.valueOf(tomorrowStart.withHour(20)), "test",null,hairdresser1));
+        */
         logger.info("ApplicationStartupRunner run method Started !!");
+    }
+
+    public void busyToday(User[] list){
+        LocalDateTime today = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+        for (User user : list) {
+            appointmentRepository.save(new Appointment(Timestamp.valueOf(today.withHour(10)),Timestamp.valueOf(today.withHour(20)), "test",null,user));
+        }
     }
 }
