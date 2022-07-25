@@ -23,11 +23,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 -AFFICHER LE RENDEZ VOUS D UN CLIENT ET LE METTRE EN EVIDENCE
 -PRENDRE UN RENDEZ VOUS QU UNE FOIS PAR SEMAINE
 -ADAPETER LE BACKEND APPOINTMENT
--Ajouter des flèches à droite et à gauche pour changer de jours
 -Il faut afficher l'horaire du client
 -Utiliser une classe pour mettre dans les tableaux de schedulerData
--Essayer de combler les trous 
--Analyser les temps libres
+-Analyser les temps libres, Essayer de combler les trous 
 -Coiffeur Sans préférence.. regarder comment faire 
 */
 
@@ -41,7 +39,6 @@ const resources = [{
   }];
 
 class Schedule extends React.Component{
-
   
     constructor(props){
       super(props);
@@ -50,7 +47,7 @@ class Schedule extends React.Component{
         date : this.props.date,
         hairdresser : this.props.hairdresser,
         startDay : 10,
-        endDay : 18,
+        endDay : 20,
         services :  [],
         service : null,
         error : null,
@@ -70,6 +67,7 @@ class Schedule extends React.Component{
       this.handleJsonReturn = this.handleJsonReturn.bind(this);
       this.handleChangeDate = this.handleChangeDate.bind(this);
       this.handleDataSchedule = this.handleDataSchedule.bind(this);
+      this.validationSchedule = this.validationSchedule.bind(this)
     }
 
     componentDidMount() {
@@ -157,33 +155,31 @@ class Schedule extends React.Component{
         //AFFICHER LA REPONSE
     }
 
-
-    /*
-    A verifier
-    Il manque la validation quand le rendez vous se termine alors que il y en a deja un qui va commencer
-    Attention pas rajouter un rendez vous a la fin de la journée et faut voir pour le debut de journée
-    */
     validationAppointment(){
       var valid = true;
       if(this.state.service != null ){
         var endingApp = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');
-        this.validationSchedule()
-        this.state.schedulerData.forEach(element => {
-          var tmpStart = moment(element.startDate)
-          var tmpEnd = moment(element.endDate)
-          if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
-            valid = false;
-            this.setState({error : "You cannot make an appointment when an other has already start."});
-          }
-          if(tmpStart<endingApp &&  tmpEnd>endingApp){
-            valid = false;
-            this.setState({error : "The appointment cannot encroach on the next."});
-          }
-          if(tmpStart.isSame(this.state.startAppointement)){
-            valid = false;
-            this.setState({error : "There is already an appointment at this time."});
-          }
-        });
+        console.log("VALIDATION SCHEDULE",this.validationSchedule());
+        if(this.validationSchedule()){
+          this.state.schedulerData.forEach(element => {
+            var tmpStart = moment(element.startDate)
+            var tmpEnd = moment(element.endDate)
+            if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
+              valid = false;
+              this.setState({error : "You cannot make an appointment when an other has already start."});
+            }
+            if(tmpStart<endingApp &&  tmpEnd>endingApp){
+              valid = false;
+              this.setState({error : "The appointment cannot encroach on the next."});
+            }
+            if(tmpStart.isSame(this.state.startAppointement)){
+              valid = false;
+              this.setState({error : "There is already an appointment at this time."});
+            }
+          });
+        }else{
+          valid = false;
+        }
       }else{
         valid = false;
         this.setState({error : "You have to choose a service to confirm the appointment."});
@@ -192,42 +188,24 @@ class Schedule extends React.Component{
     }
 
     validationSchedule(){
-      //var valid = true;
+      var valid = true;
       console.log("START APPOINTMENT", this.state.startAppointement)
       if(moment().format('L') === moment(this.state.startAppointement).format('L')){
         if(moment(this.state.startAppointement) <= moment()){
-          console.log("You cannot make an appointment in the past");
-          //valid = false;
+          valid = false;
+          this.setState({error : "You cannot make an appointment in the past"});
         }
       }else{
-        //DELIMITER LES HEURES EN FONTION DE L HEURE
-        var limit = moment();
-        limit.set({'year': this.state.startAppointement.year(),
-                    'month': this.state.startAppointement.month(), 
-                    'date': this.state.startAppointement.date(), 
-                    'hour': this.state.startDay,
-                    'minute': 0,
-                    'second': 0
-                  });
-        if(moment(this.state.startAppointement) <= limit){
-          console.log("You cannot make an appointment when we do not work");  
+        if( this.state.startAppointement.hour() <= this.state.startDay){
+          valid = false;
+          this.setState({error : "You cannot make an appointment when we do not work"});
         }
       }
-
-      var limitMax = moment();
-      limitMax.set({'year': this.state.startAppointement.year(),
-                    'month': this.state.startAppointement.month(), 
-                    'date': this.state.startAppointement.date(), 
-                    'hour': this.state.endDay,
-                    'minute': 0,
-                    'second': 0
-                  });
-      console.log("LIMIT MAX",limitMax)
-      //isSameOrAfter
-      if(limitMax === this.state.startAppointement ){
-          console.log("You cannot make an appointment when we do not work");  
+      if(  (this.state.endDay  <=  this.state.startAppointement.hour()) || (this.state.startAppointement.hour() == this.state.endDay-1 && this.state.startAppointement.minute()>30 ) ){
+          valid = false;
+          this.setState({error : "You cannot make an appointment when we are gonna finish the job day"}); 
       }
-      //return valid;
+      return valid;
     }
 
     handleCancel(){
