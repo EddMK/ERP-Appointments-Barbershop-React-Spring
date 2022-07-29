@@ -1,6 +1,7 @@
 import * as React from "react";
 import './ChosenDate.css';
 import moment from 'moment';
+import { styled } from '@mui/material/styles';
 import DateAdapter from '@mui/lab/AdapterMoment';
 import Button from '@mui/material/Button';
 import StaticDatePicker from '@mui/lab/StaticDatePicker';
@@ -9,10 +10,28 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import Autocomplete from '@mui/material/Autocomplete';
 import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
+import PickersDay, {
+	PickersDayProps,
+	pickersDayClasses
+  } from "@mui/lab/PickersDay";
 
-/*
-Mettre des couleurs dans le calendriers pour indiquer si un jour possède plus de places pour des rendez-vous
-*/
+// free, halfFilled, full
+
+const CustomPickersDay = styled(PickersDay, {
+	shouldForwardProp: (prop) =>
+	  prop !== 'free' && prop !== 'halfFilled' && prop !== 'full',
+  })(({ theme, free, halfFilled, full }) => ({
+	...(free && {
+		background: '#6CB590',
+	}),
+	...(halfFilled && {
+		background: '#B59B6C',
+	}),
+	...(full && {
+		background: '#B5746C',
+	}),
+  }));
+
 class ChosenDate extends React.Component{
 
     constructor(){
@@ -35,6 +54,7 @@ class ChosenDate extends React.Component{
 		this.handleClick = this.handleClick.bind(this);
 		this.handleCloseDialog = this.handleCloseDialog.bind(this);
 		this.setHairdresserList = this.setHairdresserList.bind(this);
+		this.renderWeekPickerDay = this.renderWeekPickerDay.bind(this)
 	}
 
 	componentDidMount() {
@@ -80,6 +100,35 @@ class ChosenDate extends React.Component{
 	}
 
 
+	renderWeekPickerDay(date, selectedDates, pickersDayProps){
+		/*
+		cette méthode fait les tours des dates du mois
+		pour chaque jour tester si c est rempli ou pas
+		*/
+		var test = moment().add(1, 'days');
+		//moment().format('L');
+		var test2 = moment().add(2, 'days');
+		var free;//les booleans
+		var halfFilled;
+		var full;
+		if(date.format('L') === test.format('L')){
+			free = true;
+		}else{
+			full = true;
+		}
+		return (
+		  <CustomPickersDay
+			{...pickersDayProps}
+			//disableMargin
+			free = {free}
+			halfFilled = {null}
+			full = {full}
+		  />
+		);
+		
+	  };
+
+
     render(){
 		return(
 			<div className="Agenda">
@@ -120,7 +169,8 @@ class ChosenDate extends React.Component{
 								this.handleDateChange(newValue);
 							}}
 							orientation = "portrait"
-							renderInput={(params) => <TextField {...params} />}
+							renderDay={(day, selectedDate, isInCurrentMonth, dayComponent) => this.renderWeekPickerDay(day, selectedDate, isInCurrentMonth, dayComponent)}
+							renderInput={(params) => <TextField {...params}  />}
 						/>
 				</LocalizationProvider>
 				<div className="Button">
@@ -131,5 +181,10 @@ class ChosenDate extends React.Component{
 		)
     }
 }
+/*
+renderDay={this.renderDay}
+renderInput={(params) => <TextField {...params} />}
+
+*/
 
 export default ChosenDate;
