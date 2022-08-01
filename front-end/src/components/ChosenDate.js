@@ -15,7 +15,6 @@ import PickersDay, {
 	pickersDayClasses
   } from "@mui/lab/PickersDay";
 
-// free, halfFilled, full
 
 const CustomPickersDay = styled(PickersDay, {
 	shouldForwardProp: (prop) =>
@@ -62,7 +61,7 @@ class ChosenDate extends React.Component{
 		fetch('http://localhost:8080/barbershop/all')
         .then(response => response.json())
         .then(data => this.setState({barbershops : data}));
-	  }
+	}
 
 	handleBarbershopChange(value) {
 		//alert(value);
@@ -99,7 +98,8 @@ class ChosenDate extends React.Component{
 		}
 	}
 
-
+	// IL MANQUE L APPEL AU BACKEND
+	// TENIR COMPTE DU MOIS, DU COIFFEUR, 
 	renderWeekPickerDay(date, selectedDates, pickersDayProps){
 		/*
 		cette méthode fait les tours des dates du mois

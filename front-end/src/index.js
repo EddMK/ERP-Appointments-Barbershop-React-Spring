@@ -8,6 +8,7 @@ import App from './components/App';
 import Login from './components/Login';
 import Agenda from './components/Agenda';
 import Menu from './components/Menu';
+import Employee from './components/Employee';
 
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
@@ -21,6 +22,7 @@ root.render(
 				<Route path="/signup" element={<Signup />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/agenda" element={<Agenda />} />
+				<Route path="/employee" element={<Employee />} />
 			</Routes>
 		</BrowserRouter>
   </React.StrictMode>,
