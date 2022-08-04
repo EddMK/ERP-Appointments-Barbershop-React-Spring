@@ -20,4 +20,7 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
     @Query(value = "SELECT * FROM appointment WHERE hairdresser_id = :id AND DATE(start_date) = from_unixtime(:timestamp, '%Y-%m-%d')" ,nativeQuery = true)
     List<Appointment> findByStartDate(@Param("timestamp") long timestamp, @Param("id") int id );
 
+    @Query(value = "SELECT * FROM appointment WHERE hairdresser_id = :id AND :monday <= start_date  AND start_date <= :sunday " ,nativeQuery = true)
+    List<Appointment> findWeeksSchedule(@Param("id") int id , @Param("monday") String monday, @Param("sunday") String sunday);
+
 }
