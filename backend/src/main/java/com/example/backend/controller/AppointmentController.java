@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Controller // This means that this class is a Controller
@@ -52,26 +54,21 @@ public class AppointmentController {
 
   @CrossOrigin
   @GetMapping(path="/weekWorks/{timestamp}/{id}")
-  public @ResponseBody List<Appointment> getAppointmentsWeek(@PathVariable String timestamp, @PathVariable int id ) {
-    System.out.println(timestamp);
-    System.out.println(id);
-    String newTime = timestamp.substring(0,10);
-    LocalDate localDate = LocalDate.parse(newTime);
-    System.out.println("LOCALDATE : "+localDate.toString());
+  public @ResponseBody List<Appointment> getAppointmentsWeek(@PathVariable long timestamp, @PathVariable int id ) {
+    //System.out.println(timestamp);
+    //System.out.println(id);
+    LocalDate localDate = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDate();
     LocalDate monday = localDate;
     while (monday.getDayOfWeek() != DayOfWeek.MONDAY)
     {
       monday = monday.minusDays(1);
     }
-    System.out.println("MONDAY : "+monday.toString());
     LocalDate sunday = localDate;
     while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY)
     {
       sunday = sunday.plusDays(1);
     }
     sunday = sunday.plusDays(1);
-    System.out.println("SUNDAY : "+sunday.toString());
-    //return null;
     return appointmentRepository.findWeeksSchedule(id, monday.toString(), sunday.toString());
   }
 

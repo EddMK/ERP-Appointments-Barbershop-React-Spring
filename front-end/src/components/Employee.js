@@ -20,7 +20,7 @@ class Employee extends React.Component{
         super(props);
         this.state = {
             data : [],
-            currentDate : moment().format()
+            currentDate : new Date().getTime()
         };
         this.handleChangeDate = this.handleChangeDate.bind(this)
     }
@@ -33,14 +33,16 @@ class Employee extends React.Component{
     handleDataSchedule(){
         var idHairdresser = 250;
         var timestamp = this.state.currentDate
-        console.log(timestamp)
-        fetch("http://localhost:8080/appointment/weekWorks/"+timestamp+"/"+idHairdresser).then((res) => res.json()).then( (json) => this.setState({data : json}) );
+        var date = new Date(timestamp); 
+        var long = date.getTime()
+        fetch("http://localhost:8080/appointment/weekWorks/"+long+"/"+idHairdresser).then((res) => res.json()).then( (json) => this.setState({data : json}) );
     }
 
-    handleChangeDate(value){
-        this.setState({
+    async handleChangeDate(value){
+        await this.setState({
             currentDate : value
         });
+        this.handleDataSchedule(); 
     }
 
     render(){
