@@ -1,17 +1,31 @@
 import * as React from "react";
 import './Employee.css';
+import Content from './Content';
 import { ViewState } from '@devexpress/dx-react-scheduler';
-import { Scheduler, WeekView, CurrentTimeIndicator, Toolbar, DateNavigator, Appointments, TodayButton, } from '@devexpress/dx-react-scheduler-material-ui';
-import moment from "moment";
+import { Scheduler, Resources, AppointmentTooltip,WeekView, CurrentTimeIndicator, Toolbar, DateNavigator, Appointments, TodayButton, } from '@devexpress/dx-react-scheduler-material-ui';
+import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import CheckIcon from '@mui/icons-material/Check';
+import ClearIcon from '@mui/icons-material/Clear';
 
-//const views = ['week', 'timelineWeek'];
 
 /*
 Essayer avec le id d un coiffeur
 id = 250 
 Sebahat
-
 */
+
+const resources = [{
+    fieldName: 'type',
+    title: 'Type',
+    instances: [
+      { id: 'present', text: 'Present', color: '#40EC46' },
+      { id: 'absent', text: 'Absent', color: '#EC4040' },
+    ],
+  }];
+
 
 class Employee extends React.Component{
 
@@ -20,9 +34,53 @@ class Employee extends React.Component{
         super(props);
         this.state = {
             data : [],
-            currentDate : new Date().getTime()
+            currentDate : new Date().getTime(),
+            showProgress : false
         };
         this.handleChangeDate = this.handleChangeDate.bind(this)
+        this.handleJsonReturn = this.handleJsonReturn.bind(this)
+        this.handleErrorButton = this.handleErrorButton.bind(this)
+        this.handleSuccesButton = this.handleSuccesButton.bind(this)
+    }
+//{...restProps} appointmentData={appointmentData} 
+/*
+
+*/
+
+    handleContent = (  ({children, buttonError,  appointmentData, ...restProps}
+      ) => (
+        <AppointmentTooltip.Content {...restProps} appointmentData={appointmentData} >
+            <Grid container alignItems="center">
+                <p>{children}</p>
+                <Grid sx={{ m: 2 }}>
+                    <QuestionMarkIcon />
+                </Grid>
+                <Grid item xs={10}>
+                    <p>Did the customer come ?
+                        <IconButton color="success" onClick={() => this.handleSuccesButton(appointmentData)} >
+                            <CheckIcon />
+                        </IconButton>
+                        <IconButton color="error" onClick={() => this.handleErrorButton(appointmentData)}  >
+                            <ClearIcon />
+                        </IconButton>
+                    </p>
+                </Grid>
+            </Grid>
+        </AppointmentTooltip.Content>
+      ));
+
+    handleErrorButton(app){
+        const newData = this.state.data.slice() //copy the array
+        const ind = newData.findIndex(obj => obj.id === app.id);
+        newData[ind].type="absent";
+        this.setState({data: newData}) //set the new state
+    }
+
+    handleSuccesButton(id){
+        const newData = this.state.data.slice() //copy the array
+        const ind = newData.findIndex(obj => obj.id === id);
+        newData[ind].type="present";
+        this.setState({data: newData}) //set the new state
     }
 
     componentDidMount() {
@@ -32,32 +90,48 @@ class Employee extends React.Component{
 
     handleDataSchedule(){
         var idHairdresser = 250;
-        var timestamp = this.state.currentDate
+        var timestamp = this.state.currentDate;
         var date = new Date(timestamp); 
-        var long = date.getTime()
-        fetch("http://localhost:8080/appointment/weekWorks/"+long+"/"+idHairdresser).then((res) => res.json()).then( (json) => this.setState({data : json}) );
+        var long = date.getTime();
+        fetch("http://localhost:8080/appointment/weekWorks/"+long+"/"+idHairdresser).then((res) => res.json()).then( (json) => this.handleJsonReturn(json) );
     }
+
+    handleJsonReturn(value){
+        value.forEach( (element) =>{
+            element.title = element.customer_id.lastName+" "+element.customer_id.firstName+" - "+element.title;
+            //element.type='all';
+        })
+        this.setState({
+            data : value
+        })
+      }
 
     async handleChangeDate(value){
         await this.setState({
+            showProgress : true,
             currentDate : value
         });
-        this.handleDataSchedule(); 
+        this.handleDataSchedule();
+        this.setState({ showProgress : false }); 
     }
 
     render(){
 		return(
             <div className="Employee">
                 <h1>Schedule</h1>
-                <Scheduler data={this.state.data}  height={500} firstDayOfWeek={1}>
+                { this.state.showProgress ? <CircularProgress />   :
+                <Scheduler data={this.state.data}  height={500} firstDayOfWeek={1} error={this.handleErrorButton}>
                     <ViewState currentDate={this.state.currentDate} onCurrentDateChange={this.handleChangeDate} />
                     <WeekView startDayHour={9} endDayHour={19} cellDuration={15} />
                     <Toolbar />
                     <DateNavigator />
                     <TodayButton />
-                    <Appointments />
+                    <Appointments/>
+                    <AppointmentTooltip showCloseButton  contentComponent={this.handleContent} />
+                    <Resources data={resources} />
                     <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true}  updateInterval={true} />
                 </Scheduler>
+                }
             </div>
         )
     }
