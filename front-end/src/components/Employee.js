@@ -1,6 +1,6 @@
 import * as React from "react";
 import './Employee.css';
-import Content from './Content';
+import AddDaysOff from './AddDaysOff';
 import { ViewState } from '@devexpress/dx-react-scheduler';
 import { Scheduler, Resources, AppointmentTooltip,WeekView, CurrentTimeIndicator, Toolbar, DateNavigator, Appointments, TodayButton, } from '@devexpress/dx-react-scheduler-material-ui';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -9,6 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
+import Button from '@mui/material/Button';
 
 
 /*
@@ -23,6 +24,7 @@ const resources = [{
     instances: [
       { id: 'present', text: 'Present', color: '#40EC46' },
       { id: 'absent', text: 'Absent', color: '#EC4040' },
+      { id: 'dayOff', text: 'DayOff', color: '#ff8000' },
     ],
   }];
 
@@ -35,12 +37,15 @@ class Employee extends React.Component{
         this.state = {
             data : [],
             currentDate : new Date().getTime(),
-            showProgress : false
+            showProgress : false,
+            showDialog : false
         };
         this.handleChangeDate = this.handleChangeDate.bind(this)
         this.handleJsonReturn = this.handleJsonReturn.bind(this)
         this.handleErrorButton = this.handleErrorButton.bind(this)
         this.handleSuccesButton = this.handleSuccesButton.bind(this)
+        this.handleCloseDialog = this.handleCloseDialog.bind(this)
+        this.handleOpenDialog = this.handleOpenDialog.bind(this)
     }
 //{...restProps} appointmentData={appointmentData} 
 /*
@@ -98,13 +103,30 @@ class Employee extends React.Component{
 
     handleJsonReturn(value){
         value.forEach( (element) =>{
-            element.title = element.customer_id.lastName+" "+element.customer_id.firstName+" - "+element.title;
+            //console.log(element);
+            if(element.title !== "day off"){
+                element.title = element.customer_id.lastName+" "+element.customer_id.firstName+" - "+element.title;
+            }else{
+                element.type='dayOff';
+            }
             //element.type='all';
         })
         this.setState({
             data : value
         })
       }
+
+    handleCloseDialog(){
+        this.setState({
+            showDialog: false
+        })
+    }
+
+    handleOpenDialog(){
+        this.setState({
+            showDialog: true
+        })
+    }
 
     async handleChangeDate(value){
         await this.setState({
@@ -120,21 +142,60 @@ class Employee extends React.Component{
             <div className="Employee">
                 <h1>Schedule</h1>
                 { this.state.showProgress ? <CircularProgress />   :
-                <Scheduler data={this.state.data}  height={500} firstDayOfWeek={1} error={this.handleErrorButton}>
-                    <ViewState currentDate={this.state.currentDate} onCurrentDateChange={this.handleChangeDate} />
-                    <WeekView startDayHour={9} endDayHour={19} cellDuration={15} />
-                    <Toolbar />
-                    <DateNavigator />
-                    <TodayButton />
-                    <Appointments/>
-                    <AppointmentTooltip showCloseButton  contentComponent={this.handleContent} />
-                    <Resources data={resources} />
-                    <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true}  updateInterval={true} />
-                </Scheduler>
+                    <Scheduler data={this.state.data}  height={500} firstDayOfWeek={1} error={this.handleErrorButton}>
+                        <ViewState currentDate={this.state.currentDate} onCurrentDateChange={this.handleChangeDate} />
+                        <WeekView startDayHour={9} endDayHour={19} cellDuration={15} />
+                        <Toolbar />
+                        <DateNavigator />
+                        <TodayButton />
+                        <Appointments/>
+                        <AppointmentTooltip showCloseButton  contentComponent={this.handleContent} />
+                        <Resources data={resources} />
+                        <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true}  updateInterval={true} />
+                    </Scheduler>
                 }
+                <Button variant="contained" onClick={this.handleOpenDialog} >Add day(s) off</Button>
+                <Button variant="contained">Absence</Button>
+                {this.state.showDialog ? <AddDaysOff  open={true}  close={this.handleCloseDialog} id={250} /> : null }
             </div>
         )
     }
 }
 
 export default Employee
+/*
+
+<Dialog onClose={this.handleCloseDialog} open={this.state.showDialog}>
+                    <DialogTitle sx={{ textAlign : "center",}} >Days Off</DialogTitle>
+                    <DialogContent>
+                        <TextField
+                                    id="outlined-read-only-input"
+                                    label="Number of days available for this year"
+                                    variant="filled"
+                                    defaultValue="15 days"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    sx={{
+                                        width: "100%",
+                                        mb : 5
+                                    }}
+                        />
+                        <FormControlLabel  sx={{ width: "100%", mb : 5 }} control={<Checkbox defaultChecked />} label="One day" />
+                        <LocalizationProvider dateAdapter={DateAdapter}>
+                            <DatePicker
+                                label="Basic example"
+                                value={moment()}
+                                minDate={moment()}
+                                onChange={(newValue) => {
+                                    console.log(newValue);
+                                }}
+                                renderInput={(params) => <TextField {...params} />}
+                            />
+                        </LocalizationProvider>
+                    </DialogContent>
+                </Dialog>
+
+
+
+*/

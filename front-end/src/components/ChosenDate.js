@@ -165,9 +165,7 @@ class ChosenDate extends React.Component{
 							maxDate = {this.state.max}
 							defaultCalendarMonth={null}
 							value = {null}
-							onChange={(newValue) => {
-								this.handleDateChange(newValue);
-							}}
+							onChange={(newValue) => { this.handleDateChange(newValue); }}
 							orientation = "portrait"
 							renderDay={(day, selectedDate, isInCurrentMonth, dayComponent) => this.renderWeekPickerDay(day, selectedDate, isInCurrentMonth, dayComponent)}
 							renderInput={(params) => <TextField {...params}  />}
