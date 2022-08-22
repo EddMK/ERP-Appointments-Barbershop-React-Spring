@@ -6,7 +6,6 @@ import TextField from '@mui/material/TextField';
 import DateAdapter from '@mui/lab/AdapterMoment';
 import moment from "moment";
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
-//import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -19,21 +18,24 @@ import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 
 const CustomPickersDay = styled(PickersDay, {
 	shouldForwardProp: (prop) =>
-	  prop !== 'dayoffOwn' && prop !== 'halfFilled' && prop !== 'full',
-  })(({ theme, dayoffOwn, halfFilled, full }) => ({
-	...(dayoffOwn && {
-		background: '#6CB590',
+	  prop !== 'dayoffownPast' && prop !== 'dayoffownFutur' && prop !== 'unavailable',
+  })(({ theme, dayoffownPast, dayoffownFutur, unavailable }) => ({
+	...(dayoffownPast && {
+		background: '#196F3D',
 	}),
-	...(halfFilled && {
-		background: '#B59B6C',
+	...(dayoffownFutur && {
+		background: '#7DCEA0',
 	}),
-	...(full && {
-		background: '#B5746C',
+	...(unavailable && {
+		background: '#943126',
 	}),
   }));
 
-
+//METTRE A JOUR LE ID HAIRDRESSER ET BARBERSHOP
 //les inputs des dates formats => francais pas use kfr
+//recupere de la base de donnees : les congés du coiffeur courant, de l'autre coiffeur
+//recuperer les jours de rendez-vous, pas libre pour un rendez-vous
+// VALIDATION QD ON AJOUTE
 export default class AddDaysOff extends React.Component{
 
     constructor(props){
@@ -44,7 +46,9 @@ export default class AddDaysOff extends React.Component{
             checked : true,
             from : moment(),
             dayAgenda : moment(),
-            dayoffOwn : [moment().add(1,'day'),moment().add(2,'day'),moment().add(3,'day'), moment().add(4,'day')]
+            database : [],
+            dayoffCount : [],
+            unavailable : []
         };
         this.handleCloseDialog = this.handleCloseDialog.bind(this);
         this.handleChangeCheck = this.handleChangeCheck.bind(this);
@@ -55,13 +59,37 @@ export default class AddDaysOff extends React.Component{
         this.handleColorAgenda = this.handleColorAgenda.bind(this);
     }
 
+    componentDidMount() {
+		// get all entities - GET
+		fetch('http://localhost:8080/appointment/daysoff/'+245+'/'+250)
+        .then(response => response.json())
+        .then(data => { var unv = new Set(data.filter(e => e.title !=='day off' || e.hairdresser_id.id !== 250).map(e=>moment(e.startDate).format('L'))); 
+                        var dof = data.filter(e => e.title ==='day off' && e.hairdresser_id.id === 250).map(e=>moment(e.startDate).format('L'));
+                        this.setState({database : data, unavailable : unv, dayoffCount : dof}); });
+	}
+
 
     handleColorAgenda(date, selectedDates, pickersDayProps){
-		var dayoffOwn = false;
-
-        this.state.dayoffOwn.forEach(e => {  
-            if(date.format('L') === e.format('L')){
-                dayoffOwn = true;
+		var dayoffownPast = false;
+        var dayoffownFutur = false;
+        var unavailable = false;
+        //hairdresser_id  => test 250
+        //compare avec today
+        this.state.database.forEach(e => {  
+            if(date.format('L') === moment(e.startDate).format('L')){
+                if(e.title ==='day off'){
+                    if(e.hairdresser_id.id === 250){
+                        if(moment()> moment(e.startDate)){
+                            dayoffownPast = true;
+                        }else{
+                            dayoffownFutur = true;
+                        }                    
+                    }else{
+                        unavailable = true;
+                    }
+                }else{
+                    unavailable = true;
+                }
             }
         })
         
@@ -69,17 +97,21 @@ export default class AddDaysOff extends React.Component{
 		  <CustomPickersDay
 			{...pickersDayProps}
 			//disableMargin
-			dayoffOwn = {dayoffOwn}
-			halfFilled = {null}
+			dayoffownPast = {dayoffownPast}
+            dayoffownFutur = {dayoffownFutur}
+            unavailable = {unavailable}
 		  />
 		);
     };
 
     handleDateFirst(e){
         //console.log("change date : ",e.set({hour:0,minute:0,second:0,millisecond:0}));
-        var start = e.set({hour:0,minute:0,second:0,millisecond:0});
+        var start = {};
+        start.startDate = e.set({hour:0,minute:0,second:0,millisecond:0});
+        start.hairdresser_id = {};
+        start.hairdresser_id.id = 250
         this.setState({ from : start})
-        console.log(this.state.dayoffOwn);
+        console.log(this.state.database);
     }
 
     handleDateLast(e){
@@ -98,9 +130,9 @@ export default class AddDaysOff extends React.Component{
     }
 
     handleConfirm(){
-        this.setState({dayoffOwn: [...this.state.dayoffOwn, this.state.from]});
-        //this.addDayOffBackend()
-        console.log(this.state.dayoffOwn);
+        this.setState({database: [...this.state.database, this.state.from]});
+        this.addDayOffBackend()
+        console.log(this.state.database);
     }
 
     async addDayOffBackend(){
@@ -139,7 +171,7 @@ export default class AddDaysOff extends React.Component{
                             id="outlined-read-only-input"
                             label="Number of days available for this year"
                             variant="filled"
-                            defaultValue="15 days"
+                            defaultValue="20 days"
                             InputProps={{ readOnly: true, }}
                             sx={{ width: "100%", mb : 2 }}
                         />

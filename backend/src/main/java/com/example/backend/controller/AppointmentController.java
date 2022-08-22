@@ -95,4 +95,10 @@ public class AppointmentController {
     return appointmentRepository.findWeeksSchedule(id, monday.toString(), sunday.toString());
   }
 
+  @CrossOrigin
+  @GetMapping(path="/daysoff/{barbershopId}/{hairdresserId}")
+  public @ResponseBody List<Appointment> getDaysoffByBarbershop(@PathVariable int barbershopId, @PathVariable int hairdresserId ) {
+    return appointmentRepository.findDaysoffByBarbershop(barbershopId, hairdresserId);
+  }
+
 }

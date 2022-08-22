@@ -23,4 +23,14 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
     @Query(value = "SELECT * FROM appointment WHERE hairdresser_id = :id AND :monday <= start_date  AND start_date <= :sunday " ,nativeQuery = true)
     List<Appointment> findWeeksSchedule(@Param("id") int id , @Param("monday") String monday, @Param("sunday") String sunday);
 
+    @Query(value = "SELECT * FROM EdBarbershop.appointment WHERE (title='day off' AND hairdresser_id IN ( SELECT id FROM EdBarbershop.user WHERE barbershop_id = :barbershopId)) OR (hairdresser_id = :hairdresserId AND start_date>now()) GROUP BY CAST(start_date AS DATE), title;" ,nativeQuery = true)
+    List<Appointment> findDaysoffByBarbershop(@Param("barbershopId") int barbershopId, @Param("hairdresserId") int hairdresserId );
+
 }
+
+/*
+ * SELECT * FROM EdBarbershop.appointment
+WHERE (title="day off" AND hairdresser_id IN ( SELECT id FROM EdBarbershop.user WHERE barbershop_id = 245))
+ * 
+ * 
+ */
