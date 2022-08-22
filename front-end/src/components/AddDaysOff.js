@@ -36,6 +36,10 @@ const CustomPickersDay = styled(PickersDay, {
 //recupere de la base de donnees : les congés du coiffeur courant, de l'autre coiffeur
 //recuperer les jours de rendez-vous, pas libre pour un rendez-vous
 // VALIDATION QD ON AJOUTE
+// LE NOMBRE DE JOUR DISPO 
+// AJOUTER PLUSIEURS DATES
+// DERNIER AGENDA ENLEVER LA COULEUR BLEU DU CLICK
+// LE DAY OFF DU COLLEGUE A VENIR ON S EN FOUT QUE CE SOIT PASSE SAL ZEBE
 export default class AddDaysOff extends React.Component{
 
     constructor(props){
@@ -48,7 +52,8 @@ export default class AddDaysOff extends React.Component{
             dayAgenda : moment(),
             database : [],
             dayoffCount : [],
-            unavailable : []
+            unavailable : [], 
+            errorFirstDate : true,
         };
         this.handleCloseDialog = this.handleCloseDialog.bind(this);
         this.handleChangeCheck = this.handleChangeCheck.bind(this);
@@ -105,13 +110,15 @@ export default class AddDaysOff extends React.Component{
     };
 
     handleDateFirst(e){
-        //console.log("change date : ",e.set({hour:0,minute:0,second:0,millisecond:0}));
-        var start = {};
-        start.startDate = e.set({hour:0,minute:0,second:0,millisecond:0});
-        start.hairdresser_id = {};
-        start.hairdresser_id.id = 250
+        var stringFormat = moment(e).format('L');
+        if(this.state.unavailable.has(stringFormat) ||  this.state.dayoffCount.some(v => v === stringFormat)   ){
+            this.setState({errorFirstDate : true})
+        }else {
+            this.setState({errorFirstDate : false})
+        }
+        var start ;
+        start = e.set({hour:0,minute:0,second:0,millisecond:0});
         this.setState({ from : start})
-        console.log(this.state.database);
     }
 
     handleDateLast(e){
@@ -130,7 +137,12 @@ export default class AddDaysOff extends React.Component{
     }
 
     handleConfirm(){
-        this.setState({database: [...this.state.database, this.state.from]});
+        var start = {};
+        start.title = 'day off'; 
+        start.startDate = moment(this.state.from).set({hour:0,minute:0,second:0,millisecond:0});
+        start.hairdresser_id = {};
+        start.hairdresser_id.id = 250;
+        this.setState({database: [...this.state.database, start]});
         this.addDayOffBackend()
         console.log(this.state.database);
     }
@@ -176,14 +188,24 @@ export default class AddDaysOff extends React.Component{
                             sx={{ width: "100%", mb : 2 }}
                         />
                         <FormControlLabel  sx={{ width: "100%", mb : 2 }} control={<Checkbox  checked={this.state.checked} onChange={this.handleChangeCheck} />} label="One day" />
-                        <LocalizationProvider dateAdapter={DateAdapter}>
+                        <LocalizationProvider dateAdapter={DateAdapter} >
+                        { this.state.errorFirstDate ?
                             <DatePicker
                                 label= {this.state.checked ? "Choose a day" : "From"}
                                 value={this.state.from}
                                 minDate={moment()}
                                 onChange={(newValue) => { this.handleDateFirst(newValue) }}
-                                renderInput={(params) => <TextField {...params} />}
+                                renderInput={ (params) => <TextField {...params}  error helperText="You can't take time off this day."/>} 
                             />
+                            :
+                            <DatePicker
+                                label= {this.state.checked ? "Choose a day" : "From"}
+                                value={this.state.from}
+                                minDate={moment()}
+                                onChange={(newValue) => { this.handleDateFirst(newValue) }}
+                                renderInput={ (params) => <TextField {...params}  />} 
+                            />
+                        }
                         </LocalizationProvider>
                         { this.state.checked ? null : 
                             <LocalizationProvider  dateAdapter={DateAdapter}>
@@ -196,6 +218,7 @@ export default class AddDaysOff extends React.Component{
                                 />
                             </LocalizationProvider>
                         }
+                        <p>Here you can see your days off</p>
                         <LocalizationProvider dateAdapter={DateAdapter}>
                             <StaticDatePicker
                                 displayStaticWrapperAs="desktop"
@@ -212,11 +235,12 @@ export default class AddDaysOff extends React.Component{
                         </LocalizationProvider>
                     </DialogContent>
                     <DialogActions sx={{ justifyContent : "center"}} >
-                        <Button variant="contained" onClick={() => { this.handleConfirm()}}>Add</Button>
+                        <Button disabled={this.state.errorFirstDate} variant="contained" onClick={() => { this.handleConfirm()}}>Add</Button>
                     </DialogActions>
                 </Dialog>
         )
     }
 
 }
+//error helperText="Incorrect entry."
 //renderDay={this.handleColorAgenda}
