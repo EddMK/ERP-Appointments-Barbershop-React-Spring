@@ -65,6 +65,7 @@ export default class AddDaysOff extends React.Component{
         this.betweenTwoDates = this.betweenTwoDates.bind(this);
         this.addDayOffBackend = this.addDayOffBackend.bind(this);
         this.handleColorAgenda = this.handleColorAgenda.bind(this);
+        this.addArrayFrontend =this.addArrayFrontend.bind(this);
     }
 
     componentDidMount() {
@@ -160,17 +161,30 @@ export default class AddDaysOff extends React.Component{
     }
 
     betweenTwoDates(){
-        
         var str = moment(this.state.from)
-        console.log(str);
-        var arrayDate = [str]
+        //console.log(str);
+        var arrayDate = [moment(this.state.from)]
         var strLast = moment(this.state.lastDate).format('L')
         while (str.format('L') !== strLast) {
             str.add(1, 'day');
-            console.log(str);
+            //console.log(str);
             arrayDate.push(moment(str))
         }
-        console.log(arrayDate)
+        //console.log(arrayDate)
+        this.addArrayFrontend(arrayDate)
+    }
+
+    addArrayFrontend(array){
+        var newArray = []
+        array.forEach(e => {
+            var start = {};
+            start.title = 'day off'; 
+            start.startDate = moment(e);
+            start.hairdresser_id = {};
+            start.hairdresser_id.id = 250;
+            newArray.push(start);
+        })
+        this.setState({database: [...this.state.database, ...newArray]});
     }
 
     async addDayOffBackend(){
