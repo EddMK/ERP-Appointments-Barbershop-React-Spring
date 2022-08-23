@@ -156,21 +156,19 @@ export default class AddDaysOff extends React.Component{
             console.log("NOT CHECKED");
             this.betweenTwoDates();
         }
+        this.addDayOffBackend();
         //this.addDayOffBackend()
         //console.log(this.state.database);
     }
 
     betweenTwoDates(){
         var str = moment(this.state.from)
-        //console.log(str);
         var arrayDate = [moment(this.state.from)]
         var strLast = moment(this.state.lastDate).format('L')
         while (str.format('L') !== strLast) {
             str.add(1, 'day');
-            //console.log(str);
             arrayDate.push(moment(str))
         }
-        //console.log(arrayDate)
         this.addArrayFrontend(arrayDate)
     }
 
@@ -192,9 +190,14 @@ export default class AddDaysOff extends React.Component{
         //start and end depend on day choosen
         //customer ==> null
         //hairdresser ==> id
-        var a = moment(this.state.from);
-        var b = moment(a);
-        a.set({hour:23,minute:59,second:0,millisecond:0})
+        if(this.state.checked){
+            var a = moment(this.state.from);
+            var b = moment(a);
+            a.set({hour:23,minute:59,second:0,millisecond:0})
+        }else{
+            var b = moment(this.state.from);
+            var a = moment(this.state.lastDate);
+        }
         var json =  JSON.stringify({ title : "conge", startDate : b, endDate : a});
         console.log(json);
         const requestOptions = {

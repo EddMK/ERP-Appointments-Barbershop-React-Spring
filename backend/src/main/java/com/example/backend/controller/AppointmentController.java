@@ -5,6 +5,7 @@ import com.example.backend.entity.Appointment;
 import com.example.backend.entity.User;
 import com.example.backend.repository.AppointmentRepository;
 import com.example.backend.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,10 +19,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+//import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/appointment") // This means URL's start with /demo (after Application path)
@@ -49,6 +51,18 @@ public class AppointmentController {
   @CrossOrigin
   @PostMapping(path="/addDayOff") // Map ONLY POST Requests
   public @ResponseBody String addDayOff (@RequestBody Appointment appointment){
+    LocalDate st = appointment.getStart().toLocalDateTime().toLocalDate();
+    LocalDate ed = appointment.getEnd().toLocalDateTime().toLocalDate();
+    if(!st.isEqual(ed)){
+      System.out.println("PAS LES MEMES DATES");
+      //System.out.println(st.datesUntil(ed).collect(Collectors.toList()));
+      List<LocalDate> listes = st.datesUntil(ed).collect(Collectors.toList());
+      listes.add(ed);
+      System.out.println(listes);
+    }else{
+      System.out.println("LES MEMES DATES");
+    }
+    
     Appointment a = new Appointment();
     a.setTitle("day off");
     a.setStart(appointment.getStart());
@@ -59,7 +73,8 @@ public class AppointmentController {
     a.setHairdresser(hairdresser.get());
     //System.out.println("hairdresser" + appointment.getHairdresser());
     //CUSTOMER !! ==> null
-    appointmentRepository.save(a);
+
+    //appointmentRepository.save(a);
     return "Saved";
   }
 
