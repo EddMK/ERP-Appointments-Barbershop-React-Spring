@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -53,28 +54,46 @@ public class AppointmentController {
   public @ResponseBody String addDayOff (@RequestBody Appointment appointment){
     LocalDate st = appointment.getStart().toLocalDateTime().toLocalDate();
     LocalDate ed = appointment.getEnd().toLocalDateTime().toLocalDate();
+    int idHairdresser = 250;
+    Optional<User> hairdresser  = userRepository.findById(idHairdresser);
     if(!st.isEqual(ed)){
-      System.out.println("PAS LES MEMES DATES");
-      //System.out.println(st.datesUntil(ed).collect(Collectors.toList()));
+      //System.out.println("PAS LES MEMES DATES");
       List<LocalDate> listes = st.datesUntil(ed).collect(Collectors.toList());
       listes.add(ed);
-      System.out.println(listes);
+      //System.out.println(listes);
+      for (LocalDate temp : listes) {
+        Appointment a = new Appointment();
+        a.setTitle("day off");
+        a.setStart(Timestamp.valueOf(temp.atStartOfDay()));
+        a.setEnd(Timestamp.valueOf(temp.atTime(23, 59)));
+        a.setHairdresser(hairdresser.get());
+        appointmentRepository.save(a);
+      }
     }else{
       System.out.println("LES MEMES DATES");
+      Appointment a = new Appointment();
+      a.setTitle("day off");
+      a.setStart(appointment.getStart());
+      a.setEnd(appointment.getEnd());
+      appointmentRepository.save(a);
     }
-    
+/*     
     Appointment a = new Appointment();
     a.setTitle("day off");
     a.setStart(appointment.getStart());
     a.setEnd(appointment.getEnd());
     //System.out.println(appointment.getHairdresser());
-    int idHairdresser = 250;
-    Optional<User> hairdresser  = userRepository.findById(idHairdresser);
     a.setHairdresser(hairdresser.get());
     //System.out.println("hairdresser" + appointment.getHairdresser());
     //CUSTOMER !! ==> null
+*/
+    
+    return "Saved";
+  }
 
-    //appointmentRepository.save(a);
+  @CrossOrigin
+  @PostMapping(path="/addMultipleDayoff") // Map ONLY POST Requests
+  public @ResponseBody String addMultipleDayoff (@RequestBody Appointment appointment){
     return "Saved";
   }
 
