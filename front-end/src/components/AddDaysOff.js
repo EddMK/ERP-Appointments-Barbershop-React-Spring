@@ -35,11 +35,12 @@ const CustomPickersDay = styled(PickersDay, {
 //les inputs des dates formats => francais pas use kfr
 //recupere de la base de donnees : les congés du coiffeur courant, de l'autre coiffeur
 //recuperer les jours de rendez-vous, pas libre pour un rendez-vous
-// VALIDATION QD ON AJOUTE
+// VALIDATION QD ON AJOUTE MAIS PAS POUR PLUSIEURS JOURS
 // LE NOMBRE DE JOUR DISPO 
 // AJOUTER PLUSIEURS DATES
 // DERNIER AGENDA ENLEVER LA COULEUR BLEU DU CLICK
-// LE DAY OFF DU COLLEGUE A VENIR ON S EN FOUT QUE CE SOIT PASSE SAL ZEBE
+// DELETE A DAY OFF
+// LE DAY OFF DU COLLEGUE A VENIR ON S EN FOUT QUE CE SOIT PASSE SAL ZEBE ?
 export default class AddDaysOff extends React.Component{
 
     constructor(props){
@@ -49,6 +50,7 @@ export default class AddDaysOff extends React.Component{
             showDialog : this.props.open,
             checked : true,
             from : moment(),
+            lastDate : moment(),
             dayAgenda : moment(),
             database : [],
             dayoffCount : [],
@@ -60,6 +62,7 @@ export default class AddDaysOff extends React.Component{
         this.handleConfirm = this.handleConfirm.bind(this);
         this.handleDateFirst = this.handleDateFirst.bind(this);
         this.handleDateLast = this.handleDateLast.bind(this);
+        this.betweenTwoDates = this.betweenTwoDates.bind(this);
         this.addDayOffBackend = this.addDayOffBackend.bind(this);
         this.handleColorAgenda = this.handleColorAgenda.bind(this);
     }
@@ -110,6 +113,7 @@ export default class AddDaysOff extends React.Component{
     };
 
     handleDateFirst(e){
+
         var stringFormat = moment(e).format('L');
         if(this.state.unavailable.has(stringFormat) ||  this.state.dayoffCount.some(v => v === stringFormat)   ){
             this.setState({errorFirstDate : true})
@@ -118,11 +122,14 @@ export default class AddDaysOff extends React.Component{
         }
         var start ;
         start = e.set({hour:0,minute:0,second:0,millisecond:0});
+        if(!this.state.checked){
+            this.setState({ lastDate : start})
+        }
         this.setState({ from : start})
     }
 
     handleDateLast(e){
-
+        this.setState({ lastDate : e})
     }
 
     handleCloseDialog(){
@@ -137,14 +144,33 @@ export default class AddDaysOff extends React.Component{
     }
 
     handleConfirm(){
-        var start = {};
-        start.title = 'day off'; 
-        start.startDate = moment(this.state.from).set({hour:0,minute:0,second:0,millisecond:0});
-        start.hairdresser_id = {};
-        start.hairdresser_id.id = 250;
-        this.setState({database: [...this.state.database, start]});
-        this.addDayOffBackend()
-        console.log(this.state.database);
+        if(this.state.checked){
+            var start = {};
+            start.title = 'day off'; 
+            start.startDate = moment(this.state.from).set({hour:0,minute:0,second:0,millisecond:0});
+            start.hairdresser_id = {};
+            start.hairdresser_id.id = 250;
+            this.setState({database: [...this.state.database, start]});
+        }else{
+            console.log("NOT CHECKED");
+            this.betweenTwoDates();
+        }
+        //this.addDayOffBackend()
+        //console.log(this.state.database);
+    }
+
+    betweenTwoDates(){
+        
+        var str = moment(this.state.from)
+        console.log(str);
+        var arrayDate = [str]
+        var strLast = moment(this.state.lastDate).format('L')
+        while (str.format('L') !== strLast) {
+            str.add(1, 'day');
+            console.log(str);
+            arrayDate.push(moment(str))
+        }
+        console.log(arrayDate)
     }
 
     async addDayOffBackend(){
@@ -211,9 +237,9 @@ export default class AddDaysOff extends React.Component{
                             <LocalizationProvider  dateAdapter={DateAdapter}>
                                 <DatePicker
                                     label="To"
-                                    value={moment()}
-                                    minDate={moment()}
-                                    onChange={(newValue) => { console.log(newValue); }}
+                                    value={this.state.lastDate}
+                                    minDate={this.state.from}
+                                    onChange={(newValue) => { this.handleDateLast(newValue); }}
                                     renderInput={(params) => <TextField {...params} sx={{ml : 5}} />}
                                 />
                             </LocalizationProvider>
