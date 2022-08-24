@@ -11,17 +11,19 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import DialogContentText from '@mui/material/DialogContentText';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
-import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
 import { styled } from '@mui/material/styles';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import IconButton from '@mui/material/IconButton';
 
 const CustomPickersDay = styled(PickersDay, {
 	shouldForwardProp: (prop) =>
 	  prop !== 'dayoffownPast' && prop !== 'dayoffownFutur' && prop !== 'unavailable',
   })(({ theme, dayoffownPast, dayoffownFutur, unavailable }) => ({
 	...(dayoffownPast && {
-		background: '#196F3D',
+		background: '#3B9216',
 	}),
 	...(dayoffownFutur && {
 		background: '#7DCEA0',
@@ -29,16 +31,18 @@ const CustomPickersDay = styled(PickersDay, {
 	...(unavailable && {
 		background: '#943126',
 	}),
+    "& .Mui-selected": {
+        color: '#FFFFFF'
+      },
   }));
 
 //METTRE A JOUR LE ID HAIRDRESSER ET BARBERSHOP
 //les inputs des dates formats => francais pas use kfr
-// VALIDATION QD ON AJOUTE MAIS PAS POUR PLUSIEURS JOURS
 // LE NOMBRE DE JOUR DISPO => lien avec le button
 // DERNIER AGENDA ENLEVER LA COULEUR BLEU DU CLICK
 // DELETE A DAY OFF
 // LE DAY OFF DU COLLEGUE ON S EN FOUT QUE CE SOIT PASSE SAL ZEBE ?
-//REGARDER COMMENT FAIRE POUR LE JOUR MEME
+// REGARDER COMMENT FAIRE POUR LE JOUR MEME VALIDATION
 export default class AddDaysOff extends React.Component{
 
     constructor(props){
@@ -56,6 +60,7 @@ export default class AddDaysOff extends React.Component{
             btwTwoDates : [], 
             error : true,
             errorLast : false,
+            showButton : false,
         };
         this.handleCloseDialog = this.handleCloseDialog.bind(this);
         this.handleChangeCheck = this.handleChangeCheck.bind(this);
@@ -67,6 +72,18 @@ export default class AddDaysOff extends React.Component{
         this.handleColorAgenda = this.handleColorAgenda.bind(this);
         this.addArrayFrontend =this.addArrayFrontend.bind(this);
         this.notValidDayoff = this.notValidDayoff.bind(this);
+        this.handleClickAgenda = this.handleClickAgenda.bind(this);
+        this.handleLeave = this.handleLeave.bind(this);
+    }
+
+    handleLeave(){
+        console.log("CLICKE POUR ENLEVER !");
+        //ENLEVER DANS LE FRONTEND ET DANS LE BACKEND
+        console.log(this.state.database);
+        var str  = moment(this.state.dayAgenda).format('L')
+        var dayoff = this.state.database.find(e => e.title==='day off' && e.hairdresser_id.id === 250 && moment(e.startDate).format('L') === str)
+        console.log(dayoff)
+        this.setState({database: this.state.database.filter( data => data !== dayoff)});
     }
 
     componentDidMount() {
@@ -78,8 +95,9 @@ export default class AddDaysOff extends React.Component{
                         this.setState({database : data, unavailable : unv, dayoffCount : dof}); });
 	}
 
-
     handleColorAgenda(date, selectedDates, pickersDayProps){
+        //console.log(selectedDates);
+        //console.log(pickersDayProps)
 		var dayoffownPast = false;
         var dayoffownFutur = false;
         var unavailable = false;
@@ -102,7 +120,9 @@ export default class AddDaysOff extends React.Component{
                 }
             }
         })
-        
+        //disableHighlightToday
+        //pickersDayProps.selected = false
+        //console.log(pickersDayProps.selected)
         return (
 		  <CustomPickersDay
 			{...pickersDayProps}
@@ -113,6 +133,17 @@ export default class AddDaysOff extends React.Component{
 		);
     };
 
+    handleClickAgenda(e){
+        var selection = moment(e)
+        var strSelect = selection.format('L')
+        if(selection > moment()){
+            this.state.dayoffCount.some(e => e === strSelect) ? this.setState({showButton : true}) : this.setState({showButton : false})
+        }else{
+            this.setState({showButton : false})
+        }
+        this.setState({dayAgenda : e})
+    }
+
     handleDateFirst(e){
         this.notValidDayoff(e) ? this.setState({error : true}) : this.setState({error : false})
         var start ;
@@ -120,18 +151,13 @@ export default class AddDaysOff extends React.Component{
         if(!this.state.checked){
             var array = [];
             if(start>this.state.lastDate || moment(start).format('L') === moment(this.state.lastDate).format('L') ){
-                //console.log(" PLUS GRAND QUE LE DERNIER")
                 this.setState({ lastDate : moment(start).add(1,'day')})
                 var lastDate = moment(start).add(1,'day')
                 array = this.betweenTwoDates(start, lastDate)
             }else{
                 array = this.betweenTwoDates(start, this.state.lastDate)
             }
-            console.log("VALABLE : "+array.some(e => this.notValidDayoff(e)))
             array.some(e => this.notValidDayoff(e)) ? this.setState({errorLast : true}) : this.setState({errorLast : false})
-            //false
-            //VERIFIER ERROR
-            //this.setState({ lastDate : start})
         }
         this.setState({ from : start})
     }
@@ -150,7 +176,6 @@ export default class AddDaysOff extends React.Component{
             str.add(1, 'day');
             arrayDate.push(moment(str))
         }
-        //console.log(arrayDate);
         this.setState({ btwTwoDates : arrayDate})
         return arrayDate
     }
@@ -159,9 +184,7 @@ export default class AddDaysOff extends React.Component{
         this.setState({lastDate : e})
         var array = [];
         array = this.betweenTwoDates(this.state.from, e)
-        console.log("VALABLE : "+array.some(e => this.notValidDayoff(e)))
         array.some(e => this.notValidDayoff(e)) ? this.setState({errorLast : true}) : this.setState({errorLast : false})
-        //this.setState({ btwTwoDates : array})        
     }
 
     handleCloseDialog(){
@@ -182,13 +205,10 @@ export default class AddDaysOff extends React.Component{
             start.hairdresser_id.id = 250;
             this.setState({database: [...this.state.database, start]});
         }else{
-            console.log("NOT CHECKED");
             this.addArrayFrontend();
         }
         this.addDayOffBackend();
     }
-
-    
 
     addArrayFrontend(){
         var newArray = []
@@ -208,16 +228,17 @@ export default class AddDaysOff extends React.Component{
         //start and end depend on day choosen
         //customer ==> null
         //hairdresser ==> id
+        var a;
+        var b;
         if(this.state.checked){
-            var a = moment(this.state.from);
-            var b = moment(a);
+            a = moment(this.state.from);
+            b = moment(a);
             a.set({hour:23,minute:59,second:0,millisecond:0})
         }else{
-            var b = moment(this.state.from);
-            var a = moment(this.state.lastDate);
+            b = moment(this.state.from);
+            a = moment(this.state.lastDate);
         }
         var json =  JSON.stringify({ title : "conge", startDate : b, endDate : a});
-        console.log(json);
         const requestOptions = {
           method: 'POST',
           headers: { 
@@ -257,6 +278,7 @@ export default class AddDaysOff extends React.Component{
                                 minDate={moment()}
                                 onChange={(newValue) => { this.handleDateFirst(newValue) }}
                                 renderInput={ (params) => <TextField {...params}  error helperText="You can't take time off this day."/>} 
+                                disableHighlightToday={true}
                             />
                             :
                             <DatePicker
@@ -291,24 +313,24 @@ export default class AddDaysOff extends React.Component{
                             </LocalizationProvider>
                         :null
                         }
-                        <p>Here you can see your days off</p>
+                        <p>Here you can see your days off (in green) and when you can not take time off (red). In order to remove a day off, you click on the wright day and the button</p>
                         <LocalizationProvider dateAdapter={DateAdapter}>
-                            <StaticDatePicker
+                            <StaticDatePicker 
                                 displayStaticWrapperAs="desktop"
                                 openTo="day"
                                 minDate={moment().startOf('year')}
                                 maxDate={moment().endOf('year')}
                                 defaultCalendarMonth={null}
                                 value={this.state.dayAgenda}
-                                disableHighlightToday={true}
-                                onChange={(newValue) => { this.setState({dayAgenda : newValue}) }}
+                                onChange={(newValue) => { this.handleClickAgenda(newValue) }}
                                 renderDay={(day, selectedDate, isInCurrentMonth, dayComponent) => this.handleColorAgenda(day, selectedDate, isInCurrentMonth, dayComponent)}
                                 renderInput={(params) => <TextField {...params} />}
                             />
                         </LocalizationProvider>
                     </DialogContent>
                     <DialogActions sx={{ justifyContent : "center"}} >
-                        <Button disabled={this.state.error || this.state.errorLast} variant="contained" onClick={() => { this.handleConfirm()}}>Add</Button>
+                        <IconButton disabled={this.state.error || this.state.errorLast} color="success"  onClick={() => { this.handleConfirm()}} ><AddIcon /></IconButton>
+                        <IconButton color="error" disabled={!this.state.showButton} onClick={() => {this.handleLeave()}} ><DeleteForeverIcon /></IconButton>
                     </DialogActions>
                 </Dialog>
         )
