@@ -57,10 +57,8 @@ public class AppointmentController {
     int idHairdresser = 250;
     Optional<User> hairdresser  = userRepository.findById(idHairdresser);
     if(!st.isEqual(ed)){
-      //System.out.println("PAS LES MEMES DATES");
       List<LocalDate> listes = st.datesUntil(ed).collect(Collectors.toList());
       listes.add(ed);
-      //System.out.println(listes);
       for (LocalDate temp : listes) {
         Appointment a = new Appointment();
         a.setTitle("day off");
@@ -77,17 +75,6 @@ public class AppointmentController {
       a.setEnd(appointment.getEnd());
       appointmentRepository.save(a);
     }
-/*     
-    Appointment a = new Appointment();
-    a.setTitle("day off");
-    a.setStart(appointment.getStart());
-    a.setEnd(appointment.getEnd());
-    //System.out.println(appointment.getHairdresser());
-    a.setHairdresser(hairdresser.get());
-    //System.out.println("hairdresser" + appointment.getHairdresser());
-    //CUSTOMER !! ==> null
-*/
-    
     return "Saved";
   }
 

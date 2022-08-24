@@ -33,14 +33,12 @@ const CustomPickersDay = styled(PickersDay, {
 
 //METTRE A JOUR LE ID HAIRDRESSER ET BARBERSHOP
 //les inputs des dates formats => francais pas use kfr
-//recupere de la base de donnees : les congés du coiffeur courant, de l'autre coiffeur
-//recuperer les jours de rendez-vous, pas libre pour un rendez-vous
 // VALIDATION QD ON AJOUTE MAIS PAS POUR PLUSIEURS JOURS
-// LE NOMBRE DE JOUR DISPO 
-// AJOUTER PLUSIEURS DATES
+// LE NOMBRE DE JOUR DISPO => lien avec le button
 // DERNIER AGENDA ENLEVER LA COULEUR BLEU DU CLICK
 // DELETE A DAY OFF
-// LE DAY OFF DU COLLEGUE A VENIR ON S EN FOUT QUE CE SOIT PASSE SAL ZEBE ?
+// LE DAY OFF DU COLLEGUE ON S EN FOUT QUE CE SOIT PASSE SAL ZEBE ?
+//REGARDER COMMENT FAIRE POUR LE JOUR MEME
 export default class AddDaysOff extends React.Component{
 
     constructor(props){
@@ -50,12 +48,14 @@ export default class AddDaysOff extends React.Component{
             showDialog : this.props.open,
             checked : true,
             from : moment(),
-            lastDate : moment(),
+            lastDate : moment().add(1,'day'),
             dayAgenda : moment(),
             database : [],
             dayoffCount : [],
             unavailable : [], 
-            errorFirstDate : true,
+            btwTwoDates : [], 
+            error : true,
+            errorLast : false,
         };
         this.handleCloseDialog = this.handleCloseDialog.bind(this);
         this.handleChangeCheck = this.handleChangeCheck.bind(this);
@@ -66,6 +66,7 @@ export default class AddDaysOff extends React.Component{
         this.addDayOffBackend = this.addDayOffBackend.bind(this);
         this.handleColorAgenda = this.handleColorAgenda.bind(this);
         this.addArrayFrontend =this.addArrayFrontend.bind(this);
+        this.notValidDayoff = this.notValidDayoff.bind(this);
     }
 
     componentDidMount() {
@@ -105,7 +106,6 @@ export default class AddDaysOff extends React.Component{
         return (
 		  <CustomPickersDay
 			{...pickersDayProps}
-			//disableMargin
 			dayoffownPast = {dayoffownPast}
             dayoffownFutur = {dayoffownFutur}
             unavailable = {unavailable}
@@ -114,34 +114,63 @@ export default class AddDaysOff extends React.Component{
     };
 
     handleDateFirst(e){
-
-        var stringFormat = moment(e).format('L');
-        if(this.state.unavailable.has(stringFormat) ||  this.state.dayoffCount.some(v => v === stringFormat)   ){
-            this.setState({errorFirstDate : true})
-        }else {
-            this.setState({errorFirstDate : false})
-        }
+        this.notValidDayoff(e) ? this.setState({error : true}) : this.setState({error : false})
         var start ;
         start = e.set({hour:0,minute:0,second:0,millisecond:0});
         if(!this.state.checked){
-            this.setState({ lastDate : start})
+            var array = [];
+            if(start>this.state.lastDate || moment(start).format('L') === moment(this.state.lastDate).format('L') ){
+                //console.log(" PLUS GRAND QUE LE DERNIER")
+                this.setState({ lastDate : moment(start).add(1,'day')})
+                var lastDate = moment(start).add(1,'day')
+                array = this.betweenTwoDates(start, lastDate)
+            }else{
+                array = this.betweenTwoDates(start, this.state.lastDate)
+            }
+            console.log("VALABLE : "+array.some(e => this.notValidDayoff(e)))
+            array.some(e => this.notValidDayoff(e)) ? this.setState({errorLast : true}) : this.setState({errorLast : false})
+            //false
+            //VERIFIER ERROR
+            //this.setState({ lastDate : start})
         }
         this.setState({ from : start})
     }
 
+    notValidDayoff(e){
+        var stringFormat = moment(e).format('L');
+        return this.state.unavailable.has(stringFormat) || this.state.dayoffCount.some(v => v === stringFormat); 
+    }
+    
+    betweenTwoDates(dateStart, dateEnd){
+        var str = moment(dateStart);
+        var strLast = moment(dateEnd).format('L');
+        var str2 = moment(str)
+        var arrayDate = [str2]
+        while (str.format('L') !== strLast) {
+            str.add(1, 'day');
+            arrayDate.push(moment(str))
+        }
+        //console.log(arrayDate);
+        this.setState({ btwTwoDates : arrayDate})
+        return arrayDate
+    }
+
     handleDateLast(e){
-        this.setState({ lastDate : e})
+        this.setState({lastDate : e})
+        var array = [];
+        array = this.betweenTwoDates(this.state.from, e)
+        console.log("VALABLE : "+array.some(e => this.notValidDayoff(e)))
+        array.some(e => this.notValidDayoff(e)) ? this.setState({errorLast : true}) : this.setState({errorLast : false})
+        //this.setState({ btwTwoDates : array})        
     }
 
     handleCloseDialog(){
-        this.setState({
-            showDialog: false
-        })
+        this.setState({ showDialog: false })
     }
 
     handleChangeCheck(e){
         var bool = ! this.state.checked
-        this.setState({checked : bool })
+        this.setState({checked : bool, lastDate : this.state.from })
     }
 
     handleConfirm(){
@@ -154,27 +183,17 @@ export default class AddDaysOff extends React.Component{
             this.setState({database: [...this.state.database, start]});
         }else{
             console.log("NOT CHECKED");
-            this.betweenTwoDates();
+            //this.betweenTwoDates()
+            this.addArrayFrontend();
         }
         this.addDayOffBackend();
-        //this.addDayOffBackend()
-        //console.log(this.state.database);
     }
 
-    betweenTwoDates(){
-        var str = moment(this.state.from)
-        var arrayDate = [moment(this.state.from)]
-        var strLast = moment(this.state.lastDate).format('L')
-        while (str.format('L') !== strLast) {
-            str.add(1, 'day');
-            arrayDate.push(moment(str))
-        }
-        this.addArrayFrontend(arrayDate)
-    }
+    
 
-    addArrayFrontend(array){
+    addArrayFrontend(){
         var newArray = []
-        array.forEach(e => {
+        this.state.btwTwoDates.forEach(e => {
             var start = {};
             start.title = 'day off'; 
             start.startDate = moment(e);
@@ -230,9 +249,9 @@ export default class AddDaysOff extends React.Component{
                             InputProps={{ readOnly: true, }}
                             sx={{ width: "100%", mb : 2 }}
                         />
-                        <FormControlLabel  sx={{ width: "100%", mb : 2 }} control={<Checkbox  checked={this.state.checked} onChange={this.handleChangeCheck} />} label="One day" />
+                        <FormControlLabel  sx={{ pr : 35, mb : 2 }} control={<Checkbox  checked={this.state.checked} onChange={this.handleChangeCheck} />} label="One day" />
                         <LocalizationProvider dateAdapter={DateAdapter} >
-                        { this.state.errorFirstDate ?
+                        { this.state.error ?
                             <DatePicker
                                 label= {this.state.checked ? "Choose a day" : "From"}
                                 value={this.state.from}
@@ -250,16 +269,28 @@ export default class AddDaysOff extends React.Component{
                             />
                         }
                         </LocalizationProvider>
-                        { this.state.checked ? null : 
+                        { ! this.state.checked ? 
+                            this.state.errorLast ? 
+                                <LocalizationProvider  dateAdapter={DateAdapter}>
+                                    <DatePicker
+                                        label="To"
+                                        value={this.state.lastDate}
+                                        minDate={moment(this.state.from).add(1, 'day')}
+                                        onChange={(newValue) => { this.handleDateLast(newValue); }}
+                                        renderInput={(params) => <TextField {...params} sx={{ml : 5}} error helperText="You can't take time off theses days."/>}
+                                    />
+                                </LocalizationProvider>
+                            :
                             <LocalizationProvider  dateAdapter={DateAdapter}>
                                 <DatePicker
                                     label="To"
                                     value={this.state.lastDate}
-                                    minDate={this.state.from}
+                                    minDate={moment(this.state.from).add(1, 'day')}
                                     onChange={(newValue) => { this.handleDateLast(newValue); }}
                                     renderInput={(params) => <TextField {...params} sx={{ml : 5}} />}
                                 />
                             </LocalizationProvider>
+                        :null
                         }
                         <p>Here you can see your days off</p>
                         <LocalizationProvider dateAdapter={DateAdapter}>
@@ -278,12 +309,10 @@ export default class AddDaysOff extends React.Component{
                         </LocalizationProvider>
                     </DialogContent>
                     <DialogActions sx={{ justifyContent : "center"}} >
-                        <Button disabled={this.state.errorFirstDate} variant="contained" onClick={() => { this.handleConfirm()}}>Add</Button>
+                        <Button disabled={this.state.error || this.state.errorLast} variant="contained" onClick={() => { this.handleConfirm()}}>Add</Button>
                     </DialogActions>
                 </Dialog>
         )
     }
 
 }
-//error helperText="Incorrect entry."
-//renderDay={this.handleColorAgenda}
