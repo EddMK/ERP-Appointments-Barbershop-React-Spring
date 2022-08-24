@@ -84,6 +84,9 @@ export default class AddDaysOff extends React.Component{
         var dayoff = this.state.database.find(e => e.title==='day off' && e.hairdresser_id.id === 250 && moment(e.startDate).format('L') === str)
         console.log(dayoff)
         this.setState({database: this.state.database.filter( data => data !== dayoff)});
+        fetch('http://localhost:8080/appointment/delete/'+dayoff.id, {
+			method: 'DELETE'
+		});
     }
 
     componentDidMount() {
