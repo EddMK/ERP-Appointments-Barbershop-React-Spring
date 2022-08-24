@@ -183,7 +183,6 @@ export default class AddDaysOff extends React.Component{
             this.setState({database: [...this.state.database, start]});
         }else{
             console.log("NOT CHECKED");
-            //this.betweenTwoDates()
             this.addArrayFrontend();
         }
         this.addDayOffBackend();
