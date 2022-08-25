@@ -1,6 +1,7 @@
 import * as React from "react";
 import './Employee.css';
 import AddDaysOff from './AddDaysOff';
+import Absence from './Absence';
 import { ViewState } from '@devexpress/dx-react-scheduler';
 import { Scheduler, Resources, AppointmentTooltip,WeekView, CurrentTimeIndicator, Toolbar, DateNavigator, Appointments, TodayButton, } from '@devexpress/dx-react-scheduler-material-ui';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -38,14 +39,17 @@ class Employee extends React.Component{
             data : [],
             currentDate : new Date().getTime(),
             showProgress : false,
-            showDialog : false
+            showDialog : false,
+            showDialogAbsence : false
         };
         this.handleChangeDate = this.handleChangeDate.bind(this)
         this.handleJsonReturn = this.handleJsonReturn.bind(this)
         this.handleErrorButton = this.handleErrorButton.bind(this)
         this.handleSuccesButton = this.handleSuccesButton.bind(this)
         this.handleCloseDialog = this.handleCloseDialog.bind(this)
+        this.handleCloseDialogAbsence = this.handleCloseDialogAbsence.bind(this)
         this.handleOpenDialog = this.handleOpenDialog.bind(this)
+        this.handleOpenDialogAbsence = this.handleOpenDialogAbsence.bind(this)
     }
 //{...restProps} appointmentData={appointmentData} 
 /*
@@ -122,9 +126,21 @@ class Employee extends React.Component{
         })
     }
 
+    handleCloseDialogAbsence(){
+        this.setState({
+            showDialogAbsence: false
+        })
+    }
+
     handleOpenDialog(){
         this.setState({
             showDialog: true
+        })
+    }
+
+    handleOpenDialogAbsence(){
+        this.setState({
+            showDialogAbsence: true
         })
     }
 
@@ -155,47 +171,12 @@ class Employee extends React.Component{
                     </Scheduler>
                 }
                 <Button variant="contained" onClick={this.handleOpenDialog} >Add day(s) off</Button>
-                <Button variant="contained">Absence</Button>
+                <Button variant="contained" onClick={this.handleOpenDialogAbsence} >Absence this week</Button>
                 {this.state.showDialog ? <AddDaysOff  open={true}  close={this.handleCloseDialog} id={250} /> : null }
+                {this.state.showDialogAbsence ? <Absence open={true} date={this.state.currentDate}  close={this.handleCloseDialogAbsence} id={250} /> : null }
             </div>
         )
     }
 }
 
 export default Employee
-/*
-
-<Dialog onClose={this.handleCloseDialog} open={this.state.showDialog}>
-                    <DialogTitle sx={{ textAlign : "center",}} >Days Off</DialogTitle>
-                    <DialogContent>
-                        <TextField
-                                    id="outlined-read-only-input"
-                                    label="Number of days available for this year"
-                                    variant="filled"
-                                    defaultValue="15 days"
-                                    InputProps={{
-                                        readOnly: true,
-                                    }}
-                                    sx={{
-                                        width: "100%",
-                                        mb : 5
-                                    }}
-                        />
-                        <FormControlLabel  sx={{ width: "100%", mb : 5 }} control={<Checkbox defaultChecked />} label="One day" />
-                        <LocalizationProvider dateAdapter={DateAdapter}>
-                            <DatePicker
-                                label="Basic example"
-                                value={moment()}
-                                minDate={moment()}
-                                onChange={(newValue) => {
-                                    console.log(newValue);
-                                }}
-                                renderInput={(params) => <TextField {...params} />}
-                            />
-                        </LocalizationProvider>
-                    </DialogContent>
-                </Dialog>
-
-
-
-*/

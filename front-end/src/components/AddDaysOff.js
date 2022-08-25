@@ -37,11 +37,12 @@ const CustomPickersDay = styled(PickersDay, {
       },
   }));
 
+// CHANGER LE DIALOG A LA PLACE D UN ONGLET PSK CA A RIEN A VOIR AVEC LA SEMAINE C EST GLOBAL
 //METTRE A JOUR LE ID HAIRDRESSER ET BARBERSHOP
 //les inputs des dates formats => francais pas use kfr
-// LE NOMBRE DE JOUR DISPO => lien avec le button
 // DERNIER AGENDA ENLEVER LA COULEUR BLEU DU CLICK
-// REGARDER COMMENT FAIRE POUR LE JOUR MEME VALIDATION
+// REGARDER COMMENT FAIRE POUR LE JOUR AUJOURD HUI AVEC LE LENDEMAIN MEME VALIDATION
+// ESSAYER DE METTRE EN EVIDENCE LES ERREURS Y EN A BCP 
 export default class AddDaysOff extends React.Component{
 
     constructor(props){
@@ -159,7 +160,6 @@ export default class AddDaysOff extends React.Component{
                 array = this.betweenTwoDates(start, this.state.lastDate)
             }
             array.some(e => this.notValidDayoff(e)) ? this.setState({errorLast : true}) : this.setState({errorLast : false})
-            //VERIFIER LE NOMBRE DE JOUR DISPONIBLE
             20-this.state.dayoffCount.length-array.length < 0 ? this.setState({alertAvailable : true}) : this.setState({alertAvailable : false})
         }else{
             20-this.state.dayoffCount.length-1 < 0 ? this.setState({alertAvailable : true}) : this.setState({alertAvailable : false})
@@ -191,7 +191,6 @@ export default class AddDaysOff extends React.Component{
         array = this.betweenTwoDates(this.state.from, e)
         array.some(e => this.notValidDayoff(e)) ? this.setState({errorLast : true}) : this.setState({errorLast : false})
         20-this.state.dayoffCount.length-array.length < 0 ? this.setState({alertAvailable : true}) : this.setState({alertAvailable : false})
-        //VERIFIER LE NOMBRE DE JOUR DISPONIBLE
     }
 
     handleCloseDialog(){
