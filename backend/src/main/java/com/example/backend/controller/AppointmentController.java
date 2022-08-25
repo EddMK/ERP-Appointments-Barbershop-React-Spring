@@ -75,6 +75,7 @@ public class AppointmentController {
       a.setTitle("day off");
       a.setStart(appointment.getStart());
       a.setEnd(appointment.getEnd());
+      a.setHairdresser(hairdresser.get());
       appointmentRepository.save(a);
     }
     return "Saved";
