@@ -40,7 +40,6 @@ const CustomPickersDay = styled(PickersDay, {
 //les inputs des dates formats => francais pas use kfr
 // LE NOMBRE DE JOUR DISPO => lien avec le button
 // DERNIER AGENDA ENLEVER LA COULEUR BLEU DU CLICK
-// DELETE A DAY OFF
 // LE DAY OFF DU COLLEGUE ON S EN FOUT QUE CE SOIT PASSE SAL ZEBE ?
 // REGARDER COMMENT FAIRE POUR LE JOUR MEME VALIDATION
 export default class AddDaysOff extends React.Component{
@@ -77,12 +76,8 @@ export default class AddDaysOff extends React.Component{
     }
 
     handleLeave(){
-        console.log("CLICKE POUR ENLEVER !");
-        //ENLEVER DANS LE FRONTEND ET DANS LE BACKEND
-        console.log(this.state.database);
         var str  = moment(this.state.dayAgenda).format('L')
         var dayoff = this.state.database.find(e => e.title==='day off' && e.hairdresser_id.id === 250 && moment(e.startDate).format('L') === str)
-        console.log(dayoff)
         this.setState({database: this.state.database.filter( data => data !== dayoff)});
         fetch('http://localhost:8080/appointment/delete/'+dayoff.id, {
 			method: 'DELETE'
@@ -116,7 +111,10 @@ export default class AddDaysOff extends React.Component{
                             dayoffownFutur = true;
                         }                    
                     }else{
-                        unavailable = true;
+                        if(moment() < moment(e.startDate)){
+                            //dayoffownPast = true;
+                            unavailable = true;
+                        }
                     }
                 }else{
                     unavailable = true;

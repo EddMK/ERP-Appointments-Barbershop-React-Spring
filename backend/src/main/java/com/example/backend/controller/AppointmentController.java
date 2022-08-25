@@ -71,7 +71,6 @@ public class AppointmentController {
         appointmentRepository.save(a);
       }
     }else{
-      System.out.println("LES MEMES DATES");
       Appointment a = new Appointment();
       a.setTitle("day off");
       a.setStart(appointment.getStart());
