@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Dialog,DialogTitle, DialogContent, TextField, Autocomplete, InputLabel} from '@mui/material/';
+import {Dialog,DialogTitle, DialogContent, TextField, Autocomplete, Button, InputLabel} from '@mui/material/';
 import {LocalizationProvider, DatePicker} from '@mui/x-date-pickers/';
 import DateAdapter from '@mui/lab/AdapterMoment';
 import moment from "moment";
@@ -43,22 +43,50 @@ export default class Absence extends React.Component{
             fromHour : "",
             toHour : "",
             fromMinute : "",
-            toMinute : ""
+            toMinute : "",
+            reason : ""
         };
         this.handleFrom = this.handleFrom.bind(this);
+        this.handleTo = this.handleTo.bind(this);
+        this.handleReason = this.handleReason.bind(this);
         this.handleChangeDate = this.handleChangeDate.bind(this);
     }
 
+    handleReason(e){
+        console.log(e.target.value)
+        this.setState( {reason : e.target.value })
+    }
+
     handleFrom(e, t){
-        var nbr = parseInt(e)
-        console.log(nbr)
-        if(t === "hour"){
-            this.setState({ from : moment(this.state.from).set({h: nbr}) , fromHour : e })
+        console.log(e)
+        if(e !== ""){
+            var nbr = parseInt(e)
+            if(t === "hour"){
+                this.setState({ from : moment(this.state.from).set({h: nbr}) , fromHour : e })
+            }
+            if(t === "minute"){
+                this.setState({ from : moment(this.state.from).set({m: nbr}) , fromMinute : e })
+            }
+        }else{
+            console.log("VIDE")
         }
-        if(t === "minute"){
-            this.setState({ from : moment(this.state.from).set({m: nbr}) , fromMinute : e })
+        
+    }
+
+    handleTo(e, t){
+        console.log(e)
+        if(e !== ""){
+            var nbr = parseInt(e)
+            if(t === "hour"){
+                this.setState({ to : moment(this.state.to).set({h: nbr}) , toHour : e })
+            }
+            if(t === "minute"){
+                this.setState({ to : moment(this.state.to).set({m: nbr}) , toMinute : e })
+            }
+        }else{
+            console.log("VIDE")
         }
-        console.log(this.state.from);
+        
     }
 
     handleChangeDate(e){
@@ -66,7 +94,6 @@ export default class Absence extends React.Component{
         var day   = e.format('D');
         var year   = e.format('Y');
         this.setState({ date : e, from : moment(this.state.from).set({ date : day, month : month, year : year })  });
-        console.log(this.state.from);
     }
 
     render(){
@@ -104,10 +131,21 @@ export default class Absence extends React.Component{
                                 <InputLabel  sx={{mr : 0}}>To :</InputLabel>
                             </Grid>
                             <Grid item xs={4}>
-                                <Autocomplete   inputValue={this.state.toHour} onInputChange={(event, newInputValue) => { console.log(newInputValue)}}    getOptionLabel={option => option.name} options={hours.filter(e => this.state.fromMinute === "50" ? e.id > this.state.fromHour :  e.id >= this.state.fromHour)} sx={{ width: 150, mr : 0 }} renderInput={(params) => <TextField {...params} label="Hour" />} />
+                                <Autocomplete   inputValue={this.state.toHour} onInputChange={(event, newInputValue) => { this.handleTo(newInputValue, "hour")}}    getOptionLabel={option => option.name} options={hours.filter(e => this.state.fromMinute === "50" ? e.id > this.state.fromHour :  e.id >= this.state.fromHour)} sx={{ width: 150, mr : 0 }} renderInput={(params) => <TextField {...params} label="Hour" />} />
                             </Grid>
                             <Grid item xs={4}>
-                                <Autocomplete  inputValue={this.state.toMinute} onInputChange={(event, newInputValue) => { console.log(newInputValue)}}  getOptionLabel={option => option.name}  options={minutes} sx={{ width: 150, mr : 0 }} renderInput={(params) => <TextField {...params} label="Minute" />} />
+                                <Autocomplete  inputValue={this.state.toMinute} onInputChange={(event, newInputValue) => { this.handleTo(newInputValue, "minute")}}  getOptionLabel={option => option.name}  options={minutes.filter(e => this.state.toHour === "20" ? e.id === 0 : this.state.toHour === this.state.fromHour ?   e.id > parseInt(this.state.fromMinute) : e.id !== -1 )} sx={{ width: 150, mr : 0 }} renderInput={(params) => <TextField {...params} label="Minute" />} />
+                            </Grid>
+                            <Grid item xs={4}>
+                                <InputLabel  sx={{mr : 0}}>Reason :</InputLabel>
+                            </Grid>
+                            <Grid item xs={8}>
+                                <TextField  label="Write here ..." variant="outlined" multiline rows={4} onChange={this.handleReason} />
+                            </Grid>
+                            <Grid item xs={4}>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Button disabled={this.state.fromHour === "" || this.state.toHour === "" ||  this.state.fromMinute === "" ||  this.state.toMinute === "" || this.state.reason === ""} variant="contained">Confirm</Button>
                             </Grid>
                         </Grid>
                     </DialogContent>
@@ -116,20 +154,8 @@ export default class Absence extends React.Component{
     }
 }
 /*
-
-                            <Grid item xs={4}>
-                                <InputLabel  sx={{mr : 0}}>To :</InputLabel>
-                            </Grid>
-                            <Grid item xs={4}>
-                                <Autocomplete  options={["10","11","12","13","14","15","16","17","18","19","20"]} sx={{ width: 150, mr : 0 }} renderInput={(params) => <TextField {...params} label="Hour" />} />
-                            </Grid>
-                            <Grid item xs={4}>
-                                <Autocomplete  options={this.state.minutes} sx={{ width: 150, mr : 0 }} renderInput={(params) => <TextField {...params} label="Minute" />} />
-                            </Grid>
-                            <Grid item xs={4}>
-                                <InputLabel  sx={{mr : 0}}>Reason :</InputLabel>
-                            </Grid>
-                            <Grid item xs={8}>
-                                <TextField  label="Write here ..." variant="outlined" multiline ={true} />
-                            </Grid>
-        */
+fromHour : "",
+            toHour : "",
+            fromMinute : "",
+            toMinute : ""
+*/
