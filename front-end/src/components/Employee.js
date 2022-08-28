@@ -146,11 +146,20 @@ class Employee extends React.Component{
     handleAddAbsence(e){
         console.log("add absence : ",e);
         e.type='absent'
-        this.setState({  data: [...this.state.data, e] })
+        //this.setState({  data: [...this.state.data, e] })
         //trouver les rdv dans cette période récupere leur id
         var arrayToDelete = this.findAppointment(e.startDate, e.endDate)
         //supprimer
         console.log(arrayToDelete);
+        //console.log(this.state.data);
+        //
+        var data = this.state.data.filter(d => ! arrayToDelete.some( s => s.id ===d.id)).concat(e);
+        console.log(data);
+        //data.push(e);
+        this.setState({ data : data})
+        //this.setState({ data: this.state.data.filter(d => ! arrayToDelete.some( s => s.id ===d.id))});
+        //this.setState({  data: [...this.state.data, e] });
+
         //envoyer des notifications
         //ajouter l absent
         //data
@@ -160,6 +169,7 @@ class Employee extends React.Component{
     findAppointment(start, end){
         var array = []
         this.state.data.forEach( a =>{
+            console.log(a.title);
             if( ( this.dateIsAfter(start,moment(a.startDate) ) && this.dateIsAfter(moment(a.startDate), end ) ) ||  (   this.dateIsAfter(start, moment(a.endDate) )  &&   this.dateIsAfter(moment(a.endDate), end) )    ){
                 array.push(a)
             }else if (this.dateIsSame(start, moment(a.startDate))){
