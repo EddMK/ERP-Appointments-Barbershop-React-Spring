@@ -11,6 +11,8 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import Button from '@mui/material/Button';
+import moment from "moment";
+
 
 
 /*
@@ -50,11 +52,11 @@ class Employee extends React.Component{
         this.handleCloseDialogAbsence = this.handleCloseDialogAbsence.bind(this)
         this.handleOpenDialog = this.handleOpenDialog.bind(this)
         this.handleOpenDialogAbsence = this.handleOpenDialogAbsence.bind(this)
+        this.handleDataSchedule = this.handleDataSchedule.bind(this)
+        this.handleAddAbsence = this.handleAddAbsence.bind(this)
+        this.findAppointment = this.findAppointment.bind(this)
+        this.dateIsAfter = this.dateIsAfter.bind(this)
     }
-//{...restProps} appointmentData={appointmentData} 
-/*
-
-*/
 
     handleContent = (  ({children, buttonError,  appointmentData, ...restProps}
       ) => (
@@ -93,7 +95,6 @@ class Employee extends React.Component{
     }
 
     componentDidMount() {
-        //OBTENIR LE RENDEZ VOUS DU COIFFEUR
         this.handleDataSchedule();                                   
     }
 
@@ -115,42 +116,68 @@ class Employee extends React.Component{
             }
             //element.type='all';
         })
-        this.setState({
-            data : value
-        })
+        console.log("data",value);
+        this.setState({ data : value })
       }
 
     handleCloseDialog(){
-        this.setState({
-            showDialog: false
-        })
+        this.setState({ showDialog: false })
     }
 
     handleCloseDialogAbsence(){
-        this.setState({
-            showDialogAbsence: false
-        })
+        console.log("CLOSE");
+        this.setState({ showDialogAbsence: false })
     }
 
     handleOpenDialog(){
-        this.setState({
-            showDialog: true
-        })
+        this.setState({ showDialog: true })
     }
 
     handleOpenDialogAbsence(){
-        this.setState({
-            showDialogAbsence: true
-        })
+        this.setState({ showDialogAbsence: true })
     }
 
     async handleChangeDate(value){
-        await this.setState({
-            showProgress : true,
-            currentDate : value
-        });
+        await this.setState({ showProgress : true, currentDate : value });
         this.handleDataSchedule();
         this.setState({ showProgress : false }); 
+    }
+
+    handleAddAbsence(e){
+        console.log("add absence : ",e);
+        e.type='absent'
+        this.setState({  data: [...this.state.data, e] })
+        //trouver les rdv dans cette période récupere leur id
+        var arrayToDelete = this.findAppointment(e.startDate, e.endDate)
+        //supprimer
+        console.log(arrayToDelete);
+        //envoyer des notifications
+        //ajouter l absent
+        //data
+    }
+
+    //utiliser la fonction .diff() pour comparer
+    findAppointment(start, end){
+        var array = []
+        this.state.data.forEach( a =>{
+            if( ( this.dateIsAfter(start,moment(a.startDate) ) && this.dateIsAfter(moment(a.startDate), end ) ) ||  (   this.dateIsAfter(start, moment(a.endDate) )  &&   this.dateIsAfter(moment(a.endDate), end) )    ){
+                array.push(a)
+            }else if (this.dateIsSame(start, moment(a.startDate))){
+                array.push(a)
+            }else if( this.dateIsAfter(moment(a.startDate), start) && this.dateIsAfter( end, moment(a.endDate))  ){
+                array.push(a)
+            }
+        })
+        console.log(array);
+        return array;
+    }
+
+    dateIsAfter(avant, apres){
+        return apres.diff(avant, "seconds") > 0
+    }
+
+    dateIsSame(avant, apres){
+        return apres.diff(avant, "seconds") === 0
     }
 
     render(){
@@ -173,7 +200,7 @@ class Employee extends React.Component{
                 <Button variant="contained" onClick={this.handleOpenDialog} >Add day(s) off</Button>
                 <Button variant="contained" onClick={this.handleOpenDialogAbsence} >Absence this week</Button>
                 {this.state.showDialog ? <AddDaysOff  open={true}  close={this.handleCloseDialog} id={250} /> : null }
-                {this.state.showDialogAbsence ? <Absence open={true} date={this.state.currentDate}  close={this.handleCloseDialogAbsence} id={250} /> : null }
+                {this.state.showDialogAbsence ? <Absence open={true} date={this.state.currentDate} absence={this.handleAddAbsence}  close={this.handleCloseDialogAbsence} id={250} /> : null }
             </div>
         )
     }

@@ -1,10 +1,9 @@
 import * as React from "react";
-import {Dialog,DialogTitle, DialogContent, TextField, Autocomplete, Button, InputLabel} from '@mui/material/';
+import {Dialog,DialogTitle,  Grid, DialogContent, TextField, Autocomplete, Button, InputLabel} from '@mui/material/';
 import {LocalizationProvider, DatePicker} from '@mui/x-date-pickers/';
 import DateAdapter from '@mui/lab/AdapterMoment';
 import moment from "moment";
 import 'moment/locale/fr';
-import Grid from '@mui/material/Grid';
 
 const hours = [
     { id: 10, name: "10"},
@@ -29,12 +28,19 @@ const minutes = [
     { id: 0, name: "00"},
 ]
 
+/*
+-attendtion quand c est la semaine courrant faire attention au minDate peut pas prendre absence pour jours precendants
+-faire attention quand change de minute remettre les heures à null
+
+*/
+
 export default class Absence extends React.Component{
 
     constructor(props){
         super(props)
         console.log(this.props.date);
         this.state = {
+            showDialog : true,
             date : moment(this.props.date),
             from : moment(this.props.date),
             to : moment(this.props.date),
@@ -50,10 +56,21 @@ export default class Absence extends React.Component{
         this.handleTo = this.handleTo.bind(this);
         this.handleReason = this.handleReason.bind(this);
         this.handleChangeDate = this.handleChangeDate.bind(this);
+        this.handleConfirm = this.handleConfirm.bind(this);
+    }
+
+    handleConfirm(){
+        var abs ={
+            startDate : this.state.from,
+            endDate : this.state.to, 
+            title : 'absence'
+        }
+        this.props.absence(abs);
+        this.setState({showDialog : false})
+        this.props.close()
     }
 
     handleReason(e){
-        console.log(e.target.value)
         this.setState( {reason : e.target.value })
     }
 
@@ -62,10 +79,10 @@ export default class Absence extends React.Component{
         if(e !== ""){
             var nbr = parseInt(e)
             if(t === "hour"){
-                this.setState({ from : moment(this.state.from).set({h: nbr}) , fromHour : e })
+                this.setState({ from : moment(this.state.from).set({h: nbr, second : 0}) , fromHour : e })
             }
             if(t === "minute"){
-                this.setState({ from : moment(this.state.from).set({m: nbr}) , fromMinute : e })
+                this.setState({ from : moment(this.state.from).set({m: nbr, second : 0}) , fromMinute : e })
             }
         }else{
             console.log("VIDE")
@@ -78,10 +95,10 @@ export default class Absence extends React.Component{
         if(e !== ""){
             var nbr = parseInt(e)
             if(t === "hour"){
-                this.setState({ to : moment(this.state.to).set({h: nbr}) , toHour : e })
+                this.setState({ to : moment(this.state.to).set({h: nbr, second : 0}) , toHour : e })
             }
             if(t === "minute"){
-                this.setState({ to : moment(this.state.to).set({m: nbr}) , toMinute : e })
+                this.setState({ to : moment(this.state.to).set({m: nbr, second : 0}) , toMinute : e })
             }
         }else{
             console.log("VIDE")
@@ -91,14 +108,17 @@ export default class Absence extends React.Component{
 
     handleChangeDate(e){
         var month = e.format('M');
+        console.log("mois : "+month);
         var day   = e.format('D');
         var year   = e.format('Y');
-        this.setState({ date : e, from : moment(this.state.from).set({ date : day, month : month, year : year })  });
+        this.setState({ date : e, 
+                        from : moment(this.state.from).set({ date : day, month : month-1, year : year }),
+                        to : moment(this.state.to).set({ date : day, month : month-1, year : year })   });
     }
 
     render(){
 		return(
-            <Dialog onClose={this.props.close} open={true} fullWidth maxWidth="sm" >
+            <Dialog onClose={this.props.close} open={this.state.showDialog} fullWidth maxWidth="sm" >
                     <DialogTitle sx={{ textAlign : "center"}} >Absence</DialogTitle>
                     <DialogContent>
                         <Grid container spacing={2}>
@@ -145,7 +165,7 @@ export default class Absence extends React.Component{
                             <Grid item xs={4}>
                             </Grid>
                             <Grid item xs={4}>
-                                <Button disabled={this.state.fromHour === "" || this.state.toHour === "" ||  this.state.fromMinute === "" ||  this.state.toMinute === "" || this.state.reason === ""} variant="contained">Confirm</Button>
+                                <Button onClick={this.handleConfirm} disabled={this.state.fromHour === "" || this.state.toHour === "" ||  this.state.fromMinute === "" ||  this.state.toMinute === "" || this.state.reason === ""} variant="contained">Confirm</Button>
                             </Grid>
                         </Grid>
                     </DialogContent>
@@ -153,9 +173,3 @@ export default class Absence extends React.Component{
         )
     }
 }
-/*
-fromHour : "",
-            toHour : "",
-            fromMinute : "",
-            toMinute : ""
-*/
