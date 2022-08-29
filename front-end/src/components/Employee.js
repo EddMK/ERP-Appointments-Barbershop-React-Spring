@@ -4,14 +4,12 @@ import AddDaysOff from './AddDaysOff';
 import Absence from './Absence';
 import { ViewState } from '@devexpress/dx-react-scheduler';
 import { Scheduler, Resources, AppointmentTooltip,WeekView, CurrentTimeIndicator, Toolbar, DateNavigator, Appointments, TodayButton, } from '@devexpress/dx-react-scheduler-material-ui';
-import CircularProgress from '@mui/material/CircularProgress';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
-import Button from '@mui/material/Button';
 import moment from "moment";
+import {Dialog,Alert, DialogContent, DialogContentText, Grid, Button, IconButton, CircularProgress} from '@mui/material/';
+
 
 
 
@@ -42,7 +40,8 @@ class Employee extends React.Component{
             currentDate : new Date().getTime(),
             showProgress : false,
             showDialog : false,
-            showDialogAbsence : false
+            showDialogAbsence : false,
+            showDialogValidationAbsence : false
         };
         this.handleChangeDate = this.handleChangeDate.bind(this)
         this.handleJsonReturn = this.handleJsonReturn.bind(this)
@@ -54,6 +53,7 @@ class Employee extends React.Component{
         this.handleOpenDialogAbsence = this.handleOpenDialogAbsence.bind(this)
         this.handleDataSchedule = this.handleDataSchedule.bind(this)
         this.handleAddAbsence = this.handleAddAbsence.bind(this)
+        this.handleCloseDialogValidation = this.handleCloseDialogValidation.bind(this)
         this.findAppointment = this.findAppointment.bind(this)
         this.dateIsAfter = this.dateIsAfter.bind(this)
     }
@@ -109,10 +109,12 @@ class Employee extends React.Component{
     handleJsonReturn(value){
         value.forEach( (element) =>{
             //console.log(element);
-            if(element.title !== "day off"){
-                element.title = element.customer_id.lastName+" "+element.customer_id.firstName+" - "+element.title;
-            }else{
+            if(element.title === "day off"){
                 element.type='dayOff';
+            }else if(element.title === "absence"){
+                element.type='absent';
+            }else{
+                element.title = element.customer_id.lastName+" "+element.customer_id.firstName+" - "+element.title;
             }
             //element.type='all';
         })
@@ -127,6 +129,10 @@ class Employee extends React.Component{
     handleCloseDialogAbsence(){
         console.log("CLOSE");
         this.setState({ showDialogAbsence: false })
+    }
+
+    handleCloseDialogValidation(){
+        this.setState({ showDialogValidationAbsence: false })
     }
 
     handleOpenDialog(){
@@ -146,30 +152,34 @@ class Employee extends React.Component{
     handleAddAbsence(e){
         console.log("add absence : ",e);
         e.type='absent'
-        //this.setState({  data: [...this.state.data, e] })
-        //trouver les rdv dans cette période récupere leur id
         var arrayToDelete = this.findAppointment(e.startDate, e.endDate)
-        //supprimer
-        console.log(arrayToDelete);
-        //console.log(this.state.data);
-        //
-        var data = this.state.data.filter(d => ! arrayToDelete.some( s => s.id ===d.id)).concat(e);
-        console.log(data);
-        //data.push(e);
-        this.setState({ data : data})
-        //this.setState({ data: this.state.data.filter(d => ! arrayToDelete.some( s => s.id ===d.id))});
-        //this.setState({  data: [...this.state.data, e] });
+        if(arrayToDelete.some(a => a.title === 'day off' ||  a.title === 'absence')){
+            this.setState({showDialogValidationAbsence : true})
+        }else{
+            var data = this.state.data.filter(d => ! arrayToDelete.some( s => s.id ===d.id)).concat(e);       
+            this.setState({ data : data})
+            this.deleteAppointmentBackend(arrayToDelete.map((e) => e.id))
+            this.addAbsenceBackend(e)
+        }
+    }
 
-        //envoyer des notifications
-        //ajouter l absent
-        //data
+    deleteAppointmentBackend(array){
+        console.log(array);
+        fetch('http://localhost:8080/appointment/absence?ids='+array, { method: 'DELETE' });
+    }
+
+    async addAbsenceBackend(e){
+        var json =  JSON.stringify(e);
+        const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
+        const response = await fetch( 'http://localhost:8080/appointment/addAbsence',requestOptions);
+        const data = await response.text();
     }
 
     //utiliser la fonction .diff() pour comparer
     findAppointment(start, end){
         var array = []
         this.state.data.forEach( a =>{
-            console.log(a.title);
+            console.log("title : "+a.title);
             if( ( this.dateIsAfter(start,moment(a.startDate) ) && this.dateIsAfter(moment(a.startDate), end ) ) ||  (   this.dateIsAfter(start, moment(a.endDate) )  &&   this.dateIsAfter(moment(a.endDate), end) )    ){
                 array.push(a)
             }else if (this.dateIsSame(start, moment(a.startDate))){
@@ -178,7 +188,7 @@ class Employee extends React.Component{
                 array.push(a)
             }
         })
-        console.log(array);
+        console.log("findappointment ",array);
         return array;
     }
 
@@ -209,11 +219,18 @@ class Employee extends React.Component{
                 }
                 <Button variant="contained" onClick={this.handleOpenDialog} >Add day(s) off</Button>
                 <Button variant="contained" onClick={this.handleOpenDialogAbsence} >Absence this week</Button>
+                <Button variant="contained">A delay today</Button>
                 {this.state.showDialog ? <AddDaysOff  open={true}  close={this.handleCloseDialog} id={250} /> : null }
                 {this.state.showDialogAbsence ? <Absence open={true} date={this.state.currentDate} absence={this.handleAddAbsence}  close={this.handleCloseDialogAbsence} id={250} /> : null }
+                {this.state.showDialogValidationAbsence ?
+                    <Dialog open={this.state.showDialogValidationAbsence} onClose={this.handleCloseDialogValidation}  >
+                        <DialogContent>
+                            <Alert severity="warning">You can not add an absence when there is already one</Alert>
+                        </DialogContent>
+                    </Dialog>
+                :null } 
             </div>
         )
     }
 }
-
 export default Employee

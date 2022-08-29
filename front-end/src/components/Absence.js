@@ -63,7 +63,8 @@ export default class Absence extends React.Component{
         var abs ={
             startDate : this.state.from,
             endDate : this.state.to, 
-            title : 'absence'
+            title : 'absence',
+            reason : this.state.reason
         }
         this.props.absence(abs);
         this.setState({showDialog : false})

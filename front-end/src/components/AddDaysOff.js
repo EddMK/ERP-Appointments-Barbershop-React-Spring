@@ -43,6 +43,7 @@ const CustomPickersDay = styled(PickersDay, {
 // DERNIER AGENDA ENLEVER LA COULEUR BLEU DU CLICK
 // REGARDER COMMENT FAIRE POUR LE JOUR AUJOURD HUI AVEC LE LENDEMAIN MEME VALIDATION
 // ESSAYER DE METTRE EN EVIDENCE LES ERREURS Y EN A BCP 
+// QUAND ON COMMENCE UN DAY OFF A 1H DU MAT
 export default class AddDaysOff extends React.Component{
 
     constructor(props){
@@ -349,5 +350,4 @@ export default class AddDaysOff extends React.Component{
                 </Dialog>
         )
     }
-
 }

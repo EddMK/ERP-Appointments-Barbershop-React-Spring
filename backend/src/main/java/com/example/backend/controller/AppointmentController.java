@@ -3,8 +3,10 @@ package com.example.backend.controller;
 
 import com.example.backend.entity.Appointment;
 import com.example.backend.entity.User;
+import com.example.backend.entity.Notification;
 import com.example.backend.repository.AppointmentRepository;
-import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.UserRepository;//NotificationRepository
+import com.example.backend.repository.NotificationRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,9 +18,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 
+import java.sql.Array;
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Instant;
@@ -37,6 +41,9 @@ public class AppointmentController {
   private AppointmentRepository appointmentRepository;
 
   @Autowired 
+  private NotificationRepository notificationRepository;
+
+  @Autowired 
   private UserRepository userRepository;
 
   @CrossOrigin
@@ -48,6 +55,21 @@ public class AppointmentController {
     a.setEnd(appointment.getEnd());
     a.setHairdresser(appointment.getHairdresser());
     //CUSTOMER !!
+    appointmentRepository.save(a);
+    return "Saved";
+  }
+
+  @CrossOrigin
+  @PostMapping(path="/addAbsence") // Map ONLY POST Requests
+  public @ResponseBody String addAbsence (@RequestBody Appointment appointment){
+    Appointment a = new Appointment();
+    String reason = appointment.getTitle();
+    a.setTitle("absence");
+    a.setStart(appointment.getStart());
+    a.setEnd(appointment.getEnd());
+    a.setHairdresser(appointment.getHairdresser());
+    //CUSTOMER !! ==> null Faut notifier aux 
+    
     appointmentRepository.save(a);
     return "Saved";
   }
@@ -129,6 +151,29 @@ public class AppointmentController {
   @DeleteMapping(path="/delete/{id}")
   public @ResponseBody String deleteAppointment(@PathVariable int id) {
     appointmentRepository.deleteById(id);
+    return "deleted";
+  }
+
+  @CrossOrigin
+  @DeleteMapping(path="/absence")
+  public @ResponseBody String addAbsence(@RequestParam List<Integer> ids) {
+    System.out.println("Here we are");
+    System.out.println(ids);
+
+    for(Integer id : ids){
+      //appointmentRepository.deleteById(id);
+      //PREVENIR LE CLIENTS
+      Optional<Appointment> app  = appointmentRepository.findById(id);
+      int idCustomer = app.get().getCustomer().getId();
+      int idHairdresser = app.get().getHairdresser().getId();
+      Notification n = new Notification(idHairdresser,idCustomer, "absence");
+      notificationRepository.save(n);
+
+      //SUPPRIMER LE RENDEZ VOUS
+      appointmentRepository.deleteById(id);
+    }
+    //appointmentRepository.deleteById(id);
+    //PREVENIR LES CLIENTS
     return "deleted";
   }
 
