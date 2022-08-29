@@ -2,6 +2,7 @@ import * as React from "react";
 import './Employee.css';
 import AddDaysOff from './AddDaysOff';
 import Absence from './Absence';
+import Delay from './Delay';
 import { ViewState } from '@devexpress/dx-react-scheduler';
 import { Scheduler, Resources, AppointmentTooltip,WeekView, CurrentTimeIndicator, Toolbar, DateNavigator, Appointments, TodayButton, } from '@devexpress/dx-react-scheduler-material-ui';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
@@ -41,6 +42,7 @@ class Employee extends React.Component{
             showProgress : false,
             showDialog : false,
             showDialogAbsence : false,
+            showDialogDelay : false,
             showDialogValidationAbsence : false
         };
         this.handleChangeDate = this.handleChangeDate.bind(this)
@@ -49,13 +51,16 @@ class Employee extends React.Component{
         this.handleSuccesButton = this.handleSuccesButton.bind(this)
         this.handleCloseDialog = this.handleCloseDialog.bind(this)
         this.handleCloseDialogAbsence = this.handleCloseDialogAbsence.bind(this)
+        this.handleCloseDialogDelay = this.handleCloseDialogDelay.bind(this)
         this.handleOpenDialog = this.handleOpenDialog.bind(this)
         this.handleOpenDialogAbsence = this.handleOpenDialogAbsence.bind(this)
         this.handleDataSchedule = this.handleDataSchedule.bind(this)
         this.handleAddAbsence = this.handleAddAbsence.bind(this)
+        this.handleDelay = this.handleDelay.bind(this);
         this.handleCloseDialogValidation = this.handleCloseDialogValidation.bind(this)
         this.findAppointment = this.findAppointment.bind(this)
         this.dateIsAfter = this.dateIsAfter.bind(this)
+        this.handleOpenDialogDelay = this.handleOpenDialogDelay.bind(this)
     }
 
     handleContent = (  ({children, buttonError,  appointmentData, ...restProps}
@@ -131,6 +136,10 @@ class Employee extends React.Component{
         this.setState({ showDialogAbsence: false })
     }
 
+    handleCloseDialogDelay(){
+        this.setState({ showDialogDelay: false })
+    }
+
     handleCloseDialogValidation(){
         this.setState({ showDialogValidationAbsence: false })
     }
@@ -141,6 +150,10 @@ class Employee extends React.Component{
 
     handleOpenDialogAbsence(){
         this.setState({ showDialogAbsence: true })
+    }
+
+    handleOpenDialogDelay(){
+        this.setState({ showDialogDelay: true })
     }
 
     async handleChangeDate(value){
@@ -161,6 +174,10 @@ class Employee extends React.Component{
             this.deleteAppointmentBackend(arrayToDelete.map((e) => e.id))
             this.addAbsenceBackend(e)
         }
+    }
+
+    handleDelay(e){
+        console.log(e);
     }
 
     deleteAppointmentBackend(array){
@@ -219,9 +236,10 @@ class Employee extends React.Component{
                 }
                 <Button variant="contained" onClick={this.handleOpenDialog} >Add day(s) off</Button>
                 <Button variant="contained" onClick={this.handleOpenDialogAbsence} >Absence this week</Button>
-                <Button variant="contained">A delay today</Button>
+                <Button variant="contained" onClick={this.handleOpenDialogDelay}>A delay today</Button>
                 {this.state.showDialog ? <AddDaysOff  open={true}  close={this.handleCloseDialog} id={250} /> : null }
                 {this.state.showDialogAbsence ? <Absence open={true} date={this.state.currentDate} absence={this.handleAddAbsence}  close={this.handleCloseDialogAbsence} id={250} /> : null }
+                {this.state.showDialogDelay ? <Delay open={true} date={this.state.currentDate} delay={this.handleDelay}   close={this.handleCloseDialogDelay} id={250} /> : null }
                 {this.state.showDialogValidationAbsence ?
                     <Dialog open={this.state.showDialogValidationAbsence} onClose={this.handleCloseDialogValidation}  >
                         <DialogContent>
