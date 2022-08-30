@@ -176,13 +176,13 @@ class Employee extends React.Component{
         }
     }
 
-    handleDelay(e){
-        console.log(e);
-    }
+    
 
     deleteAppointmentBackend(array){
-        console.log(array);
-        fetch('http://localhost:8080/appointment/absence?ids='+array, { method: 'DELETE' });
+        //console.log(array);
+        if(array.length !== 0){
+            fetch('http://localhost:8080/appointment/absence?ids='+array, { method: 'DELETE' });
+        }
     }
 
     async addAbsenceBackend(e){
@@ -190,6 +190,39 @@ class Employee extends React.Component{
         const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
         const response = await fetch( 'http://localhost:8080/appointment/addAbsence',requestOptions);
         const data = await response.text();
+    }
+    
+    handleDelay(e){
+        var delay = parseInt(e.delay)
+        var arrayBackend = this.findAppointmentDay(e.date, delay)
+        this.addDelayBackend(arrayBackend.map((e) => e.id), delay )
+    }
+
+    findAppointmentDay(date, delayMinute){
+        var array = []
+        var arrayBackend = []
+        this.state.data.forEach( a =>{
+            if(moment(a.startDate).format('L') === date.format('L')){
+                var nv = a;
+                nv.startDate = moment(nv.startDate).add(delayMinute, 'minutes');
+                nv.endDate = moment(nv.endDate).add(delayMinute, 'minutes');
+                array.push(nv)
+                arrayBackend.push(nv)
+            }else{
+                array.push(a)
+            }
+        })
+        this.setState({ data : array})
+        //array.sort(function(a, b){return(moment(a.startDate)-moment(b.startDate))});
+        //adapter avec l absence
+        return arrayBackend
+    }
+
+    addDelayBackend(array, delay){
+        //console.log(array);
+        if(array.length !== 0){
+            fetch('http://localhost:8080/appointment/delay/'+delay+'/?ids='+array, { method: 'DELETE' });
+        }
     }
 
     //utiliser la fonction .diff() pour comparer
@@ -205,7 +238,7 @@ class Employee extends React.Component{
                 array.push(a)
             }
         })
-        console.log("findappointment ",array);
+        //console.log("findappointment ",array);
         return array;
     }
 

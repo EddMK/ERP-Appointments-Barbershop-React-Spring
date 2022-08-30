@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Controller // This means that this class is a Controller
@@ -172,6 +173,32 @@ public class AppointmentController {
       //SUPPRIMER LE RENDEZ VOUS
       appointmentRepository.deleteById(id);
     }
+    //appointmentRepository.deleteById(id);
+    //PREVENIR LES CLIENTS
+    return "deleted";
+  }
+
+  @CrossOrigin
+  @DeleteMapping(path="/delay/{minutes}/")
+  public @ResponseBody String addDelay(@RequestParam List<Integer> ids, @PathVariable Integer minutes) {
+    System.out.println("Here we are");
+    System.out.println(ids);
+    System.out.println(minutes);
+
+    for(Integer id : ids){
+      //appointmentRepository.deleteById(id);
+      //PREVENIR LE CLIENTS
+      Optional<Appointment> app  = appointmentRepository.findById(id);
+      Appointment appointment = app.get();
+      int idCustomer = appointment.getCustomer().getId();
+      int idHairdresser = appointment.getHairdresser().getId();
+      Notification n = new Notification(idHairdresser,idCustomer, "delay");
+      notificationRepository.save(n);      
+      appointment.setStart( new Timestamp(appointment.getStart().getTime() + TimeUnit.MINUTES.toMillis(minutes)) );
+      appointment.setEnd(new Timestamp(appointment.getEnd().getTime() + TimeUnit.MINUTES.toMillis(minutes)));
+      appointmentRepository.save(appointment);
+    }
+
     //appointmentRepository.deleteById(id);
     //PREVENIR LES CLIENTS
     return "deleted";

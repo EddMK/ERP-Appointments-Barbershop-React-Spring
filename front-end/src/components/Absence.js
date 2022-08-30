@@ -31,7 +31,7 @@ const minutes = [
 /*
 -attendtion quand c est la semaine courrant faire attention au minDate peut pas prendre absence pour jours precendants
 -faire attention quand change de minute remettre les heures à null
-
+-ajouter absence toute la journee
 */
 
 export default class Absence extends React.Component{
