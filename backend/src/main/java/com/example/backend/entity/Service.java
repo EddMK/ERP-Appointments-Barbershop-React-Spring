@@ -18,14 +18,18 @@ public class Service{
 
     private Long duration;
 
-    public Service(String name, Long duration){
+    private Integer price;
+
+    public Service(String name, Long duration, Integer price){
         this.name = name;
         this.duration = duration;
+        this.price = price;
     }
 
     public Service(){
         this.name = null;
         this.duration = null;
+        this.price = null;
     }
 
     public Long getId() {
@@ -52,6 +56,15 @@ public class Service{
 
     public void setDuration(Long duration) {
         this.duration = duration;
+    }
+
+    @JsonProperty("price")
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
     }
 
 

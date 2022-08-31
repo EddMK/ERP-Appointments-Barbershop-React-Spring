@@ -45,8 +45,8 @@ public class Runner implements CommandLineRunner {
         userRepository.deleteAll();
         serviceRepository.deleteAll();
 
-        Service s1 = new Service("coupe", Long.valueOf(15));
-        Service s2 = new Service("barbe", Long.valueOf(5));
+        Service s1 = new Service("coupe", Long.valueOf(15), 12);
+        Service s2 = new Service("barbe", Long.valueOf(5), 5);
 
         Barbershop b1 = new Barbershop("Coiffure Simonis", "Av. de Jette 22, 1081 Bruxelles");
         Barbershop b2 = new Barbershop("Coiffeur Créa-Tif", "Chau. d'Alsemberg 764B, 1180 Uccle");

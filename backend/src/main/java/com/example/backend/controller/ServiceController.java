@@ -25,6 +25,7 @@ public class ServiceController {
     Service s = new Service();
     s.setName(service.getName());
     s.setDuration(service.getDuration());
+    s.setPrice(service.getPrice());
     serviceRepository.save(s);
     return "Saved";
   }

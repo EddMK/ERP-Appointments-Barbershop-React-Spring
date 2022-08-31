@@ -25,12 +25,19 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
 
     @Query(value = "SELECT * FROM EdBarbershop.appointment WHERE (title='day off' AND hairdresser_id IN ( SELECT id FROM EdBarbershop.user WHERE barbershop_id = :barbershopId)) OR (hairdresser_id = :hairdresserId AND start_date>now()) GROUP BY CAST(start_date AS DATE), title;" ,nativeQuery = true)
     List<Appointment> findDaysoffByBarbershop(@Param("barbershopId") int barbershopId, @Param("hairdresserId") int hairdresserId );
+    
+    // ATTENTION CHANGEZ LE START DATE PAR LE END DATE
+    @Query(value = " SELECT SUM(service.price) AS turnover FROM appointment, service WHERE appointment.title = service.name  AND DATE(appointment.start_date) = DATE( NOW() ) AND appointment.start_date < NOW();" ,nativeQuery = true)
+    Integer findAppointmentToday();
+
+    @Query(value = " SELECT COALESCE(SUM(service.price), 0) AS turnover FROM appointment, service WHERE appointment.title = service.name  AND month(appointment.start_date) = :month AND year(appointment.start_date) = :year  ;" ,nativeQuery = true)
+    Integer findTurnoverMonth(@Param("month") int month, @Param("year") int year );
 
 }
-
 /*
- * SELECT * FROM EdBarbershop.appointment
-WHERE (title="day off" AND hairdresser_id IN ( SELECT id FROM EdBarbershop.user WHERE barbershop_id = 245))
- * 
- * 
+SELECT sum(EdBarbershop.service.price)
+FROM EdBarbershop.appointment, EdBarbershop.service
+WHERE 
+EdBarbershop.appointment.title = EdBarbershop.service.name 
+AND month(EdBarbershop.appointment.start_date) = month( NOW() );
  */

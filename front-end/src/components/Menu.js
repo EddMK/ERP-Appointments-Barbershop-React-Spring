@@ -12,6 +12,7 @@ class Menu extends React.Component{
 						<li><Link to="/login">Log In</Link></li>
 						<li><Link to="/agenda">Make an appointment</Link></li>
 						<li><Link to="/employee">Schedule</Link></li>
+						<li><Link to="/admin">Admin</Link></li>
 						<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
 					</ul>
 				</nav>

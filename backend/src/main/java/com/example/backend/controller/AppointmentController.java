@@ -6,6 +6,7 @@ import com.example.backend.entity.User;
 import com.example.backend.entity.Notification;
 import com.example.backend.repository.AppointmentRepository;
 import com.example.backend.repository.UserRepository;//NotificationRepository
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.backend.repository.NotificationRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +28,14 @@ import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.Month;
 //import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -146,6 +152,30 @@ public class AppointmentController {
   @GetMapping(path="/daysoff/{barbershopId}/{hairdresserId}")
   public @ResponseBody List<Appointment> getDaysoffByBarbershop(@PathVariable int barbershopId, @PathVariable int hairdresserId ) {
     return appointmentRepository.findDaysoffByBarbershop(barbershopId, hairdresserId);
+  }
+
+  @CrossOrigin
+  @GetMapping(path="/turnoverToday/")
+  public @ResponseBody String getTurnoverToday() { 
+    return String.valueOf(appointmentRepository.findAppointmentToday());
+  }
+
+  @CrossOrigin
+  @GetMapping(path="/evolutionTurnover/")
+  public @ResponseBody Map<String,Integer>  getEvolutionTurnover() { 
+    //appointmentRepository.findTurnoverMonth()
+    LocalDate date = LocalDate.now();
+    Map<String,Integer> payload = new LinkedHashMap<>();
+
+    for(int i = 0; i<7 ; i ++){
+      date = date.minusMonths(1);
+      //System.out.println(date);
+      appointmentRepository.findTurnoverMonth(date.getMonthValue(), date.getYear());
+      payload.put(Month.of(date.getMonthValue()).name(),appointmentRepository.findTurnoverMonth(date.getMonthValue(), date.getYear()));
+    }
+    System.out.println(payload);
+    System.out.println("___________________");
+    return payload;
   }
 
   @CrossOrigin

@@ -29,7 +29,10 @@ const resources = [{
       { id: 'dayOff', text: 'DayOff', color: '#ff8000' },
     ],
   }];
+/*
+Pas fait de validaiton pour les retards , tenir compte des absence 
 
+*/
 
 class Employee extends React.Component{
 
