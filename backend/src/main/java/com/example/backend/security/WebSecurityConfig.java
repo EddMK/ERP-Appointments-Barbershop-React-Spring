@@ -18,26 +18,32 @@ import com.example.backend.security.services.UserDetailsServiceImpl;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(
-    // securedEnabled = true,
-    // jsr250Enabled = true,
+    //securedEnabled = true,
+    //jsr250Enabled = true,
     prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+/*
+ * @EnableGlobalMethodSecurity(
+    //securedEnabled = true,
+    //jsr250Enabled = true,
+    prePostEnabled = true)
+ */
+
   @Autowired
   UserDetailsServiceImpl userDetailsService;
-/* 
-  @Autowired
-  private AuthEntryPointJwt unauthorizedHandler;
 
-  @Bean
-  public AuthTokenFilter authenticationJwtTokenFilter() {
-    return new AuthTokenFilter();
-  }
-*/
   @Override
   public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
     authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
   }
 
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .antMatchers("/**").permitAll();
+  }
+  
   @Bean
   @Override
   public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -48,6 +54,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
+
+}
+
+/* 
+  @Autowired
+  private AuthEntryPointJwt unauthorizedHandler;
+
+  @Bean
+  public AuthTokenFilter authenticationJwtTokenFilter() {
+    return new AuthTokenFilter();
+  }
+*/
+
+
 /* 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
@@ -61,4 +81,3 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
   }
 */
-}
