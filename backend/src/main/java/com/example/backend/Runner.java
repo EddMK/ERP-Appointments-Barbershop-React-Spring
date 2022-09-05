@@ -15,6 +15,7 @@ import com.example.backend.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class Runner implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(Runner.class);
@@ -40,6 +41,7 @@ public class Runner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        /* 
         appointmentRepository.deleteAll();
         barbershopRepository.deleteAll();
         userRepository.deleteAll();
@@ -82,6 +84,11 @@ public class Runner implements CommandLineRunner {
         appointmentRepository.save(new Appointment(Timestamp.valueOf(tomorrowStart.withHour(11)),Timestamp.valueOf(tomorrowStart.withHour(16)), "test",null,hairdresser2));
         appointmentRepository.save(new Appointment(Timestamp.valueOf(tomorrowStart.withHour(10)),Timestamp.valueOf(tomorrowStart.withHour(20)), "test",null,hairdresser1));
         */
+        User admin = userRepository.findById(248).get();
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String password = passwordEncoder.encode("admin");
+        admin.setPassword(password);
+        userRepository.save(admin);
         logger.info("ApplicationStartupRunner run method Started !!");
     }
 

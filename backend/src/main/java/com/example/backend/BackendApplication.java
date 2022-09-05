@@ -32,7 +32,6 @@ public class BackendApplication  {
 	
 
 	public static void main(String[] args) {
-		System.setProperty("spring.devtools.restart.enabled", "false");
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
@@ -44,10 +43,10 @@ public class BackendApplication  {
 			}
 		};
 	}
-/* 
+
 	@Bean
 	public Runner schedulerRunner() {
 		return new Runner(appointmentRepository, barbershopRepository, serviceRepository, userRepository);
 	}
-*/
+
 }
