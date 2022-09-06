@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Paper from '@mui/material/Paper';
+import './Admin.css';
 
 const data = [
     {
@@ -92,7 +93,7 @@ export default class Admin extends  PureComponent{
 
     render(){
 		return(
-            <div>
+            <div className='admin'>
                 <h1>Admin</h1>
                 <Paper elevation={5}><p>Chiffre d'affaire du jour : {this.state.turnover} €</p> </Paper>
                 <Paper elevation={5} sx={{width:500, ml: 20}}>
