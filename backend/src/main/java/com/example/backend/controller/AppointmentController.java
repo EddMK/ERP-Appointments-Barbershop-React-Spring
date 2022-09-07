@@ -2,9 +2,11 @@ package com.example.backend.controller;
 
 
 import com.example.backend.entity.Appointment;
+import com.example.backend.entity.Barbershop;
 import com.example.backend.entity.User;
 import com.example.backend.entity.Notification;
 import com.example.backend.repository.AppointmentRepository;
+import com.example.backend.repository.BarbershopRepository;
 import com.example.backend.repository.UserRepository;//NotificationRepository
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.backend.repository.NotificationRepository;
@@ -31,6 +33,7 @@ import java.time.LocalDate;
 import java.time.Month;
 //import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,6 +49,9 @@ public class AppointmentController {
   
   @Autowired 
   private AppointmentRepository appointmentRepository;
+
+  @Autowired 
+  private BarbershopRepository barbershopRepository;
 
   @Autowired 
   private NotificationRepository notificationRepository;
@@ -162,20 +168,41 @@ public class AppointmentController {
 
   @CrossOrigin
   @GetMapping(path="/evolutionTurnover/")
-  public @ResponseBody Map<String,Integer>  getEvolutionTurnover() { 
-    //appointmentRepository.findTurnoverMonth()
+  public @ResponseBody List<Object>  getEvolutionTurnover() { 
     LocalDate date = LocalDate.now();
-    Map<String,Integer> payload = new LinkedHashMap<>();
-
+    List<Object> res = new ArrayList<Object>();
     for(int i = 0; i<7 ; i ++){
+      List<String> mois = new ArrayList<String>();
       date = date.minusMonths(1);
-      //System.out.println(date);
-      appointmentRepository.findTurnoverMonth(date.getMonthValue(), date.getYear());
-      payload.put(Month.of(date.getMonthValue()).name(),appointmentRepository.findTurnoverMonth(date.getMonthValue(), date.getYear()));
+      mois.add(Month.of(date.getMonthValue()).name());
+      mois.add(String.valueOf(appointmentRepository.findTurnoverMonth(date.getMonthValue(), date.getYear())));
+      res.add(mois);
     }
-    System.out.println(payload);
-    System.out.println("___________________");
-    return payload;
+    return res;
+  }
+
+  @CrossOrigin
+  @GetMapping(path="/evolutionTurnoverBarbershop/")
+  public @ResponseBody List<Object>  getEvolutionTurnoverByBarbershop() { 
+    LocalDate date = LocalDate.now();
+    List<Object> res = new ArrayList<Object>();
+    Iterable<Barbershop> listIdBarbershop = barbershopRepository.findAll();
+    for(int i = 0; i<7 ; i ++){
+      List<Object> mois = new ArrayList<Object>();
+      List<String> name = new ArrayList<String>();
+      date = date.minusMonths(1);
+      name.add("name");
+      name.add(Month.of(date.getMonthValue()).name());
+      mois.add(name);      
+      for (Barbershop b : listIdBarbershop) {
+        List<String> barber = new ArrayList<String>();
+        barber.add(b.getName());
+        barber.add(String.valueOf(appointmentRepository.findTurnoverMonthByBarbershop(date.getMonthValue(), date.getYear(), b.getId().intValue())));
+        mois.add(barber);
+      }
+      res.add(mois);
+    }
+    return res;
   }
 
   @CrossOrigin

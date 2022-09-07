@@ -33,11 +33,7 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
     @Query(value = " SELECT COALESCE(SUM(service.price), 0) AS turnover FROM appointment, service WHERE appointment.title = service.name  AND month(appointment.start_date) = :month AND year(appointment.start_date) = :year  ;" ,nativeQuery = true)
     Integer findTurnoverMonth(@Param("month") int month, @Param("year") int year );
 
+    @Query(value = "SELECT COALESCE(SUM(service.price), 0) FROM appointment, service WHERE appointment.title = service.name AND month(appointment.start_date) = :month AND year(appointment.start_date) = :year AND hairdresser_id IN (SELECT user.id FROM barbershop, user WHERE user.barbershop_id = barbershop.id AND barbershop.id = :barbershopId) " ,nativeQuery = true)
+    Integer findTurnoverMonthByBarbershop(@Param("month") int month, @Param("year") int year, @Param("barbershopId") int barbershopId );
+
 }
-/*
-SELECT sum(EdBarbershop.service.price)
-FROM EdBarbershop.appointment, EdBarbershop.service
-WHERE 
-EdBarbershop.appointment.title = EdBarbershop.service.name 
-AND month(EdBarbershop.appointment.start_date) = month( NOW() );
- */

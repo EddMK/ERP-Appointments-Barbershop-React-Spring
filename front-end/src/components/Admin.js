@@ -63,13 +63,16 @@ export default class Admin extends  PureComponent{
         super(props);
         this.state = {
             turnover : null,
-            evolutionCommerce : null
+            evolutionCommerce : null,
+            evolutionCommerceBarbershop : null
         };
     }
 
      componentDidMount() {
          fetch("http://localhost:8080/appointment/turnoverToday/").then((res) => res.json()).then( (json) => this.setState({turnover : json})); 
-         fetch("http://localhost:8080/appointment/evolutionTurnover/").then((res) => res.json()).then( (json) => this.changeJsonData(json));                                                        
+         fetch("http://localhost:8080/appointment/evolutionTurnover/").then((res) => res.json()).then( (json) => this.changeJsonData(json)); 
+         fetch("http://localhost:8080/appointment/evolutionTurnoverBarbershop/").then((res) => res.json()).then( (json) => this.changeJsonDataEvolution(json));   
+  
     }
 /*
 {
@@ -80,28 +83,56 @@ export default class Admin extends  PureComponent{
       amt: 2400,
     },
 */
+    changeJsonDataEvolution(json){
+      console.log("graph",json)
+      var array = json.map((e) => {
+        var rObj = {};
+        console.log(e);
+        rObj.name = e[0][1];
+        rObj.simo = parseInt(e[1][1]);
+        rObj.crea = parseInt(e[2][1]);
+        rObj.esar = parseInt(e[3][1]);
+        console.log(rObj);
+        console.log("_____________");
+        return rObj;
+    });
+    console.log("graph",array)
+    this.setState({evolutionCommerceBarbershop : array});
+    //evolutionCommerceBarbershop
+      /*
+      var array = json.map(([k, v]) => {
+          var rObj = {};
+          rObj.name = k;
+          rObj.edShop = parseInt(v);
+          return rObj;
+      });*/
+      //this.setState({evolutionCommerce : array});
+      //console.log(array);
+    }
+
     changeJsonData(json){
+        //console.log("graph",json)
         var array = json.map(([k, v]) => {
             var rObj = {};
             rObj.name = k;
-            rObj.edShop = v;
+            rObj.edShop = parseInt(v);
             return rObj;
         });
         this.setState({evolutionCommerce : array});
-        console.log(array);
+        //console.log(array);
     }
 
     render(){
 		return(
             <div className='admin'>
                 <h1>Admin</h1>
-                <Paper elevation={5}><p>Chiffre d'affaire du jour : {this.state.turnover} €</p> </Paper>
+                <Paper elevation={5}><p>Chiffre d'affaire du jour : {this.state.turnover === null ? '0': this.state.turnover } €</p> </Paper>
                 <Paper elevation={5} sx={{width:500, ml: 20}}>
                     <h2>Evolution differents salon</h2>
                     <LineChart
                         width={500}
                         height={300}
-                        data={data}
+                        data={this.state.evolutionCommerceBarbershop}
                         margin={{
                             top: 5,
                             right: 30,
@@ -114,16 +145,16 @@ export default class Admin extends  PureComponent{
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{ r: 8 }} />
-                        <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-                        <Line type="monotone" dataKey="mv" stroke="#82ca9d" />
+                        <Line type="monotone" dataKey="simo" stroke="#8884d8" activeDot={{ r: 8 }} />
+                        <Line type="monotone" dataKey="crea" stroke="#961316" />
+                        <Line type="monotone" dataKey="esar" stroke="#82ca9d" />
                     </LineChart>
                 </Paper>
                 <Paper elevation={5}>
                     <LineChart
                         width={500}
                         height={300}
-                        data={data}
+                        data={this.state.evolutionCommerce}
                         margin={{
                             top: 5,
                             right: 30,
@@ -136,7 +167,7 @@ export default class Admin extends  PureComponent{
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{ r: 8 }} />
+                        <Line type="monotone" dataKey="edShop" stroke="#8884d8" activeDot={{ r: 8 }} />
                     </LineChart>
                 </Paper>
             </div>
