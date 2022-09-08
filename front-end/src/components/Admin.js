@@ -15,9 +15,9 @@ export default class Admin extends  PureComponent{
     }
 
      componentDidMount() {
-         fetch("http://localhost:8080/appointment/turnoverToday/").then((res) => res.json()).then( (json) => this.setState({turnover : json})); 
-         fetch("http://localhost:8080/appointment/evolutionTurnover/").then((res) => res.json()).then( (json) => this.changeJsonData(json)); 
-         fetch("http://localhost:8080/appointment/evolutionTurnoverBarbershop/").then((res) => res.json()).then( (json) => this.changeJsonDataEvolution(json));   
+         fetch("http://localhost:8080/admin/turnoverToday/").then((res) => res.json()).then( (json) => this.setState({turnover : json})); 
+         fetch("http://localhost:8080/admin/evolutionTurnover/").then((res) => res.json()).then( (json) => this.changeJsonData(json)); 
+         fetch("http://localhost:8080/admin/evolutionTurnoverBarbershop/").then((res) => res.json()).then( (json) => this.changeJsonDataEvolution(json));   
   
     }
 

@@ -161,51 +161,6 @@ public class AppointmentController {
   }
 
   @CrossOrigin
-  @GetMapping(path="/turnoverToday/")
-  public @ResponseBody String getTurnoverToday() { 
-    return String.valueOf(appointmentRepository.findAppointmentToday());
-  }
-
-  @CrossOrigin
-  @GetMapping(path="/evolutionTurnover/")
-  public @ResponseBody List<Object>  getEvolutionTurnover() { 
-    LocalDate date = LocalDate.now();
-    List<Object> res = new ArrayList<Object>();
-    for(int i = 0; i<7 ; i ++){
-      List<String> mois = new ArrayList<String>();
-      date = date.minusMonths(1);
-      mois.add(Month.of(date.getMonthValue()).name());
-      mois.add(String.valueOf(appointmentRepository.findTurnoverMonth(date.getMonthValue(), date.getYear())));
-      res.add(mois);
-    }
-    return res;
-  }
-
-  @CrossOrigin
-  @GetMapping(path="/evolutionTurnoverBarbershop/")
-  public @ResponseBody List<Object>  getEvolutionTurnoverByBarbershop() { 
-    LocalDate date = LocalDate.now();
-    List<Object> res = new ArrayList<Object>();
-    Iterable<Barbershop> listIdBarbershop = barbershopRepository.findAll();
-    for(int i = 0; i<7 ; i ++){
-      List<Object> mois = new ArrayList<Object>();
-      List<String> name = new ArrayList<String>();
-      date = date.minusMonths(1);
-      name.add("name");
-      name.add(Month.of(date.getMonthValue()).name());
-      mois.add(name);      
-      for (Barbershop b : listIdBarbershop) {
-        List<String> barber = new ArrayList<String>();
-        barber.add(b.getName());
-        barber.add(String.valueOf(appointmentRepository.findTurnoverMonthByBarbershop(date.getMonthValue(), date.getYear(), b.getId().intValue())));
-        mois.add(barber);
-      }
-      res.add(mois);
-    }
-    return res;
-  }
-
-  @CrossOrigin
   @DeleteMapping(path="/delete/{id}")
   public @ResponseBody String deleteAppointment(@PathVariable int id) {
     appointmentRepository.deleteById(id);
