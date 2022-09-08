@@ -22,10 +22,10 @@ import java.util.List;
 public class AdminController {
 
     @Autowired 
-  private AppointmentRepository appointmentRepository;
+    private AppointmentRepository appointmentRepository;
 
-  @Autowired 
-  private BarbershopRepository barbershopRepository;
+    @Autowired 
+    private BarbershopRepository barbershopRepository;
 
 
   @CrossOrigin

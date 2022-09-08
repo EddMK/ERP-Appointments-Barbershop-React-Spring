@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {Paper, Grid , Typography}from '@mui/material/';
 import './Admin.css';
+import moment from "moment";
 
 export default class Admin extends  PureComponent{
     
@@ -12,6 +13,7 @@ export default class Admin extends  PureComponent{
             evolutionCommerce : null,
             evolutionCommerceBarbershop : null
         };
+		    // faire en sorte que le premier du mois il paye tout 
     }
 
      componentDidMount() {

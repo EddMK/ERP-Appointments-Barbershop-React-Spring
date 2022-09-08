@@ -5,6 +5,7 @@ import Drawer from '@mui/material/Drawer';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import {Badge} from '@mui/material/';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
@@ -13,6 +14,9 @@ import ListSubheader from '@mui/material/ListSubheader';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Divider from '@mui/material/Divider';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import moment from "moment";
+
 
 
 
@@ -20,16 +24,14 @@ import Divider from '@mui/material/Divider';
 
 const drawerWidth = 160;
 
-const ink = <Link to="/login">Log In</Link>
-
-
 class Menu extends React.Component{
 	
 	constructor(props){
 		super(props);
 		this.state={
-			admin : true
-		}
+			admin : true,
+			showBadge : moment().date() === 1 ? 1 : 0
+		}		
 	}
 	render(){
 		return(
@@ -58,16 +60,18 @@ class Menu extends React.Component{
 						<Toolbar />
 						<Divider />
 						<List>
-						  {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-							<ListItem key={text} disablePadding>
-							  <ListItemButton>
-								<ListItemIcon>
-								  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-								</ListItemIcon>
-								<ListItemText primary={text} />
-							  </ListItemButton>
-							</ListItem>
-						  ))}
+							<Link to="/invoice"  style={{ textDecoration: 'none', color:'white' }} >
+								<ListItem button disablePadding>
+									<ListItemButton>
+										<ListItemIcon>
+											<Badge badgeContent={this.state.showBadge} color="primary">
+												<ReceiptLongOutlinedIcon />
+											</Badge>											
+										</ListItemIcon>
+										<ListItemText primary="Invoicing" />
+									</ListItemButton>
+								</ListItem>
+							</Link>
 						</List>
 					  </Drawer>
 					: 

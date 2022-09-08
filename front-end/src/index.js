@@ -10,6 +10,7 @@ import Agenda from './components/Agenda';
 import Menu from './components/Menu';
 import Employee from './components/Employee';
 import Admin from './components/Admin';
+import Invoice from './components/Invoice';
 
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
@@ -25,6 +26,7 @@ root.render(
 				<Route path="/agenda" element={<Agenda />} />
 				<Route path="/employee" element={<Employee />} />
 				<Route path="/admin" element={<Admin />} />
+				<Route path="/invoice" element={<Invoice />} />
 			</Routes>
 		</BrowserRouter>
   </React.StrictMode>,
