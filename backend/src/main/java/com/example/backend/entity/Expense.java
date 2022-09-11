@@ -13,30 +13,37 @@ public class Expense {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    private Integer id;
+    private Long id;
 
     private String name;
+
+    private String type;
+
+    private Integer barbershop;
 
     private Double  price;
 
     private Timestamp date;
 
-    public Expense(String name, Double price, Timestamp date){
+    public Expense(String name, Double price, Timestamp date, String type, Integer barbershopId){
         this.name = name;
         this.price = price; 
-        this.date = date;  
+        this.date = date;
+        this.type = type;
+        this.barbershop = barbershopId;  
     }
     
     public Expense(){}
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
     
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
+    @JsonProperty("name")
     public String getName() {
         return name;
     }
@@ -45,6 +52,16 @@ public class Expense {
         this.name =  name;
     }
 
+    @JsonProperty("type")
+    public String getType() {
+        return type;
+    }
+    
+    public void setType(String type) {
+        this.type =  type;
+    }
+
+    @JsonProperty("price")
     public Double getPrice() {
         return price;
     }
@@ -53,7 +70,16 @@ public class Expense {
         this.price = price;
     }
 
-    //@JsonProperty("message")
+    @JsonProperty("barbershop")
+    public Integer getBarbershop() {
+        return barbershop;
+    }
+    
+    public void setBarbershop(Integer id) {
+        this.barbershop = id;
+    }
+
+    @JsonProperty("date")
     public Timestamp getDate() {
         return date;
     }

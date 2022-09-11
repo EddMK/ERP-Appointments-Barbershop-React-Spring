@@ -13,6 +13,7 @@ import javax.persistence.OneToMany;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,7 +42,10 @@ public class User implements UserDetails  {
     @JoinColumn(name = "barbershop_id", nullable = true)
     private Barbershop barbershop;
 
-    public User(String lastName, String firstName, String email, String phoneNumber, String password, Role role, Barbershop barbershop){
+    @JoinColumn(nullable = true)
+    private LocalDate start;
+
+    public User(String lastName, String firstName, String email, String phoneNumber, String password, Role role, Barbershop barbershop, LocalDate start){
         this.lastName = lastName;
         this.firstName = firstName;
         this.email = email;
@@ -49,6 +53,7 @@ public class User implements UserDetails  {
         this.password = password;
         this.role = role;
         this.barbershop = barbershop;
+        this.start = start;
     }
     
     public User(){
@@ -130,6 +135,15 @@ public class User implements UserDetails  {
             return null;
         }
         return barbershop;
+    }
+
+    @JsonProperty("start")
+    public LocalDate getStart() {
+        return start;
+    }
+
+    public void setPassword(LocalDate date) {
+        this.start = date;
     }
 
     @Override

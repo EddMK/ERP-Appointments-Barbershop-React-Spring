@@ -15,6 +15,7 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Divider from '@mui/material/Divider';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import moment from "moment";
 
 
@@ -69,6 +70,40 @@ class Menu extends React.Component{
 											</Badge>											
 										</ListItemIcon>
 										<ListItemText primary="Invoicing" />
+									</ListItemButton>
+								</ListItem>
+							</Link>
+							<Link to="/employees"  style={{ textDecoration: 'none', color:'white' }} >
+								<ListItem button disablePadding>
+									<ListItemButton>
+										<ListItemIcon>
+											<GroupsOutlinedIcon />							
+										</ListItemIcon>
+										<ListItemText primary="Employees" />
+									</ListItemButton>
+								</ListItem>
+							</Link>
+							<Link to="/turnover"  style={{ textDecoration: 'none', color:'white' }} >
+								<ListItem button disablePadding>
+									<ListItemButton>
+										<ListItemIcon>
+											<Badge badgeContent={this.state.showBadge} color="primary">
+												<ReceiptLongOutlinedIcon />
+											</Badge>											
+										</ListItemIcon>
+										<ListItemText primary="Turnover" />
+									</ListItemButton>
+								</ListItem>
+							</Link>
+							<Link to="/barbershop"  style={{ textDecoration: 'none', color:'white' }} >
+								<ListItem button disablePadding>
+									<ListItemButton>
+										<ListItemIcon>
+											<Badge badgeContent={this.state.showBadge} color="primary">
+												<ReceiptLongOutlinedIcon />
+											</Badge>											
+										</ListItemIcon>
+										<ListItemText primary="Barbershops" />
 									</ListItemButton>
 								</ListItem>
 							</Link>

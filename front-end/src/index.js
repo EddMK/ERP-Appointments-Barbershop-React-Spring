@@ -11,6 +11,9 @@ import Menu from './components/Menu';
 import Employee from './components/Employee';
 import Admin from './components/Admin';
 import Invoice from './components/Invoice';
+import ListEmployees from './components/ListEmployees';
+import Turnover from './components/Turnover';
+import Barbershop from './components/Barbershop';
 
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
@@ -27,6 +30,9 @@ root.render(
 				<Route path="/employee" element={<Employee />} />
 				<Route path="/admin" element={<Admin />} />
 				<Route path="/invoice" element={<Invoice />} />
+				<Route path="/employees" element={<ListEmployees />} />
+				<Route path="/turnover" element={<Turnover />} />
+				<Route path="/barbershop" element={<Barbershop />} />
 			</Routes>
 		</BrowserRouter>
   </React.StrictMode>,
