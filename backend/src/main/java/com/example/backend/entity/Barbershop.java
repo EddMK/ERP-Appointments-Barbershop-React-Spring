@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Barbershop {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
+    private Integer id;
 
     private String name;
 
@@ -30,15 +30,19 @@ public class Barbershop {
         this.address = null;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
     @OneToMany
     @JoinColumn(name = "barbershop_id")
     private Set<User> hairdressers;
+
+    public Set<User> getHairdressers() {
+        return hairdressers;
+    }
     
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

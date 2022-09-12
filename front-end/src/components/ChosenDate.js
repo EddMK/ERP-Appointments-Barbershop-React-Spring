@@ -57,10 +57,7 @@ class ChosenDate extends React.Component{
 	}
 
 	componentDidMount() {
-		// get all entities - GET
-		fetch('http://localhost:8080/barbershop/all')
-        .then(response => response.json())
-        .then(data => this.setState({barbershops : data}));
+		fetch('http://localhost:8080/barbershop/all').then(response => response.json()).then(data => this.setState({barbershops : data}));
 	}
 
 	handleBarbershopChange(value) {

@@ -1,115 +1,162 @@
 import React, { PureComponent } from 'react';
 import {Paper, Autocomplete, Grid , Typography, InputAdornment, Button, TextField}from '@mui/material/';
 import moment from "moment";
-import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import DateAdapter from '@mui/lab/AdapterMoment';
-import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+
+const data = [
+    {
+      name: 'Page A',
+      uv: 4000,
+      pv: 2400,
+      amt: 2400,
+    },
+    {
+      name: 'Page B',
+      uv: 3000,
+      pv: 1398,
+      amt: 2210,
+    },
+    {
+      name: 'Page C',
+      uv: 2000,
+      pv: 9800,
+      amt: 2290,
+    },
+    {
+      name: 'Page D',
+      uv: 2780,
+      pv: 3908,
+      amt: 2000,
+    },
+    {
+      name: 'Page E',
+      uv: 1890,
+      pv: 4800,
+      amt: 2181,
+    },
+    {
+      name: 'Page F',
+      uv: 2390,
+      pv: 3800,
+      amt: 2500,
+    },
+    {
+      name: 'Page G',
+      uv: 3490,
+      pv: 4300,
+      amt: 2100,
+    },
+  ];
 
 export default class Barbershop extends  PureComponent{
     
     constructor(props){
         super(props);
         this.state = {
-            barChart : null,
-            from : "",
-            valueInput : moment().subtract(1, 'months').format('YYYY-MM') ,
-            list : []
+            barbershops : [],
+            localisation : null,
+            evolutionExpense : [],
         };
-        this.handleChangeDate = this.handleChangeDate.bind(this);
+        this.handleBarbershopChange = this.handleBarbershopChange.bind(this);
+
     }
 
     componentDidMount() {
-         fetch("http://localhost:8080/admin/barChart/"+parseInt(moment().subtract(1, 'months').format('MM'))+"/"+moment().year()+"/").then((res) => res.json()).then( (json) => this.changeJsonData(json));
-         fetch("http://localhost:8080/admin/firstAppoitment/").then((res) => res.json()).then( (json) => this.getListAutocomplete(json));   
-    }
-
-    getListAutocomplete(from){
-      var dateStart = moment(from);
-      var dateEnd = moment();
-      var timeValues = [];
-
-      while (dateEnd > dateStart) {
-        timeValues.push(dateStart.format('YYYY-MM'));
-        dateStart.add(1,'month');
-      }
-
-      if(dateEnd.format('YYYY-MM') === timeValues[timeValues.length - 1]){
-        timeValues.pop()
-      }
-
-      console.log(timeValues);
-      this.setState({ list : timeValues})
+        fetch('http://localhost:8080/barbershop/all').then(response => response.json()).then(data => this.setState({barbershops : data}));
+        fetch("http://localhost:8080/admin/evolutionExpenseBarbershop/").then((res) => res.json()).then( (json) => this.changeJsonData(json));
     }
 
     changeJsonData(json){
-      console.log(json)
-      var array = json.map((e) => {
-        var rObj = {};
-        rObj.name = e[0];
-        var prix = e[1].reduce((acc, curr) => {
-          let key = curr[0];
-          let value = curr[1];
-          acc[key] = value;
-          return acc;
-        }, {})
-        rObj = Object.assign(rObj,prix);
-        return rObj;
-    });
-    this.setState({barChart : array});
-    }
-
-    handleChangeDate(e){
-      this.setState({valueInput : e});
-      if(e === null){
-        this.setState({barChart : null});
-      }else{
-        console.log(e);
-        var year = parseInt(e.slice(0, 4));
-        var month = parseInt(e.slice(5, 7));
-        fetch("http://localhost:8080/admin/barChart/"+month+"/"+year+"/").then((res) => res.json()).then( (json) => this.changeJsonData(json));
+        var array = json.map((e) => {
+          var rObj = {};
+          rObj.name = e[0];
+          var prix = e[1].reduce((acc, curr) => {
+            let key = curr[0];
+            let value = parseInt(curr[1]);
+            acc[key] = value;
+            return acc;
+          }, {})
+          rObj = Object.assign(rObj,prix);
+          return rObj;
+      });
+      console.log(array);
+      this.setState({evolutionExpense : array.reverse()});
       }
-    }
+
+    handleBarbershopChange(value) {
+		this.setState({localisation : value});
+	}
 
     render(){
 		return(
-            <div className='barbershop' style={{marginLeft: 160 + 'px'}}>
-                <Typography variant="h4" align="center" style={{marginBottom: 160 + 'px', fontFamily: "Roboto", textDecoration : 'underline'}} gutterBottom>Barbershop</Typography>
+            <div className='Barbershop' style={{marginLeft: 160 + 'px'}}>
+                <Typography variant="h4" align="center" gutterBottom  style={{marginBottom: 50 + 'px'}}>Barbershop</Typography>
                 <Autocomplete
-                  disablePortal
-                  id="barbershop"
-                  value = {this.state.valueInput}
-                  options={this.state.list}
-                  sx={{ width: 300, marginTop : 2 }}
-                  onChange={(event,newValue) => { this.handleChangeDate(newValue)}}
-                  renderInput={(params) => <TextField {...params} label="Choose a month" />}
-                />
-                <Paper sx={{width:600, height: 400 , backgroundColor: '#F4F6F6'}}>
-                    <BarChart
+						disablePortal
+						id="barbershop"
+						options={this.state.barbershops}
+						getOptionLabel={(option) => option.name}
+						sx={{ width: 300, marginTop : 2 }}
+						onChange={(event,newValue) => {
+							this.handleBarbershopChange(newValue);
+						}}
+						renderInput={(params) => <TextField {...params} label="Choose a barbershop" />}
+				/>
+                <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                        <Paper elevation={5}>
+                        <Typography variant="h5" align="center" gutterBottom  style={{marginBottom: 50 + 'px'}}>Evolution expense</Typography>
+                            <LineChart
+                                width={500}
+                                height={300}
+                                data={this.state.evolutionExpense}
+                                margin={{
+                                    top: 5,
+                                    right: 30,
+                                    left: 20,
+                                    bottom: 5,
+                                }}
+                                >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Line type="monotone" dataKey="Charges" stroke="#0A75AD" activeDot={{ r: 8 }} />
+                                <Line type="monotone" dataKey="Taxes" stroke="#FA8072" />
+                                <Line type="monotone" dataKey="Materiel" stroke="#458B74" />
+                            </LineChart>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={6}>
+                    <Paper elevation={5}>
+                    <Typography variant="h5" align="center" gutterBottom  style={{marginBottom: 50 + 'px'}}>Evolution turnover by hairdresser</Typography>
+                        <BarChart
                         width={500}
                         height={300}
-                        data={this.state.barChart}
+                        data={data}
                         margin={{
-                            top: 20,
+                            top: 5,
                             right: 30,
                             left: 20,
                             bottom: 5,
                         }}
                         >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip width={50}  height={100}/>
-                        <Legend />
-                        <Bar dataKey="Bénéfice" stackId="a" fill="#82ca9d" />
-                        <Bar dataKey="Salaire" stackId="a" fill="#FF33F6" />
-                        <Bar dataKey="Charges" stackId="a" fill="#8884d8" />
-                        <Bar dataKey="Taxes" stackId="a" fill="#33F9FF" />
-                        <Bar dataKey="Materiel" stackId="a" fill="#FFB533" />
-                    </BarChart>
-                </Paper>
-
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="pv" fill="#8884d8" />
+                            <Bar dataKey="uv" fill="#82ca9d" />
+                        </BarChart>
+                        </Paper>
+                    </Grid>
+                    
+                </Grid>
+                
             </div>
-        )}
+    )}
+
 }

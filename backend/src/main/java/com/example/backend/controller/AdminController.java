@@ -151,23 +151,61 @@ public class AdminController {
     return res;
   }
 
+  @CrossOrigin
+  @GetMapping(path="/evolutionTurnoverBarbershopHairdresser/")
+  public @ResponseBody List<Object>  getEvolutionTurnoverBarbershopByHairdresser() { 
+    Barbershop b = barbershopRepository.findById(245).get();
+    System.out.println(b.getHairdressers());
+    LocalDate date = LocalDate.now();
+    List<Object> res = new ArrayList<Object>();
+    for(int i = 0; i<7 ; i ++){
+      List<Object> mois = new ArrayList<Object>();
+      List<String> name = new ArrayList<String>();
+      date = date.minusMonths(1);
+      name.add("name");
+      name.add(Month.of(date.getMonthValue()).name());
+      mois.add(name);
+      for (User u : b.getHairdressers()) {
+        System.out.println(u.getEmail());
+        List<String> hairdresser = new ArrayList<String>();
+        hairdresser.add(u.getLastName()+" "+u.getFirstName());
+        hairdresser.add(String.valueOf(appointmentRepository.findTurnoverMonthByHairdresser(date.getMonthValue(), date.getYear(), u.getId())));
+        mois.add(hairdresser);
+      }
+      res.add(mois);
+    }
+    return res;
+  }
+
+
+  @CrossOrigin
+  @GetMapping(path="/evolutionExpenseBarbershop/")
+  public @ResponseBody List<Object>  getEvolutionExpenseByBarbershop() { 
+    LocalDate date = LocalDate.now();
+    List<Object> res = new ArrayList<Object>();
+    for(int i = 0; i<7 ; i ++){
+      List<Object> barber = new ArrayList<Object>();
+      date = date.minusMonths(1);
+      barber.add(Month.of(date.getMonthValue()).name());
+      List<List<String>>  s = expenseRepository.getExpenseByBarbershop(date.getMonthValue(), date.getYear(), 245);
+      barber.add(s);
+      res.add(barber);
+    }
+    return res;
+  }
+
 
 
   @CrossOrigin
   @GetMapping(path="/barChart/{month}/{year}")
   public @ResponseBody List<Object>   getBarChart(@PathVariable int month, @PathVariable int year) { 
-    System.out.println("mois"+month);
-    System.out.println("year"+year);
-    // POUR LE MOIS D AOUT
     Iterable<Barbershop> listIdBarbershop = barbershopRepository.findAll();
     LocalDate date = LocalDate.now();
     date = date.minusMonths(1);
-    //int mois = date.getMonthValue();
     List<Object> res = new ArrayList<Object>();
     for (Barbershop b : listIdBarbershop) {
       List<Object> barber = new ArrayList<Object>();
       barber.add(b.getName());
-      //date.getMonthValue(), date.getYear()
       List<List<String>>  s = expenseRepository.getExpenseByBarbershop(month, year, b.getId().intValue());
       double depense = 0;
       for (List<String> object : s) {
@@ -209,5 +247,7 @@ public class AdminController {
   public @ResponseBody Iterable<User> getAllUsers() {
     return userRepository.findHairdressers();
   }
+
+
 
 }
