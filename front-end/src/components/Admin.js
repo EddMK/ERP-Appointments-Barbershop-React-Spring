@@ -10,14 +10,18 @@ export default class Admin extends  PureComponent{
         super(props);
         this.state = {
             turnover : null,
+            turnoverMonth : null,
+            expenseMonth : null,
             evolutionTurnoverExpense : null
         };
 		    // faire en sorte que le premier du mois il paye tout 
     }
 
      componentDidMount() {
-         fetch("http://localhost:8080/admin/evolutionTurnoverExpense/").then((res) => res.json()).then( (json) => this.changeJsonDataEvolution(json));   
-   
+         fetch("http://localhost:8080/admin/evolutionTurnoverExpense/").then((res) => res.json()).then( (json) => this.changeJsonDataEvolution(json));
+         fetch("http://localhost:8080/admin/turnoverToday/").then((res) => res.json()).then( (json) => this.setState({turnover : json})); 
+         fetch("http://localhost:8080/admin/turnoverThisMonth/").then((res) => res.json()).then( (json) => this.setState({turnoverMonth : json}));   
+         fetch("http://localhost:8080/admin/expenseThisMonth/").then((res) => res.json()).then( (json) => this.setState({expenseMonth : json}));   
     }
 
     changeJsonDataEvolution(json){
@@ -37,22 +41,25 @@ export default class Admin extends  PureComponent{
     render(){
 		return(
             <div className='admin' style={{marginLeft: 160 + 'px'}}>
-                <Typography variant="h4" align="center" gutterBottom>Admin</Typography>
+                <Typography variant="h4" align="center" gutterBottom  style={{marginBottom: 50 + 'px'}}>Admin</Typography>
                 <Grid container spacing={2} alignItems="center" justifyContent="center">
-                  <Grid item xs={3}>
+                  <Grid item xs={4}>
                     <Paper elevation={5}>
                       <Typography variant="body1" align="center" gutterBottom>Today's Turnover</Typography>
                       <Typography variant="body1" align="center" gutterBottom>{this.state.turnover === null ? '0': this.state.turnover } €</Typography>
                     </Paper>
                   </Grid> 
-                  <Grid item xs={3}>
-                    <Typography>xs=4</Typography>
+                  <Grid item xs={4}>
+                    <Paper elevation={5}>
+                      <Typography variant="body1" align="center" gutterBottom>Current Month's Turnover</Typography>
+                      <Typography variant="body1" align="center" gutterBottom>{this.state.turnoverMonth === null ? '0': this.state.turnoverMonth } €</Typography>
+                    </Paper>
                   </Grid>
-                  <Grid item xs={3}>
-                    <Typography>xs=4</Typography>
-                  </Grid>
-                  <Grid item xs={3}>
-                    <Typography>xs=8</Typography>
+                  <Grid item xs={4}>
+                  <Paper elevation={5}>
+                      <Typography variant="body1" align="center" gutterBottom>Current Month's Expenses</Typography>
+                      <Typography variant="body1" align="center" gutterBottom>{this.state.expenseMonth === null ? '0': this.state.expenseMonth } €</Typography>
+                    </Paper>
                   </Grid>
                   <Grid item xs={12} alignItems="center" justifyContent="center" >
                     <Paper elevation={5} sx={{width:800, backgroundColor: '#F4F6F6'}}>

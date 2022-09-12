@@ -5,7 +5,7 @@ import Drawer from '@mui/material/Drawer';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import {Badge} from '@mui/material/';
+import {Badge, Collapse} from '@mui/material/';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
@@ -16,6 +16,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Divider from '@mui/material/Divider';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+import StarBorder from '@mui/icons-material/StarBorder';
 import moment from "moment";
 
 
@@ -31,7 +32,8 @@ class Menu extends React.Component{
 		super(props);
 		this.state={
 			admin : true,
-			showBadge : moment().date() === 1 ? 1 : 0
+			showBadge : moment().date() === 1 ? 1 : 0,
+			openListEmployee : false
 		}		
 	}
 	render(){
@@ -73,16 +75,36 @@ class Menu extends React.Component{
 									</ListItemButton>
 								</ListItem>
 							</Link>
-							<Link to="/employees"  style={{ textDecoration: 'none', color:'white' }} >
-								<ListItem button disablePadding>
-									<ListItemButton>
+							<ListItem button disablePadding>
+									<ListItemButton onClick={() => {this.setState({openListEmployee : !this.state.openListEmployee})}}>
 										<ListItemIcon>
 											<GroupsOutlinedIcon />							
 										</ListItemIcon>
 										<ListItemText primary="Employees" />
 									</ListItemButton>
 								</ListItem>
-							</Link>
+							<Collapse in={this.state.openListEmployee} timeout="auto" unmountOnExit>
+								<Link to="/statEmployee"  style={{ textDecoration: 'none', color:'white' }} >
+									<List component="div" disablePadding>
+										<ListItemButton sx={{ pl: 4 }}>
+											<ListItemIcon>
+												<StarBorder />
+											</ListItemIcon>
+											<ListItemText primary="Statistiques" />
+										</ListItemButton>
+									</List>
+								</Link>
+								<Link to="/employees"  style={{ textDecoration: 'none', color:'white' }} >
+									<List component="div" disablePadding>
+										<ListItemButton sx={{ pl: 4 }}>
+											<ListItemIcon>
+												<StarBorder />
+											</ListItemIcon>
+											<ListItemText primary="List" />
+										</ListItemButton>
+									</List>
+								</Link>
+							</Collapse>
 							<Link to="/turnover"  style={{ textDecoration: 'none', color:'white' }} >
 								<ListItem button disablePadding>
 									<ListItemButton>
@@ -97,7 +119,7 @@ class Menu extends React.Component{
 							</Link>
 							<Link to="/barbershop"  style={{ textDecoration: 'none', color:'white' }} >
 								<ListItem button disablePadding>
-									<ListItemButton>
+									<ListItemButton >
 										<ListItemIcon>
 											<Badge badgeContent={this.state.showBadge} color="primary">
 												<ReceiptLongOutlinedIcon />

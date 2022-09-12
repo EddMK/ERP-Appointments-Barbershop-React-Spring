@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -48,6 +49,18 @@ public class AdminController {
   }
 
   @CrossOrigin
+  @GetMapping(path="/turnoverThisMonth/")
+  public @ResponseBody String getTurnoverThisMonth() { 
+    return String.valueOf(appointmentRepository.findAppointmentThisMonth());
+  }
+
+  @CrossOrigin
+  @GetMapping(path="/expenseThisMonth/")
+  public @ResponseBody String getExpenseThisMonth() { 
+    return String.valueOf(expenseRepository.findExpenseThisMonth());
+  }
+
+  @CrossOrigin
   @GetMapping(path="/evolutionTurnover/")
   public @ResponseBody List<Object>  getEvolutionTurnover() { 
     LocalDate date = LocalDate.now();
@@ -57,6 +70,21 @@ public class AdminController {
       date = date.minusMonths(1);
       mois.add(Month.of(date.getMonthValue()).name());
       mois.add(String.valueOf(appointmentRepository.findTurnoverMonth(date.getMonthValue(), date.getYear())));
+      res.add(mois);
+    }
+    return res;
+  }//evolutionTurnoverExpense
+
+  @CrossOrigin
+  @GetMapping(path="/evolutionTurnoverHairdresser/{id}")
+  public @ResponseBody List<Object>  getEvolutionTurnoverByHairdresser( @PathVariable int id ) { 
+    LocalDate date = LocalDate.now();
+    List<Object> res = new ArrayList<Object>();
+    for(int i = 0; i<7 ; i ++){
+      List<String> mois = new ArrayList<String>();
+      date = date.minusMonths(1);
+      mois.add(Month.of(date.getMonthValue()).name());
+      mois.add(String.valueOf(appointmentRepository.findTurnoverMonthByHairdresser(date.getMonthValue(), date.getYear(), id)));
       res.add(mois);
     }
     return res;
