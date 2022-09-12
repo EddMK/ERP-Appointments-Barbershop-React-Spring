@@ -7,38 +7,40 @@ import DateAdapter from '@mui/lab/AdapterMoment';
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 
-const data = [
-    {
-      name: 'Page A',
-      uv: 4000,
-      pv: 2400,
-      amt: 2400,
-    },
-    {
-      name: 'Page B',
-      pv: 1398,
-      uv: 3000,
-      amt: 2210,
-    },
-    {
-      name: 'Page C',
-      uv: 2000,
-      pv: 9800,
-      amt: 2290,
-    },
-  ];
-
 export default class Barbershop extends  PureComponent{
     
     constructor(props){
         super(props);
         this.state = {
-            barChart : null
+            barChart : null,
+            from : "",
+            valueInput : moment().subtract(1, 'months').format('YYYY-MM') ,
+            list : []
         };
+        this.handleChangeDate = this.handleChangeDate.bind(this);
     }
 
-     componentDidMount() {
-         fetch("http://localhost:8080/admin/barChart/").then((res) => res.json()).then( (json) => this.changeJsonData(json));   
+    componentDidMount() {
+         fetch("http://localhost:8080/admin/barChart/"+parseInt(moment().subtract(1, 'months').format('MM'))+"/"+moment().year()+"/").then((res) => res.json()).then( (json) => this.changeJsonData(json));
+         fetch("http://localhost:8080/admin/firstAppoitment/").then((res) => res.json()).then( (json) => this.getListAutocomplete(json));   
+    }
+
+    getListAutocomplete(from){
+      var dateStart = moment(from);
+      var dateEnd = moment();
+      var timeValues = [];
+
+      while (dateEnd > dateStart) {
+        timeValues.push(dateStart.format('YYYY-MM'));
+        dateStart.add(1,'month');
+      }
+
+      if(dateEnd.format('YYYY-MM') === timeValues[timeValues.length - 1]){
+        timeValues.pop()
+      }
+
+      console.log(timeValues);
+      this.setState({ list : timeValues})
     }
 
     changeJsonData(json){
@@ -57,20 +59,32 @@ export default class Barbershop extends  PureComponent{
     });
     this.setState({barChart : array});
     }
-/*
-{
-      name: 'Page C',
-      uv: 2000,
-      pv: 9800,
-      amt: 2290,
-    },
 
-*/
+    handleChangeDate(e){
+      this.setState({valueInput : e});
+      if(e === null){
+        this.setState({barChart : null});
+      }else{
+        console.log(e);
+        var year = parseInt(e.slice(0, 4));
+        var month = parseInt(e.slice(5, 7));
+        fetch("http://localhost:8080/admin/barChart/"+month+"/"+year+"/").then((res) => res.json()).then( (json) => this.changeJsonData(json));
+      }
+    }
 
     render(){
 		return(
             <div className='barbershop' style={{marginLeft: 160 + 'px'}}>
                 <Typography variant="h4" align="center" style={{marginBottom: 160 + 'px', fontFamily: "Roboto", textDecoration : 'underline'}} gutterBottom>Barbershop</Typography>
+                <Autocomplete
+                  disablePortal
+                  id="barbershop"
+                  value = {this.state.valueInput}
+                  options={this.state.list}
+                  sx={{ width: 300, marginTop : 2 }}
+                  onChange={(event,newValue) => { this.handleChangeDate(newValue)}}
+                  renderInput={(params) => <TextField {...params} label="Choose a month" />}
+                />
                 <Paper sx={{width:600, height: 400 , backgroundColor: '#F4F6F6'}}>
                     <BarChart
                         width={500}

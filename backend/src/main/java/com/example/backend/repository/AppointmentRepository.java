@@ -2,8 +2,10 @@ package com.example.backend.repository;
 
 import com.example.backend.entity.Appointment;
 
-
+import java.time.LocalDate;
 import java.util.List;
+import java.sql.Timestamp;
+
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -29,6 +31,9 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
     // ATTENTION CHANGEZ LE START DATE PAR LE END DATE
     @Query(value = " SELECT SUM(service.price) AS turnover FROM appointment, service WHERE appointment.title = service.name  AND DATE(appointment.start_date) = DATE( NOW() ) AND appointment.start_date < NOW();" ,nativeQuery = true)
     Integer findAppointmentToday();
+
+    @Query(value = " SELECT MIN(start_date) FROM appointment; " ,nativeQuery = true)
+    Timestamp findFirstAppointment();
 
     @Query(value = " SELECT SUM(service.price) AS turnover  FROM appointment, service  WHERE appointment.title = service.name   AND MONTH(appointment.start_date) = MONTH( NOW() )  AND YEAR(appointment.start_date) = YEAR( NOW() ) ;" ,nativeQuery = true)
     Integer findAppointmentThisMonth();

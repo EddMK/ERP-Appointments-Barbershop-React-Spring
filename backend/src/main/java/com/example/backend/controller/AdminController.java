@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.example.backend.entity.Expense;
 import com.example.backend.repository.ExpenseRepository;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -61,6 +62,13 @@ public class AdminController {
   }
 
   @CrossOrigin
+  @GetMapping(path="/firstAppoitment/")
+  public @ResponseBody Timestamp getFirstAppointment() { 
+    System.out.println(appointmentRepository.findFirstAppointment());
+    return appointmentRepository.findFirstAppointment();
+  }
+
+  @CrossOrigin
   @GetMapping(path="/evolutionTurnover/")
   public @ResponseBody List<Object>  getEvolutionTurnover() { 
     LocalDate date = LocalDate.now();
@@ -73,7 +81,7 @@ public class AdminController {
       res.add(mois);
     }
     return res;
-  }//evolutionTurnoverExpense
+  }
 
   @CrossOrigin
   @GetMapping(path="/evolutionTurnoverHairdresser/{id}")
@@ -88,7 +96,7 @@ public class AdminController {
       res.add(mois);
     }
     return res;
-  }//evolutionTurnoverExpense
+  }
 
   @CrossOrigin
   @GetMapping(path="/evolutionTurnoverExpense/")
@@ -143,9 +151,13 @@ public class AdminController {
     return res;
   }
 
+
+
   @CrossOrigin
-  @GetMapping(path="/barChart/")
-  public @ResponseBody List<Object>   getBarChart() { 
+  @GetMapping(path="/barChart/{month}/{year}")
+  public @ResponseBody List<Object>   getBarChart(@PathVariable int month, @PathVariable int year) { 
+    System.out.println("mois"+month);
+    System.out.println("year"+year);
     // POUR LE MOIS D AOUT
     Iterable<Barbershop> listIdBarbershop = barbershopRepository.findAll();
     LocalDate date = LocalDate.now();
@@ -156,12 +168,12 @@ public class AdminController {
       List<Object> barber = new ArrayList<Object>();
       barber.add(b.getName());
       //date.getMonthValue(), date.getYear()
-      List<List<String>>  s = expenseRepository.getExpenseByBarbershop(b.getId().intValue());
+      List<List<String>>  s = expenseRepository.getExpenseByBarbershop(month, year, b.getId().intValue());
       double depense = 0;
       for (List<String> object : s) {
         depense = depense + Double.valueOf(object.get(1));
       }
-      int ca = appointmentRepository.findTurnoverMonthByBarbershop(date.getMonthValue(), date.getYear(), b.getId().intValue());
+      int ca = appointmentRepository.findTurnoverMonthByBarbershop(month, year, b.getId().intValue());
       List<String> salary = new ArrayList<String>();
       salary.add("Salaire");
       salary.add(String.valueOf(Math.round(ca / 3 * 100)/100));
