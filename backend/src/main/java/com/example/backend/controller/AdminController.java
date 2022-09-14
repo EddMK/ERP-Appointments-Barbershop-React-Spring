@@ -152,10 +152,11 @@ public class AdminController {
   }
 
   @CrossOrigin
-  @GetMapping(path="/evolutionTurnoverBarbershopHairdresser/")
-  public @ResponseBody List<Object>  getEvolutionTurnoverBarbershopByHairdresser() { 
-    Barbershop b = barbershopRepository.findById(245).get();
-    System.out.println(b.getHairdressers());
+  @GetMapping(path="/evolutionTurnoverBarbershopHairdresser/{id}")
+  public @ResponseBody List<Object>  getEvolutionTurnoverBarbershopByHairdresser(@PathVariable int id) { 
+    //Barbershop b = barbershopRepository.findById(245).get();
+    //System.out.println(b.getHairdressers());
+    List<User> hairdressers = userRepository.findHairdressersByBarbershop(id);
     LocalDate date = LocalDate.now();
     List<Object> res = new ArrayList<Object>();
     for(int i = 0; i<7 ; i ++){
@@ -165,13 +166,14 @@ public class AdminController {
       name.add("name");
       name.add(Month.of(date.getMonthValue()).name());
       mois.add(name);
-      for (User u : b.getHairdressers()) {
-        System.out.println(u.getEmail());
+      
+      for (User u : hairdressers) {
         List<String> hairdresser = new ArrayList<String>();
         hairdresser.add(u.getLastName()+" "+u.getFirstName());
         hairdresser.add(String.valueOf(appointmentRepository.findTurnoverMonthByHairdresser(date.getMonthValue(), date.getYear(), u.getId())));
         mois.add(hairdresser);
       }
+
       res.add(mois);
     }
     return res;
@@ -179,15 +181,15 @@ public class AdminController {
 
 
   @CrossOrigin
-  @GetMapping(path="/evolutionExpenseBarbershop/")
-  public @ResponseBody List<Object>  getEvolutionExpenseByBarbershop() { 
+  @GetMapping(path="/evolutionExpenseBarbershop/{id}")
+  public @ResponseBody List<Object>  getEvolutionExpenseByBarbershop(@PathVariable int id ) { 
     LocalDate date = LocalDate.now();
     List<Object> res = new ArrayList<Object>();
     for(int i = 0; i<7 ; i ++){
       List<Object> barber = new ArrayList<Object>();
       date = date.minusMonths(1);
       barber.add(Month.of(date.getMonthValue()).name());
-      List<List<String>>  s = expenseRepository.getExpenseByBarbershop(date.getMonthValue(), date.getYear(), 245);
+      List<List<String>>  s = expenseRepository.getExpenseByBarbershop(date.getMonthValue(), date.getYear(), id);
       barber.add(s);
       res.add(barber);
     }

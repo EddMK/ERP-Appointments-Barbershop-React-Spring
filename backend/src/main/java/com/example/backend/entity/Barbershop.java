@@ -37,11 +37,11 @@ public class Barbershop {
     @OneToMany
     @JoinColumn(name = "barbershop_id")
     private Set<User> hairdressers;
-
+/* 
     public Set<User> getHairdressers() {
         return hairdressers;
     }
-    
+*/    
     public void setId(Integer id) {
         this.id = id;
     }

@@ -2,18 +2,14 @@ package com.example.backend.controller;
 
 
 import com.example.backend.entity.Appointment;
-import com.example.backend.entity.Barbershop;
 import com.example.backend.entity.User;
 import com.example.backend.entity.Notification;
 import com.example.backend.repository.AppointmentRepository;
-import com.example.backend.repository.BarbershopRepository;
+//import com.example.backend.repository.BarbershopRepository;
 import com.example.backend.repository.UserRepository;//NotificationRepository
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.backend.repository.NotificationRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,20 +21,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 
-import java.sql.Array;
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.Month;
 //import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -50,8 +39,8 @@ public class AppointmentController {
   @Autowired 
   private AppointmentRepository appointmentRepository;
 
-  @Autowired 
-  private BarbershopRepository barbershopRepository;
+  //@Autowired 
+  //private BarbershopRepository barbershopRepository;
 
   @Autowired 
   private NotificationRepository notificationRepository;
@@ -76,7 +65,7 @@ public class AppointmentController {
   @PostMapping(path="/addAbsence") // Map ONLY POST Requests
   public @ResponseBody String addAbsence (@RequestBody Appointment appointment){
     Appointment a = new Appointment();
-    String reason = appointment.getTitle();
+    //String reason = appointment.getTitle();
     a.setTitle("absence");
     a.setStart(appointment.getStart());
     a.setEnd(appointment.getEnd());

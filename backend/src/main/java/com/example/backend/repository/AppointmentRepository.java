@@ -2,7 +2,6 @@ package com.example.backend.repository;
 
 import com.example.backend.entity.Appointment;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.sql.Timestamp;
 

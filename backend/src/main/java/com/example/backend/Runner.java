@@ -4,9 +4,6 @@ import java.time.LocalDateTime;
 
 import com.example.backend.entity.Appointment;
 import com.example.backend.entity.User;
-import com.example.backend.entity.Barbershop;
-import com.example.backend.entity.Role;
-import com.example.backend.entity.Service;
 import com.example.backend.repository.AppointmentRepository;
 import com.example.backend.repository.BarbershopRepository;
 import com.example.backend.repository.ServiceRepository;
@@ -21,21 +18,21 @@ public class Runner implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(Runner.class);
 
     private final AppointmentRepository appointmentRepository;
-  	private final BarbershopRepository barbershopRepository; 
-  	private final ServiceRepository serviceRepository; 
+  	//private final BarbershopRepository barbershopRepository; 
+  	//private final ServiceRepository serviceRepository; 
   	private final UserRepository userRepository;
 
     public Runner(AppointmentRepository appointmentRepository,BarbershopRepository barbershopRepository, ServiceRepository serviceRepository, UserRepository userRepository ) {
         this.appointmentRepository = appointmentRepository;
-        this.barbershopRepository = barbershopRepository;
-        this.serviceRepository = serviceRepository;
+        //this.barbershopRepository = barbershopRepository;
+        //this.serviceRepository = serviceRepository;
         this.userRepository = userRepository;
     }
 
     public Runner() {
         this.appointmentRepository = null;
-        this.barbershopRepository = null;
-        this.serviceRepository = null;
+        //this.barbershopRepository = null;
+        //this.serviceRepository = null;
         this.userRepository = null;
     }
 

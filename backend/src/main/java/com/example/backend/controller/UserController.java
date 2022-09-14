@@ -47,7 +47,7 @@ public class UserController {
 
   @CrossOrigin
   @GetMapping(path="/hairdressByBarbershop/{id}")
-  public @ResponseBody List<User> getHairdressByBarbershop(@PathVariable Long id) {
+  public @ResponseBody List<User> getHairdressByBarbershop(@PathVariable Integer id) {
     return userRepository.findByBarbershopId(id);
   }
 

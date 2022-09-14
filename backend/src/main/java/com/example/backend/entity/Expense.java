@@ -4,9 +4,7 @@ import java.sql.Timestamp;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.persistence.ManyToOne;
 
 @Entity 
 public class Expense {
