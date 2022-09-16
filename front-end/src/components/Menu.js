@@ -109,9 +109,7 @@ class Menu extends React.Component{
 								<ListItem button disablePadding>
 									<ListItemButton>
 										<ListItemIcon>
-											<Badge badgeContent={this.state.showBadge} color="primary">
 												<ReceiptLongOutlinedIcon />
-											</Badge>											
 										</ListItemIcon>
 										<ListItemText primary="Turnover" />
 									</ListItemButton>
@@ -121,11 +119,19 @@ class Menu extends React.Component{
 								<ListItem button disablePadding>
 									<ListItemButton >
 										<ListItemIcon>
-											<Badge badgeContent={this.state.showBadge} color="primary">
 												<ReceiptLongOutlinedIcon />
-											</Badge>											
 										</ListItemIcon>
 										<ListItemText primary="Barbershops" />
+									</ListItemButton>
+								</ListItem>
+							</Link>
+							<Link to="/availability"  style={{ textDecoration: 'none', color:'white' }} >
+								<ListItem button disablePadding>
+									<ListItemButton >
+										<ListItemIcon>
+												<ReceiptLongOutlinedIcon />
+										</ListItemIcon>
+										<ListItemText primary="Availability" />
 									</ListItemButton>
 								</ListItem>
 							</Link>

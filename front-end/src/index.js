@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Signup from './components/Signup.js';
 import App from './components/App';
 import Login from './components/Login';
@@ -15,6 +15,7 @@ import ListEmployees from './components/ListEmployees';
 import Turnover from './components/Turnover';
 import StatEmployee from './components/StatEmployee'
 import Barbershop from './components/Barbershop';
+import Availability from './components/Availability';
 
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
@@ -35,6 +36,7 @@ root.render(
 				<Route path="/turnover" element={<Turnover />} />
 				<Route path="/statEmployee" element={<StatEmployee />} />
 				<Route path="/barbershop" element={<Barbershop />} />
+				<Route path="/availability" element={<Availability />} />
 			</Routes>
 		</BrowserRouter>
   </React.StrictMode>,
