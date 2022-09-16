@@ -10,13 +10,13 @@ import DateAdapter from '@mui/lab/AdapterMoment';
 //[]
 const agenda = [{
     name : 'Coiffure Simonis',
-    Monday : '8:00 - 20:00',
-    Tuesday : '8:00 - 20:00',
-    Wednesday : '8:00 - 20:00',
-    Thursday : '8:00 - 20:00',
-    Friday : '8:00 - 20:00',
-    Saturday : '8:00 - 20:00',
-    Sunday : '8:00 - 20:00',
+    Monday : '10:00 - 20:00',
+    Tuesday : '10:00 - 20:00',
+    Wednesday : '10:00 - 20:00',
+    Thursday : '10:00 - 20:00',
+    Friday : '10:00 - 20:00',
+    Saturday : '10:00 - 20:00',
+    Sunday : '10:00 - 20:00',
 }];
 
 export default class Availability extends  PureComponent{
@@ -28,13 +28,13 @@ export default class Availability extends  PureComponent{
             value : moment('15:00','h:mm'),
             barbershopChoosen : {},
             tryHours : {
-                Monday : '8:00 - 20:00',
-                Tuesday : '8:00 - 20:00',
-                Wednesday : '8:00 - 20:00',
-                Thursday : '8:00 - 20:00',
-                Friday : '8:00 - 20:00',
-                Saturday : '8:00 - 20:00',
-                Sunday : '8:00 - 20:00',
+                Monday : '10:00 - 20:00',
+                Tuesday : '10:00 - 20:00',
+                Wednesday : '10:00 - 20:00',
+                Thursday : '10:00 - 20:00',
+                Friday : '10:00 - 20:00',
+                Saturday : '10:00 - 20:00',
+                Sunday : '10:00 - 20:00',
             }
         };
         moment.locale('fr');
@@ -46,6 +46,7 @@ export default class Availability extends  PureComponent{
         console.log(string.substring(0, string.indexOf('-')))
         console.log(string.substring(string.indexOf('-') + 1))
         //var streetaddress = string.substr(0, addy.indexOf(',')); 
+        this.handleEdit = this.handleEdit.bind(this);
     }
 
      componentDidMount() {
@@ -80,6 +81,10 @@ export default class Availability extends  PureComponent{
         this.setState({ tryHours :  newTodos })
     }
 
+    handleEdit(){
+        this.setState({showBarbershopEdit : false})
+    }
+
     render(){
 		return(
             <div className='availability' style={{marginLeft: 160 + 'px'}}>
@@ -101,10 +106,7 @@ export default class Availability extends  PureComponent{
                         </TableHead>
                         <TableBody>
                         {agenda.map((row) => (
-                            <TableRow
-                            key={row.name}
-                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
+                            <TableRow key={row.name} sx={{ '&:last-child td, &:last-child th': { border: 0 } }} >
                                 <TableCell component="th" scope="row">
                                     {row.name}
                                 </TableCell>
@@ -118,6 +120,17 @@ export default class Availability extends  PureComponent{
                                 <TableCell align="right"><Button onClick={() => this.handleEditBarbershopSchedule(row)}>{row.name}</Button></TableCell>
                             </TableRow>
                         ))}
+                        <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} >
+                                <TableCell component="th" scope="row">Michel Sebahat</TableCell>
+                                <TableCell align="right">10:00-16:00</TableCell>
+                                <TableCell align="right">10:00-16:00</TableCell>
+                                <TableCell align="right">10:00-16:00</TableCell>
+                                <TableCell align="right">10:00-16:00</TableCell>
+                                <TableCell align="right">10:00-16:00</TableCell>
+                                <TableCell align="right">10:00-16:00</TableCell>
+                                <TableCell align="right">10:00-16:00</TableCell>
+                                <TableCell align="right"><Button>Edit</Button></TableCell>
+                            </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -149,9 +162,8 @@ export default class Availability extends  PureComponent{
                                 ))}
                             </Grid> 
                         </DialogContent>
-                        <DialogActions>
-                            <Button >Disagree</Button>
-                            <Button autoFocus> Agree </Button>
+                        <DialogActions sx={{ justifyContent: 'center'}} >
+                            <Button autoFocus  onClick={this.handleEdit}>Edit</Button>
                         </DialogActions>
                     </Dialog>
                 </LocalizationProvider>

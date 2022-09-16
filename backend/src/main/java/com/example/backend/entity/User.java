@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -9,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,6 +43,10 @@ public class User implements UserDetails  {
     @ManyToOne
     @JoinColumn(name = "barbershop_id", nullable = true)
     private Barbershop barbershop;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "availability_id")
+    private Availability availability;
 
     @JoinColumn(nullable = true)
     private LocalDate start;
@@ -135,6 +141,14 @@ public class User implements UserDetails  {
             return null;
         }
         return barbershop;
+    }
+
+    public Availability getAvailability(){
+        return availability;
+    }
+
+    public void setAvailability(Availability av){
+        this.availability = av;
     }
 
     @JsonProperty("start")

@@ -1,11 +1,15 @@
 package com.example.backend.entity;
 
 import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.JoinColumn;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,6 +23,10 @@ public class Barbershop {
     private String name;
 
     private String address;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "availability_id")
+    private Availability availability;
 
     public Barbershop (String name, String address){
         this.name = name;
@@ -62,6 +70,14 @@ public class Barbershop {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public Availability getAvailability(){
+        return availability;
+    }
+
+    public void setAvailability(Availability av){
+        this.availability = av;
     }
     
 }
