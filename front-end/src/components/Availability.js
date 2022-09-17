@@ -15,8 +15,12 @@ export default class Availability extends  PureComponent{
         super(props);
         this.state = {
             showBarbershopEdit : false,
-            value : moment('15:00','h:mm'),
-            barbershopChoosen : {},
+            choosen : {},
+            barberChoosen : false,
+            error : true,
+            titleDialog : "",
+            minimum : moment('8:00','HH:mm'),
+            maximum : moment('22:00','HH:mm'),
             agenda :[['Coiffure Simonis', {id : 1, Monday : '10:00 - 20:00',
                                         Tuesday : '10:00 - 20:00',
                                         Wednesday : '10:00 - 20:00',
@@ -37,12 +41,13 @@ export default class Availability extends  PureComponent{
         this.handleEditBarbershopSchedule = this.handleEditBarbershopSchedule.bind(this);
         this.handleClose = this.handleClose.bind(this)
         this.handleChangeTime = this.handleChangeTime.bind(this)
+        this.handleEdit = this.handleEdit.bind(this);
         //console.log(moment('22:00','h:mm a').format('h:mm'))
         var string = "8:00 - 20:00";
         //console.log(string.substring(0, string.indexOf('-')))
         //console.log(string.substring(string.indexOf('-') + 1))
         //var streetaddress = string.substr(0, addy.indexOf(',')); 
-        this.handleEdit = this.handleEdit.bind(this);
+        //console.log(this.state.agenda[0][1]["Monday"])
     }
 
      componentDidMount() {
@@ -52,7 +57,10 @@ export default class Availability extends  PureComponent{
     handleEditBarbershopSchedule(e){
         //console.log("EDIT");
         //console.log(e);
-        this.setState({showBarbershopEdit : true, barbershopChoosen : e})
+        //console.log(this.state.agenda.indexOf(e))
+        var bool;
+        this.state.agenda.indexOf(e) === 0 ?  bool = true : bool = false
+        this.setState({showBarbershopEdit : true, barberChoosen : bool , titleDialog : e[0],   choosen : e[1]})
     }
 
     handleClose(){
@@ -60,19 +68,20 @@ export default class Availability extends  PureComponent{
     }
 
     handleChangeTime(e, day, part){
-        var newTodos = Object.assign({}, this.state.barbershopChoosen);
+        //RAJOUTER UNE PARTIE VALIDATION QUI VERIFIE POUR CHAQUE LIGNE SI UN HORAIRE EST PLUS GRAND QU UN AUTRE
+        var newTodos = Object.assign({}, this.state.choosen);
         if(part === "f"){
             newTodos[day] = newTodos[day].replace(newTodos[day].substring(0, newTodos[day].indexOf('-')), moment(e,'HH:mm').format('HH:mm'));
         }else{
             newTodos[day] = newTodos[day].replace( newTodos[day].substring(newTodos[day].indexOf('-') + 1) , moment(e,'HH:mm').format('HH:mm'));
         }
-        this.setState({ barbershopChoosen :  newTodos })
+        this.setState({ choosen :  newTodos })
     }
 
     handleEdit(){
-        console.log(this.state.barbershopChoosen);
-        var object = this.state.barbershopChoosen;
-        var id = this.state.barbershopChoosen.id;
+        console.log(this.state.choosen);
+        var object = this.state.choosen;
+        var id = this.state.choosen.id;
         this.state.agenda.map(obj => {
             if (obj[1].id === id) {
                 var newObj = obj
@@ -105,7 +114,7 @@ export default class Availability extends  PureComponent{
                         </TableHead>
                         <TableBody>
                             {this.state.agenda.map((row) => (
-                                <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }} >
+                                <TableRow key={row[0]} sx={{ '&:last-child td, &:last-child th': { border: 0 } }} >
                                     <TableCell component="th" scope="row"> {row[0]} </TableCell>
                                     <TableCell align="right">{row[1].Monday}</TableCell>
                                     <TableCell align="right">{row[1].Tuesday}</TableCell>
@@ -114,7 +123,7 @@ export default class Availability extends  PureComponent{
                                     <TableCell align="right">{row[1].Friday}</TableCell>
                                     <TableCell align="right">{row[1].Saturday}</TableCell>
                                     <TableCell align="right">{row[1].Sunday}</TableCell>
-                                    <TableCell align="right"><Button onClick={() => this.handleEditBarbershopSchedule(row[1])}>{row[0]}</Button></TableCell>
+                                    <TableCell align="right"><Button onClick={() => this.handleEditBarbershopSchedule(row)}>{row[0]}</Button></TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -122,35 +131,40 @@ export default class Availability extends  PureComponent{
                 </TableContainer>
                 <LocalizationProvider dateAdapter={DateAdapter}>
                     <Dialog open={this.state.showBarbershopEdit} onClose={this.handleClose} >
-                        <DialogTitle sx={{ textAlign : "center"}} >Planning</DialogTitle>
+                        <DialogTitle sx={{ textAlign : "center"}} >Planning {this.state.titleDialog}</DialogTitle>
                         <DialogContent>
                             <Grid container spacing={2}>
-                                {Object.keys(this.state.barbershopChoosen).map((key) => key !== "id" ?
+                                {Object.keys(this.state.choosen).map((key) => key !== "id" ?
                                  (
-                                    <Grid container spacing={2} marginTop={5}>
-                                        <Grid item xs={4} > {key} </Grid>
+                                    <Grid key={key} container spacing={2} marginTop={5}>
+                                        <Grid item xs={4} >{key}</Grid>
                                         <Grid item xs={4} >
                                             <TimePicker
                                                 renderInput={(params) => <TextField {...params} />}
-                                                value={moment(this.state.barbershopChoosen[key].split("-")[0],'HH:mm')}
+                                                value={moment(this.state.choosen[key].split("-")[0],'HH:mm')}
                                                 label="From"
                                                 onChange={(newValue) => this.handleChangeTime(newValue, key, "f")}
+                                                minTime = {this.state.barberChoosen ? this.state.minimum : moment(this.state.agenda[0][1][key].split("-")[0],'HH:mm')} 
+                                                maxTime={ this.state.barberChoosen ? this.state.maximum : moment(this.state.agenda[0][1][key].split("-")[1],'HH:mm')}
                                             />
                                         </Grid>
                                         <Grid item xs={4} >
-                                        <TimePicker
-                                            renderInput={(params) => <TextField {...params} />}
-                                            value={moment(this.state.barbershopChoosen[key].split("-")[1],'HH:mm')}
-                                            label="To"
-                                            onChange={(newValue) => this.handleChangeTime(newValue, key, "t") }
-                                        />
+                                            <TimePicker
+                                                renderInput={(params) => <TextField {...params} />}
+                                                value={moment(this.state.choosen[key].split("-")[1],'HH:mm')}
+                                                label="To"
+                                                onChange={(newValue) => this.handleChangeTime(newValue, key, "t") }
+                                                minTime = {this.state.barberChoosen ? this.state.minimum : moment(this.state.agenda[0][1][key].split("-")[0],'HH:mm')} 
+                                                maxTime={ this.state.barberChoosen ? this.state.maximum : moment(this.state.agenda[0][1][key].split("-")[1],'HH:mm')}
+                                            />
                                         </Grid>
                                     </Grid>
                                 ) : null  )}
+                                {this.state.error ? <Grid container spacing={2} marginTop={5} justifyContent ="center" ><Typography variant="body2" sx={{ color: "red" }} gutterBottom>Error</Typography></Grid> : null}
                             </Grid> 
                         </DialogContent>
                         <DialogActions sx={{ justifyContent: 'center'}} >
-                            <Button autoFocus  onClick={this.handleEdit}>Edit</Button>
+                            <Button autoFocus disabled={this.state.error}  onClick={this.handleEdit}>Edit</Button>
                         </DialogActions>
                     </Dialog>
                 </LocalizationProvider>
@@ -158,3 +172,5 @@ export default class Availability extends  PureComponent{
         )
     }
 }
+
+//{ moment(this.state.choosen[key].split("-")[0],'HH:mm') > moment(this.state.choosen[key].split("-")[1],'HH:mm') ? this.setState({error : true}) : this.setState({error : false})}
