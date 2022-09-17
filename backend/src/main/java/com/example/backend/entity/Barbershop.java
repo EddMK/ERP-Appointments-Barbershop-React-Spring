@@ -25,8 +25,9 @@ public class Barbershop {
     private String address;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "availability_id")
+    @JoinColumn(name = "availability_id", referencedColumnName = "id")
     private Availability availability;
+
 
     public Barbershop (String name, String address){
         this.name = name;
@@ -71,7 +72,7 @@ public class Barbershop {
     public void setAddress(String address) {
         this.address = address;
     }
-
+/* 
     public Availability getAvailability(){
         return availability;
     }
@@ -79,5 +80,5 @@ public class Barbershop {
     public void setAvailability(Availability av){
         this.availability = av;
     }
-    
+    */
 }

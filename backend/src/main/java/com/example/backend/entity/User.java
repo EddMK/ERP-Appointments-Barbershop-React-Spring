@@ -45,8 +45,9 @@ public class User implements UserDetails  {
     private Barbershop barbershop;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "availability_id")
+    @JoinColumn(name = "availability_id", referencedColumnName = "id")
     private Availability availability;
+
 
     @JoinColumn(nullable = true)
     private LocalDate start;
@@ -142,14 +143,14 @@ public class User implements UserDetails  {
         }
         return barbershop;
     }
-
+/* 
     public Availability getAvailability(){
         return availability;
     }
 
     public void setAvailability(Availability av){
         this.availability = av;
-    }
+    }*/
 
     @JsonProperty("start")
     public LocalDate getStart() {
