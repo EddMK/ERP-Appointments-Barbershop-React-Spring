@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-//import com.example.backend.entity.Availability;
+import com.example.backend.entity.Availability;
 import com.example.backend.entity.Barbershop;
 import com.example.backend.entity.User;
 import com.example.backend.repository.AppointmentRepository;
@@ -257,20 +257,19 @@ public class AdminController {
   public @ResponseBody List<Object> getAvailability() {
     int id = 245;
     Optional<Barbershop> b = barbershopRepository.findById(245);
-    System.out.println(b.get().getName());
     Barbershop c = b.get();
-    //Availability av = c.getAvailability();
+    Availability av = c.getAvailability();
     String name = c.getName();
     List<Object> list = new ArrayList<Object>();
     List<Object> barber = new ArrayList<Object>();
     barber.add(name);
-    //barber.add(av);
+    barber.add(av);
     list.add(barber);
     List<User> hairdressers = userRepository.findHairdressersByBarbershop(id);
     for (User u : hairdressers) {
       List<Object> user = new ArrayList<Object>();
       user.add(u.getLastName()+" "+u.getFirstName());
-      //user.add(u.getAvailability());
+      user.add(u.getAvailability());
       list.add(user);
     }
     return list;

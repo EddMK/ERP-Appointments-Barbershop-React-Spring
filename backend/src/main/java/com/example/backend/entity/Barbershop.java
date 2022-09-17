@@ -72,7 +72,7 @@ public class Barbershop {
     public void setAddress(String address) {
         this.address = address;
     }
-/* 
+
     public Availability getAvailability(){
         return availability;
     }
@@ -80,5 +80,5 @@ public class Barbershop {
     public void setAvailability(Availability av){
         this.availability = av;
     }
-    */
+
 }

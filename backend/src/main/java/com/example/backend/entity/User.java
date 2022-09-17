@@ -143,14 +143,14 @@ public class User implements UserDetails  {
         }
         return barbershop;
     }
-/* 
+
     public Availability getAvailability(){
         return availability;
     }
 
     public void setAvailability(Availability av){
         this.availability = av;
-    }*/
+    }
 
     @JsonProperty("start")
     public LocalDate getStart() {

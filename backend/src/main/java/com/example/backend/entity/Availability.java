@@ -51,6 +51,10 @@ public class Availability {
     
     public Availability(){}
 
+    public Integer getId(){
+        return id;
+    }
+
     public String getMonday(){
         return monday;
     }
