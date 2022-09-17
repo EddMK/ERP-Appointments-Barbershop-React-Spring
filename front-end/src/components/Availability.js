@@ -70,12 +70,27 @@ export default class Availability extends  PureComponent{
     handleChangeTime(e, day, part){
         //RAJOUTER UNE PARTIE VALIDATION QUI VERIFIE POUR CHAQUE LIGNE SI UN HORAIRE EST PLUS GRAND QU UN AUTRE
         var newTodos = Object.assign({}, this.state.choosen);
+        var newTodosDay = newTodos[day];
         if(part === "f"){
-            newTodos[day] = newTodos[day].replace(newTodos[day].substring(0, newTodos[day].indexOf('-')), moment(e,'HH:mm').format('HH:mm'));
+            newTodos[day] = newTodosDay.replace(newTodosDay.substring(0, newTodosDay.indexOf('-')), moment(e,'HH:mm').format('HH:mm'));
         }else{
-            newTodos[day] = newTodos[day].replace( newTodos[day].substring(newTodos[day].indexOf('-') + 1) , moment(e,'HH:mm').format('HH:mm'));
+            newTodos[day] = newTodosDay.replace( newTodosDay.substring(newTodosDay.indexOf('-') + 1) , moment(e,'HH:mm').format('HH:mm'));
         }
-        this.setState({ choosen :  newTodos })
+        this.errorPlaning(newTodos) ? this.setState({ error : true, choosen :  newTodos }) : this.setState({ error : false,  choosen :  newTodos })
+    }
+
+    errorPlaning(obj){
+        var bool = false;
+        Object.entries(obj).forEach( (e) => {
+            if(e[0] !== "id"){
+                var array = e[1].split("-")
+                if(moment(array[0],'HH:mm') > moment(array[1],'HH:mm')){
+                    bool = true
+                }
+            }
+            
+        });
+        return bool;
     }
 
     handleEdit(){
@@ -160,7 +175,7 @@ export default class Availability extends  PureComponent{
                                         </Grid>
                                     </Grid>
                                 ) : null  )}
-                                {this.state.error ? <Grid container spacing={2} marginTop={5} justifyContent ="center" ><Typography variant="body2" sx={{ color: "red" }} gutterBottom>Error</Typography></Grid> : null}
+                                {this.state.error ? <Grid container spacing={2} marginTop={5} justifyContent ="center" ><Typography variant="body2" sx={{ color: "red" }} gutterBottom>Error : the "from" time must be before the "to" time</Typography></Grid> : null}
                             </Grid> 
                         </DialogContent>
                         <DialogActions sx={{ justifyContent: 'center'}} >
