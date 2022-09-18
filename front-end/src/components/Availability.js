@@ -2,12 +2,15 @@ import React, { PureComponent } from 'react';
 import {Paper, Grid , Typography}from '@mui/material/';
 import moment from "moment";
 import 'moment/locale/fr'
-import {Table, TextField, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, DialogTitle,  Dialog , DialogActions, DialogContent}from '@mui/material/';
+import {Table, Checkbox, FormControlLabel, TextField, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, DialogTitle,  Dialog , DialogActions, DialogContent}from '@mui/material/';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import DateAdapter from '@mui/lab/AdapterMoment';
+//import { Box } from '@mui/system';
 
 //[]
+//FERMETURE , CONGE
+//BACKEND
 
 export default class Availability extends  PureComponent{
     
@@ -17,8 +20,9 @@ export default class Availability extends  PureComponent{
             showBarbershopEdit : false,
             choosen : {},
             barberChoosen : false,
-            error : true,
+            error : false,
             titleDialog : "",
+            arrayHide : [],
             minimum : moment('8:00','HH:mm'),
             maximum : moment('22:00','HH:mm'),
             agenda :[['Coiffure Simonis', {id : 1, Monday : '10:00 - 20:00',
@@ -42,15 +46,16 @@ export default class Availability extends  PureComponent{
         this.handleClose = this.handleClose.bind(this)
         this.handleChangeTime = this.handleChangeTime.bind(this)
         this.handleEdit = this.handleEdit.bind(this);
+        this.handleCheckbox = this.handleCheckbox.bind(this);
         //console.log(moment('22:00','h:mm a').format('h:mm'))
-        var string = "8:00 - 20:00";
+        //var string = "8:00 - 20:00";
         //console.log(string.substring(0, string.indexOf('-')))
         //console.log(string.substring(string.indexOf('-') + 1))
         //var streetaddress = string.substr(0, addy.indexOf(',')); 
         //console.log(this.state.agenda[0][1]["Monday"])
     }
 
-     componentDidMount() {
+    componentDidMount() {
         fetch("http://localhost:8080/admin/availability/").then((res) => res.json()).then( (json) => json); 
     }
 
@@ -60,7 +65,20 @@ export default class Availability extends  PureComponent{
         //console.log(this.state.agenda.indexOf(e))
         var bool;
         this.state.agenda.indexOf(e) === 0 ?  bool = true : bool = false
-        this.setState({showBarbershopEdit : true, barberChoosen : bool , titleDialog : e[0],   choosen : e[1]})
+        //console.log(e[1]);
+        var arrayToHide = []
+        var obj = e[1]
+        Object.keys(obj).forEach( (e) => {
+            if(e !== "id"){
+                console.log(e);
+                var str = obj[e]
+                console.log(str.charAt(0))
+                if(str === "close" || str === "day off"){
+                    arrayToHide.push([e, true])
+                }
+            }
+        })
+        this.setState({showBarbershopEdit : true, arrayHide : arrayToHide,  barberChoosen : bool , titleDialog : e[0],   choosen : e[1]})
     }
 
     handleClose(){
@@ -68,7 +86,6 @@ export default class Availability extends  PureComponent{
     }
 
     handleChangeTime(e, day, part){
-        //RAJOUTER UNE PARTIE VALIDATION QUI VERIFIE POUR CHAQUE LIGNE SI UN HORAIRE EST PLUS GRAND QU UN AUTRE
         var newTodos = Object.assign({}, this.state.choosen);
         var newTodosDay = newTodos[day];
         if(part === "f"){
@@ -94,7 +111,6 @@ export default class Availability extends  PureComponent{
     }
 
     handleEdit(){
-        console.log(this.state.choosen);
         var object = this.state.choosen;
         var id = this.state.choosen.id;
         this.state.agenda.map(obj => {
@@ -105,7 +121,48 @@ export default class Availability extends  PureComponent{
             }
             return obj;
           });
+        if(this.state.barberChoosen){
+            //VERIFIER QUE LES AUTRES COIFFEURS AIENT UN HORARIE COMPRIS DANS LES HEURES D OUVERTURE
+            //TROUVER UN MOYEN DE MODIFIER LE BACKEND
+            Object.entries(object).forEach( (e) => {
+                if(e[0] !== "id"){
+                    this.validationOtherHairdresser(e);
+                }                
+            });
+        } 
         this.setState({showBarbershopEdit : false})
+    }
+
+    validationOtherHairdresser(barber){
+        this.state.agenda.forEach( (e) => {
+            if(this.state.agenda.indexOf(e) !== 0 ){
+                var startHair = moment(e[1][barber[0]].split("-")[0],'HH:mm') ;
+                var startBarber = moment(barber[1].split("-")[0],'HH:mm') ;
+                var endHair = moment(e[1][barber[0]].split("-")[1],'HH:mm') ;
+                var endBarber = moment(barber[1].split("-")[1],'HH:mm') ;
+                if(startHair<startBarber){
+                    //console.log(e[1])
+                    //console.log(startBarber)
+                    e[1][barber[0]] = startBarber.format('HH:mm')+" - "+endHair.format('HH:mm')
+                }
+                if(endBarber<endHair){
+                    //console.log(e[1])
+                    //console.log(endBarber)
+                    //console.log(endHair)
+                    e[1][barber[0]] = startHair.format('HH:mm')+" - "+endBarber.format('HH:mm')
+                }
+            }
+        })
+    }
+
+    handleCheckbox(e, day){
+        var bool = e.target.checked;
+        if(bool){
+            this.state.arrayHide.push([day, bool])
+        }else{
+            this.state.arrayHide.splice(this.state.arrayHide.indexOf([day, true]), 1)
+        }
+        console.log(this.state.arrayHide);
     }
 
     render(){
@@ -152,27 +209,39 @@ export default class Availability extends  PureComponent{
                                 {Object.keys(this.state.choosen).map((key) => key !== "id" ?
                                  (
                                     <Grid key={key} container spacing={2} marginTop={5}>
-                                        <Grid item xs={4} >{key}</Grid>
-                                        <Grid item xs={4} >
-                                            <TimePicker
-                                                renderInput={(params) => <TextField {...params} />}
-                                                value={moment(this.state.choosen[key].split("-")[0],'HH:mm')}
-                                                label="From"
-                                                onChange={(newValue) => this.handleChangeTime(newValue, key, "f")}
-                                                minTime = {this.state.barberChoosen ? this.state.minimum : moment(this.state.agenda[0][1][key].split("-")[0],'HH:mm')} 
-                                                maxTime={ this.state.barberChoosen ? this.state.maximum : moment(this.state.agenda[0][1][key].split("-")[1],'HH:mm')}
+                                        <Grid item xs={2} >{key}</Grid>
+                                        <Grid item xs={2} >
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox name="jason" onChange={(value) => this.handleCheckbox(value, key)} />
+                                                }
+                                                label={this.state.barberChoosen ? "close" : "day off" }
                                             />
                                         </Grid>
-                                        <Grid item xs={4} >
-                                            <TimePicker
-                                                renderInput={(params) => <TextField {...params} />}
-                                                value={moment(this.state.choosen[key].split("-")[1],'HH:mm')}
-                                                label="To"
-                                                onChange={(newValue) => this.handleChangeTime(newValue, key, "t") }
-                                                minTime = {this.state.barberChoosen ? this.state.minimum : moment(this.state.agenda[0][1][key].split("-")[0],'HH:mm')} 
-                                                maxTime={ this.state.barberChoosen ? this.state.maximum : moment(this.state.agenda[0][1][key].split("-")[1],'HH:mm')}
-                                            />
-                                        </Grid>
+                                        {this.state.arrayHide.indexOf([key,true]) === -1 ?
+                                        <>
+                                            <Grid item xs={4} >
+                                                <TimePicker
+                                                    renderInput={(params) => <TextField {...params} />}
+                                                    value={moment(this.state.choosen[key].split("-")[0],'HH:mm')}
+                                                    label="From"
+                                                    onChange={(newValue) => this.handleChangeTime(newValue, key, "f")}
+                                                    minTime = {this.state.barberChoosen ? this.state.minimum : moment(this.state.agenda[0][1][key].split("-")[0],'HH:mm')} 
+                                                    maxTime={ this.state.barberChoosen ? this.state.maximum : moment(this.state.agenda[0][1][key].split("-")[1],'HH:mm')}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={4} >
+                                                <TimePicker
+                                                    renderInput={(params) => <TextField {...params} />}
+                                                    value={moment(this.state.choosen[key].split("-")[1],'HH:mm')}
+                                                    label="To"
+                                                    onChange={(newValue) => this.handleChangeTime(newValue, key, "t") }
+                                                    minTime = {this.state.barberChoosen ? this.state.minimum : moment(this.state.agenda[0][1][key].split("-")[0],'HH:mm')} 
+                                                    maxTime={ this.state.barberChoosen ? this.state.maximum : moment(this.state.agenda[0][1][key].split("-")[1],'HH:mm')}
+                                                />
+                                            </Grid>
+                                        </>
+                                        : null}
                                     </Grid>
                                 ) : null  )}
                                 {this.state.error ? <Grid container spacing={2} marginTop={5} justifyContent ="center" ><Typography variant="body2" sx={{ color: "red" }} gutterBottom>Error : the "from" time must be before the "to" time</Typography></Grid> : null}
