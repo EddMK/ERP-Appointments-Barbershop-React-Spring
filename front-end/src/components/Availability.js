@@ -25,20 +25,20 @@ export default class Availability extends  PureComponent{
             arrayHide : {},
             minimum : moment('8:00','HH:mm'),
             maximum : moment('22:00','HH:mm'),
-            agenda :[['Coiffure Simonis', {id : 1, Monday : '10:00 - 20:00',
-                                        Tuesday : '10:00 - 20:00',
-                                        Wednesday : '10:00 - 20:00',
-                                        Thursday : '12:00 - 18:00',
-                                        Friday : '10:00 - 20:00',
-                                        Saturday : '10:00 - 20:00',
-                                        Sunday : '10:00 - 20:00',}],
-                    ['Michel Sebahat', { id : 2,Monday : '10:00 - 20:00',
-                                        Tuesday : '10:00 - 20:00',
-                                        Wednesday : '10:00 - 20:00',
-                                        Thursday : '10:00 - 20:00',
-                                        Friday : '10:00 - 20:00',
-                                        Saturday : '10:00 - 20:00',
-                                        Sunday : '10:00 - 20:00',}]
+            agenda :[['Coiffure Simonis', {id : 1, monday : '10:00 - 20:00',
+                                        tuesday : '10:00 - 20:00',
+                                        wednesday : '10:00 - 20:00',
+                                        thursday : '12:00 - 18:00',
+                                        friday : '10:00 - 20:00',
+                                        saturday : '10:00 - 20:00',
+                                        sunday : '10:00 - 20:00',}],
+                    ['Michel Sebahat', { id : 2,monday : '10:00 - 20:00',
+                                        tuesday : '10:00 - 20:00',
+                                        wednesday : '10:00 - 20:00',
+                                        thursday : '10:00 - 20:00',
+                                        friday : '10:00 - 20:00',
+                                        saturday : '10:00 - 20:00',
+                                        sunday : '10:00 - 20:00',}]
                                     ],
         };
         moment.locale('fr');
@@ -50,7 +50,7 @@ export default class Availability extends  PureComponent{
     }
 
     componentDidMount() {
-        fetch("http://localhost:8080/admin/availability/").then((res) => res.json()).then( (json) => json); 
+        fetch("http://localhost:8080/admin/availability/").then((res) => res.json()).then( (json) => this.setState({agenda : json})); 
     }
 
     handleEditBarbershopSchedule(e){
@@ -210,13 +210,13 @@ export default class Availability extends  PureComponent{
                             {this.state.agenda.map((row) => (
                                 <TableRow key={row[0]} sx={{ '&:last-child td, &:last-child th': { border: 0 } }} >
                                     <TableCell component="th" scope="row"> {row[0]} </TableCell>
-                                    <TableCell align="right">{row[1].Monday}</TableCell>
-                                    <TableCell align="right">{row[1].Tuesday}</TableCell>
-                                    <TableCell align="right">{row[1].Wednesday}</TableCell>
-                                    <TableCell align="right">{row[1].Thursday}</TableCell>
-                                    <TableCell align="right">{row[1].Friday}</TableCell>
-                                    <TableCell align="right">{row[1].Saturday}</TableCell>
-                                    <TableCell align="right">{row[1].Sunday}</TableCell>
+                                    <TableCell align="right">{row[1].monday}</TableCell>
+                                    <TableCell align="right">{row[1].tuesday}</TableCell>
+                                    <TableCell align="right">{row[1].wednesday}</TableCell>
+                                    <TableCell align="right">{row[1].thursday}</TableCell>
+                                    <TableCell align="right">{row[1].friday}</TableCell>
+                                    <TableCell align="right">{row[1].saturday}</TableCell>
+                                    <TableCell align="right">{row[1].sunday}</TableCell>
                                     <TableCell align="right"><Button onClick={() => this.handleEditBarbershopSchedule(row)}>{row[0]}</Button></TableCell>
                                 </TableRow>
                             ))}
