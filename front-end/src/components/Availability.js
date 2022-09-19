@@ -22,13 +22,13 @@ export default class Availability extends  PureComponent{
             barberChoosen : false,
             error : false,
             titleDialog : "",
-            arrayHide : [],
+            arrayHide : {},
             minimum : moment('8:00','HH:mm'),
             maximum : moment('22:00','HH:mm'),
             agenda :[['Coiffure Simonis', {id : 1, Monday : '10:00 - 20:00',
                                         Tuesday : '10:00 - 20:00',
                                         Wednesday : '10:00 - 20:00',
-                                        Thursday : '12:00 - 20:00',
+                                        Thursday : '12:00 - 18:00',
                                         Friday : '10:00 - 20:00',
                                         Saturday : '10:00 - 20:00',
                                         Sunday : '10:00 - 20:00',}],
@@ -47,12 +47,6 @@ export default class Availability extends  PureComponent{
         this.handleChangeTime = this.handleChangeTime.bind(this)
         this.handleEdit = this.handleEdit.bind(this);
         this.handleCheckbox = this.handleCheckbox.bind(this);
-        //console.log(moment('22:00','h:mm a').format('h:mm'))
-        //var string = "8:00 - 20:00";
-        //console.log(string.substring(0, string.indexOf('-')))
-        //console.log(string.substring(string.indexOf('-') + 1))
-        //var streetaddress = string.substr(0, addy.indexOf(',')); 
-        //console.log(this.state.agenda[0][1]["Monday"])
     }
 
     componentDidMount() {
@@ -60,24 +54,21 @@ export default class Availability extends  PureComponent{
     }
 
     handleEditBarbershopSchedule(e){
-        //console.log("EDIT");
-        //console.log(e);
-        //console.log(this.state.agenda.indexOf(e))
         var bool;
         this.state.agenda.indexOf(e) === 0 ?  bool = true : bool = false
-        //console.log(e[1]);
-        var arrayToHide = []
+        var arrayToHide = {}
         var obj = e[1]
         Object.keys(obj).forEach( (e) => {
             if(e !== "id"){
-                console.log(e);
                 var str = obj[e]
-                console.log(str.charAt(0))
                 if(str === "close" || str === "day off"){
-                    arrayToHide.push([e, true])
+                    arrayToHide[e] = true
+                }else{
+                    arrayToHide[e] = false
                 }
             }
         })
+        //console.log(arrayToHide);
         this.setState({showBarbershopEdit : true, arrayHide : arrayToHide,  barberChoosen : bool , titleDialog : e[0],   choosen : e[1]})
     }
 
@@ -112,6 +103,18 @@ export default class Availability extends  PureComponent{
 
     handleEdit(){
         var object = this.state.choosen;
+        // VERIFIER LES JOURS DE FERMETURES ET DE CONGES
+        //console.log(this.state.arrayHide);
+        Object.keys(object).forEach( (e) =>{
+            if(e !== "id"){
+                //console.log(e);
+                //console.log(this.state.arrayHide[e]);
+                if(this.state.arrayHide[e]){
+                    this.state.barberChoosen ? object[e] = "close" : object[e] = "day off"
+                }
+            }
+        })
+        //console.log(object);
         var id = this.state.choosen.id;
         this.state.agenda.map(obj => {
             if (obj[1].id === id) {
@@ -122,7 +125,6 @@ export default class Availability extends  PureComponent{
             return obj;
           });
         if(this.state.barberChoosen){
-            //VERIFIER QUE LES AUTRES COIFFEURS AIENT UN HORARIE COMPRIS DANS LES HEURES D OUVERTURE
             //TROUVER UN MOYEN DE MODIFIER LE BACKEND
             Object.entries(object).forEach( (e) => {
                 if(e[0] !== "id"){
@@ -136,20 +138,22 @@ export default class Availability extends  PureComponent{
     validationOtherHairdresser(barber){
         this.state.agenda.forEach( (e) => {
             if(this.state.agenda.indexOf(e) !== 0 ){
+                
                 var startHair = moment(e[1][barber[0]].split("-")[0],'HH:mm') ;
                 var startBarber = moment(barber[1].split("-")[0],'HH:mm') ;
                 var endHair = moment(e[1][barber[0]].split("-")[1],'HH:mm') ;
-                var endBarber = moment(barber[1].split("-")[1],'HH:mm') ;
-                if(startHair<startBarber){
-                    //console.log(e[1])
-                    //console.log(startBarber)
-                    e[1][barber[0]] = startBarber.format('HH:mm')+" - "+endHair.format('HH:mm')
-                }
-                if(endBarber<endHair){
-                    //console.log(e[1])
-                    //console.log(endBarber)
-                    //console.log(endHair)
-                    e[1][barber[0]] = startHair.format('HH:mm')+" - "+endBarber.format('HH:mm')
+                var endBarber = moment(barber[1].split("-")[1],'HH:mm') ;  
+                console.log(barber[1])
+                if(barber[1] !== "close"){
+                    if(startHair<startBarber && endBarber<endHair){
+                        e[1][barber[0]] = startBarber.format('HH:mm')+" - "+endBarber.format('HH:mm')
+                    }else if(startHair<startBarber){
+                        e[1][barber[0]] = startBarber.format('HH:mm')+" - "+endHair.format('HH:mm')
+                    }else if(endBarber<endHair){
+                        e[1][barber[0]] = startHair.format('HH:mm')+" - "+endBarber.format('HH:mm')
+                    }
+                }else{
+                    e[1][barber[0]] = "day off"
                 }
             }
         })
@@ -157,14 +161,32 @@ export default class Availability extends  PureComponent{
 
     handleCheckbox(e, day){
         var bool = e.target.checked;
+        var array = Object.assign({}, this.state.arrayHide);
         if(bool){
-            this.state.arrayHide.push([day, bool])
+            array[day] = true
+            this.setState({ arrayHide : array})
         }else{
-            this.state.arrayHide.splice(this.state.arrayHide.indexOf([day, true]), 1)
+            array[day] = false
+            var newTodos = Object.assign({}, this.state.choosen);
+            var newTodosDay = newTodos[day];
+            if(this.state.barberChoosen){
+                newTodos[day] = "10:00 - 20:00"
+            }else{
+                newTodos[day] = moment(this.state.agenda[0][1][day].split("-")[0],'HH:mm').format('HH:mm')+" - "+moment(this.state.agenda[0][1][day].split("-")[1],'HH:mm').format('HH:mm')
+            }
+            console.log(newTodosDay);
+            this.setState({ arrayHide : array, choosen :  newTodos})
+            //REMETTRE LES ANCIENNES HEURES ALORS
         }
-        console.log(this.state.arrayHide);
+        console.log(this.state.arrayHide)
     }
-
+/*
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.arrayHide !== this.state.arrayHide) {
+          console.log('arrayHide state has changed.')
+        }
+      }
+*/
     render(){
 		return(
             <div className='availability' style={{marginLeft: 160 + 'px'}}>
@@ -213,17 +235,17 @@ export default class Availability extends  PureComponent{
                                         <Grid item xs={2} >
                                             <FormControlLabel
                                                 control={
-                                                    <Checkbox name="jason" onChange={(value) => this.handleCheckbox(value, key)} />
+                                                    <Checkbox name="jason" disabled={!this.state.barberChoosen && this.state.agenda[0][1][key]==="close"} checked={this.state.arrayHide[key]} onChange={(value) => this.handleCheckbox(value, key)} />
                                                 }
                                                 label={this.state.barberChoosen ? "close" : "day off" }
                                             />
                                         </Grid>
-                                        {this.state.arrayHide.indexOf([key,true]) === -1 ?
+                                        {this.state.arrayHide[key] === false ? 
                                         <>
                                             <Grid item xs={4} >
                                                 <TimePicker
                                                     renderInput={(params) => <TextField {...params} />}
-                                                    value={moment(this.state.choosen[key].split("-")[0],'HH:mm')}
+                                                    value={moment(this.state.choosen[key].split("-")[0],'HH:mm').isValid() ? moment(this.state.choosen[key].split("-")[0],'HH:mm') : this.state.barberChoosen ? this.state.minimum : moment(this.state.agenda[0][1][key].split("-")[0],'HH:mm') }
                                                     label="From"
                                                     onChange={(newValue) => this.handleChangeTime(newValue, key, "f")}
                                                     minTime = {this.state.barberChoosen ? this.state.minimum : moment(this.state.agenda[0][1][key].split("-")[0],'HH:mm')} 
@@ -233,7 +255,7 @@ export default class Availability extends  PureComponent{
                                             <Grid item xs={4} >
                                                 <TimePicker
                                                     renderInput={(params) => <TextField {...params} />}
-                                                    value={moment(this.state.choosen[key].split("-")[1],'HH:mm')}
+                                                    value={moment(this.state.choosen[key].split("-")[1],'HH:mm').isValid() ? moment(this.state.choosen[key].split("-")[1],'HH:mm') : this.state.maximum }
                                                     label="To"
                                                     onChange={(newValue) => this.handleChangeTime(newValue, key, "t") }
                                                     minTime = {this.state.barberChoosen ? this.state.minimum : moment(this.state.agenda[0][1][key].split("-")[0],'HH:mm')} 
@@ -241,7 +263,7 @@ export default class Availability extends  PureComponent{
                                                 />
                                             </Grid>
                                         </>
-                                        : null}
+                                        :null}
                                     </Grid>
                                 ) : null  )}
                                 {this.state.error ? <Grid container spacing={2} marginTop={5} justifyContent ="center" ><Typography variant="body2" sx={{ color: "red" }} gutterBottom>Error : the "from" time must be before the "to" time</Typography></Grid> : null}
@@ -256,5 +278,3 @@ export default class Availability extends  PureComponent{
         )
     }
 }
-
-//{ moment(this.state.choosen[key].split("-")[0],'HH:mm') > moment(this.state.choosen[key].split("-")[1],'HH:mm') ? this.setState({error : true}) : this.setState({error : false})}
