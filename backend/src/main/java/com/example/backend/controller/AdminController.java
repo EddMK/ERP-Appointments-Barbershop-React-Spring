@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -13,6 +14,7 @@ import com.example.backend.entity.Availability;
 import com.example.backend.entity.Barbershop;
 import com.example.backend.entity.User;
 import com.example.backend.repository.AppointmentRepository;
+import com.example.backend.repository.AvailabilityRepository;
 import com.example.backend.repository.BarbershopRepository;//userRepository
 import com.example.backend.repository.UserRepository;
 
@@ -34,6 +36,9 @@ public class AdminController {
 
     @Autowired 
     private AppointmentRepository appointmentRepository;
+
+    @Autowired 
+    private AvailabilityRepository availabilityRepository;
 
     @Autowired 
     private BarbershopRepository barbershopRepository;
@@ -274,5 +279,24 @@ public class AdminController {
     }
     return list;
   }
+
+  @CrossOrigin
+  @PutMapping(path="/putAvailability")
+  public @ResponseBody String putAvailability (@RequestBody Availability availability){
+    System.out.println("bien arrivé put available!");
+    //System.out.println(expense.getName()+" "+expense.getBarbershop()+" "+expense.getType());
+    Availability a = availabilityRepository.findById(availability.getId()).get();
+    a.setMonday(availability.getMonday());
+    a.setTuesday( availability.getTuesday());
+    a.setWednesday( availability.getWednesday());
+    a.setThursday(availability.getThursday());
+    a.setFriday(availability.getFriday());
+    a.setSaturday(availability.getSaturday());
+    a.setSunday(availability.getSunday());
+    availabilityRepository.save(a);
+    return "Saved";
+  }
+
+
 
 }

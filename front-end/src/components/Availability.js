@@ -1,16 +1,13 @@
 import React, { PureComponent } from 'react';
-import {Paper, Grid , Typography}from '@mui/material/';
 import moment from "moment";
 import 'moment/locale/fr'
-import {Table, Checkbox, FormControlLabel, TextField, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, DialogTitle,  Dialog , DialogActions, DialogContent}from '@mui/material/';
+import { Paper, Grid , Typography,  Table, Checkbox, FormControlLabel, TextField, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, DialogTitle,  Dialog , DialogActions, DialogContent}from '@mui/material/';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import DateAdapter from '@mui/lab/AdapterMoment';
-//import { Box } from '@mui/system';
 
-//[]
-//FERMETURE , CONGE
-//BACKEND
+
+//barbier change à 17:00 - 20:00
 
 export default class Availability extends  PureComponent{
     
@@ -25,21 +22,7 @@ export default class Availability extends  PureComponent{
             arrayHide : {},
             minimum : moment('8:00','HH:mm'),
             maximum : moment('22:00','HH:mm'),
-            agenda :[['Coiffure Simonis', {id : 1, monday : '10:00 - 20:00',
-                                        tuesday : '10:00 - 20:00',
-                                        wednesday : '10:00 - 20:00',
-                                        thursday : '12:00 - 18:00',
-                                        friday : '10:00 - 20:00',
-                                        saturday : '10:00 - 20:00',
-                                        sunday : '10:00 - 20:00',}],
-                    ['Michel Sebahat', { id : 2,monday : '10:00 - 20:00',
-                                        tuesday : '10:00 - 20:00',
-                                        wednesday : '10:00 - 20:00',
-                                        thursday : '10:00 - 20:00',
-                                        friday : '10:00 - 20:00',
-                                        saturday : '10:00 - 20:00',
-                                        sunday : '10:00 - 20:00',}]
-                                    ],
+            agenda :[],
         };
         moment.locale('fr');
         this.handleEditBarbershopSchedule = this.handleEditBarbershopSchedule.bind(this);
@@ -51,6 +34,20 @@ export default class Availability extends  PureComponent{
 
     componentDidMount() {
         fetch("http://localhost:8080/admin/availability/").then((res) => res.json()).then( (json) => this.setState({agenda : json})); 
+    }
+
+    async putAvailability(available){
+        console.log(available)
+        var json =  JSON.stringify(available) ;
+        const requestOptions = {
+          method: 'PUT',
+          headers: { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json' 
+          },
+          body: json
+        };
+        const response = await fetch( 'http://localhost:8080/admin/putAvailability/',requestOptions);
     }
 
     handleEditBarbershopSchedule(e){
@@ -68,7 +65,6 @@ export default class Availability extends  PureComponent{
                 }
             }
         })
-        //console.log(arrayToHide);
         this.setState({showBarbershopEdit : true, arrayHide : arrayToHide,  barberChoosen : bool , titleDialog : e[0],   choosen : e[1]})
     }
 
@@ -103,18 +99,13 @@ export default class Availability extends  PureComponent{
 
     handleEdit(){
         var object = this.state.choosen;
-        // VERIFIER LES JOURS DE FERMETURES ET DE CONGES
-        //console.log(this.state.arrayHide);
         Object.keys(object).forEach( (e) =>{
             if(e !== "id"){
-                //console.log(e);
-                //console.log(this.state.arrayHide[e]);
                 if(this.state.arrayHide[e]){
                     this.state.barberChoosen ? object[e] = "close" : object[e] = "day off"
                 }
             }
         })
-        //console.log(object);
         var id = this.state.choosen.id;
         this.state.agenda.map(obj => {
             if (obj[1].id === id) {
@@ -125,25 +116,25 @@ export default class Availability extends  PureComponent{
             return obj;
           });
         if(this.state.barberChoosen){
-            //TROUVER UN MOYEN DE MODIFIER LE BACKEND
             Object.entries(object).forEach( (e) => {
                 if(e[0] !== "id"){
                     this.validationOtherHairdresser(e);
                 }                
             });
-        } 
+            this.state.agenda.forEach( (e) => { this.putAvailability(e[1])})
+        }else{
+            this.putAvailability(object);
+        }
         this.setState({showBarbershopEdit : false})
     }
 
     validationOtherHairdresser(barber){
         this.state.agenda.forEach( (e) => {
             if(this.state.agenda.indexOf(e) !== 0 ){
-                
                 var startHair = moment(e[1][barber[0]].split("-")[0],'HH:mm') ;
                 var startBarber = moment(barber[1].split("-")[0],'HH:mm') ;
                 var endHair = moment(e[1][barber[0]].split("-")[1],'HH:mm') ;
                 var endBarber = moment(barber[1].split("-")[1],'HH:mm') ;  
-                console.log(barber[1])
                 if(barber[1] !== "close"){
                     if(startHair<startBarber && endBarber<endHair){
                         e[1][barber[0]] = startBarber.format('HH:mm')+" - "+endBarber.format('HH:mm')
@@ -174,19 +165,10 @@ export default class Availability extends  PureComponent{
             }else{
                 newTodos[day] = moment(this.state.agenda[0][1][day].split("-")[0],'HH:mm').format('HH:mm')+" - "+moment(this.state.agenda[0][1][day].split("-")[1],'HH:mm').format('HH:mm')
             }
-            console.log(newTodosDay);
             this.setState({ arrayHide : array, choosen :  newTodos})
-            //REMETTRE LES ANCIENNES HEURES ALORS
         }
-        console.log(this.state.arrayHide)
     }
-/*
-    componentDidUpdate(prevProps, prevState) {
-        if (prevState.arrayHide !== this.state.arrayHide) {
-          console.log('arrayHide state has changed.')
-        }
-      }
-*/
+
     render(){
 		return(
             <div className='availability' style={{marginLeft: 160 + 'px'}}>
