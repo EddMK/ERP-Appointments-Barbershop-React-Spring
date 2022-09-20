@@ -284,7 +284,6 @@ public class AdminController {
   @PutMapping(path="/putAvailability")
   public @ResponseBody String putAvailability (@RequestBody Availability availability){
     System.out.println("bien arrivé put available!");
-    //System.out.println(expense.getName()+" "+expense.getBarbershop()+" "+expense.getType());
     Availability a = availabilityRepository.findById(availability.getId()).get();
     a.setMonday(availability.getMonday());
     a.setTuesday( availability.getTuesday());

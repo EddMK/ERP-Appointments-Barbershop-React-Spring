@@ -9,8 +9,8 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import moment from "moment";
-import {Dialog,Alert, DialogContent, DialogContentText, Grid, Button, IconButton, CircularProgress} from '@mui/material/';
-
+import {Dialog,Alert, DialogContent, Grid, Button, IconButton, CircularProgress} from '@mui/material/';
+import { styled, alpha } from '@mui/material/styles';
 
 
 
@@ -19,6 +19,57 @@ Essayer avec le id d un coiffeur
 id = 250 
 Sebahat
 */
+
+const PREFIX = 'Demo';
+
+const classes = {
+  todayCell: `${PREFIX}-todayCell`,
+  weekendCell: `${PREFIX}-weekendCell`,
+  today: `${PREFIX}-today`,
+  weekend: `${PREFIX}-weekend`,
+};
+
+const StyledWeekViewTimeTableCell = styled(WeekView.TimeTableCell)(({ theme }) => ({
+  [`&.${classes.todayCell}`]: {
+    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.14),
+    },
+    '&:focus': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.16),
+    },
+  },
+  [`&.${classes.weekendCell}`]: {
+    backgroundColor: alpha(theme.palette.action.disabledBackground, 0.04),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.action.disabledBackground, 0.04),
+    },
+    '&:focus': {
+      backgroundColor: alpha(theme.palette.action.disabledBackground, 0.04),
+    },
+  },
+}));
+
+const StyledWeekViewDayScaleCell = styled(WeekView.DayScaleCell)(({ theme }) => ({
+  [`&.${classes.today}`]: {
+    backgroundColor: alpha(theme.palette.primary.main, 0.16),
+  },
+  [`&.${classes.weekend}`]: {
+    backgroundColor: alpha(theme.palette.action.disabledBackground, 0.06),
+  },
+}));
+
+
+const DayScaleCell = (props) => {
+  const { startDate, today } = props;
+
+  if (today) {
+    return <StyledWeekViewDayScaleCell {...props} className={classes.today} />;
+  } if (startDate.getDay() === 0 || startDate.getDay() === 6) {
+    return <StyledWeekViewDayScaleCell {...props} className={classes.weekend} />;
+  } return <StyledWeekViewDayScaleCell {...props} />;
+};
+
 
 const resources = [{
     fieldName: 'type',
@@ -41,6 +92,7 @@ class Employee extends React.Component{
         super(props);
         this.state = {
             data : [],
+            availability : {},
             currentDate : new Date().getTime(),
             showProgress : false,
             showDialog : false,
@@ -64,6 +116,9 @@ class Employee extends React.Component{
         this.findAppointment = this.findAppointment.bind(this)
         this.dateIsAfter = this.dateIsAfter.bind(this)
         this.handleOpenDialogDelay = this.handleOpenDialogDelay.bind(this)
+        this.timeTableCell = this.timeTableCell.bind(this);
+        this.dayScaleCell = this.dayScaleCell.bind(this);
+        console.log(this.state.availability);
     }
 
     handleContent = (  ({children, buttonError,  appointmentData, ...restProps}
@@ -103,7 +158,8 @@ class Employee extends React.Component{
     }
 
     componentDidMount() {
-        this.handleDataSchedule();                                   
+        fetch('http://localhost:8080/hairdresser/availibility/250').then(response => response.json()).then(data => this.setState({availability : data}) ); //this.setState({availability : data})                                 
+        this.handleDataSchedule();
     }
 
     handleDataSchedule(){
@@ -253,14 +309,56 @@ class Employee extends React.Component{
         return apres.diff(avant, "seconds") === 0
     }
 
+    dayScaleCell(props){
+        const { startDate, today } = props;
+        var dayoff;
+        const dateStr = moment(props.startDate).locale("en").format('dddd').toLowerCase();//email.toLowerCase();
+        var minAndMax = this.state.availability[dateStr];
+        minAndMax === "day off" ? dayoff = true : dayoff = false
+      
+        if (today) {
+          return <StyledWeekViewDayScaleCell {...props} className={classes.today} />;
+        } if (dayoff) {
+          return <StyledWeekViewDayScaleCell {...props} className={classes.weekend} />;
+        } return <StyledWeekViewDayScaleCell {...props} />;
+    };
+
+    timeTableCell(props){
+        var unavailable;
+        const { startDate } = props;
+        const date = new Date(startDate);
+
+        var start_date = moment(props.startDate, 'HH:mm')
+        const dateStr = moment(props.startDate).locale("en").format('dddd').toLowerCase();//email.toLowerCase();
+        var minAndMax = this.state.availability[dateStr];
+        if(minAndMax !== "day off"){
+            var minimum = moment(minAndMax.split("-")[0],'HH:mm')
+            var maximum = moment(minAndMax.split("-")[1],'HH:mm')
+            if( (start_date.hours()*60+ start_date.minutes() )< (minimum.hours()*60+ minimum.minutes() )){
+                unavailable = true;
+            }
+            if( (maximum.hours()*60+ maximum.minutes() )   <=  (start_date.hours()*60+ start_date.minutes() ) ){
+                unavailable = true;
+            }
+        }else{
+            unavailable = true
+        }
+        
+        if (date.getDate() === new Date().getDate()) {
+          return <StyledWeekViewTimeTableCell {...props} className={classes.todayCell} />;
+        } if (unavailable) {
+          return <StyledWeekViewTimeTableCell {...props} className={classes.weekendCell} />;
+        } return <StyledWeekViewTimeTableCell {...props} />;
+      };
+
     render(){
 		return(
             <div className="Employee">
                 <h1>Schedule</h1>
-                { this.state.showProgress ? <CircularProgress />   :
+                { Object.keys(this.state.availability).length === 0  ? <CircularProgress />   :
                     <Scheduler data={this.state.data}  height={500} firstDayOfWeek={1} error={this.handleErrorButton}>
                         <ViewState currentDate={this.state.currentDate} onCurrentDateChange={this.handleChangeDate} />
-                        <WeekView startDayHour={9} endDayHour={19} cellDuration={15} />
+                        <WeekView startDayHour={9} endDayHour={21} cellDuration={15} dayScaleCellComponent={this.dayScaleCell} timeTableCellComponent={this.timeTableCell} />
                         <Toolbar />
                         <DateNavigator />
                         <TodayButton />
