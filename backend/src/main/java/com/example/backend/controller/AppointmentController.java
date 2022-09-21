@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -31,6 +32,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.GregorianCalendar;
+import java.util.Calendar;
+import java.util.Locale;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/appointment") // This means URL's start with /demo (after Application path)
@@ -177,6 +181,29 @@ public class AppointmentController {
     //appointmentRepository.deleteById(id);
     //PREVENIR LES CLIENTS
     return "deleted";
+  }
+
+  @CrossOrigin
+  @DeleteMapping(path="/absencecustomer/{appointmentId}") 
+  public @ResponseBody String customerAbsence (@PathVariable Integer appointmentId){
+    Appointment app = appointmentRepository.findById(appointmentId).get();
+    User u = app.getCustomer();
+    u.setAbsence(u.getAbsence()+1);
+    userRepository.save(u);
+    System.out.println(u.getEmail());
+    //une notification 
+    app.getStart();
+    Timestamp ts = app.getStart();
+    String day = (new SimpleDateFormat("EEEE", Locale.ENGLISH)).format(ts.getTime());
+    String hour = (new SimpleDateFormat("HH:mm")).format(ts.getTime());
+    System.out.println(day);
+    System.out.println(hour);
+    Notification n = new Notification(app.getHairdresser().getId(),app.getCustomer().getId(), "You were not present for your appointment on "+day+" at "+hour+".");
+    notificationRepository.save(n);
+    //supprimer le rendez-vous
+    //appointmentRepository.deleteById(appointmentId);
+    
+    return "Saved";
   }
 
   @CrossOrigin

@@ -48,6 +48,8 @@ public class User implements UserDetails  {
     @JoinColumn(name = "availability_id", referencedColumnName = "id")
     private Availability availability;
 
+    private Integer absence;
+
 
     @JoinColumn(nullable = true)
     private LocalDate start;
@@ -61,7 +63,7 @@ public class User implements UserDetails  {
         this.role = role;
         this.barbershop = barbershop;
         this.start = start;
-    }
+    } 
     
     public User(){
 
@@ -134,6 +136,14 @@ public class User implements UserDetails  {
 
     public void setRole(String role) {
         this.role = Role.valueOf(role);
+    }
+
+    public Integer getAbsence() {
+        return absence;
+    }
+    
+    public void setAbsence(Integer abs) {
+        this.absence = abs;
     }
 
     @JsonProperty("barbershop")

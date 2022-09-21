@@ -27,7 +27,6 @@ public class UserController {
   @CrossOrigin
   @PostMapping(path="/addCustomer") 
   public @ResponseBody String addNewCustomer (@RequestBody User user){
-
     User u = new User();
     u.setLastName(user.getLastName());
     u.setFirstName(user.getFirstName());
@@ -50,6 +49,7 @@ public class UserController {
   public @ResponseBody List<User> getHairdressByBarbershop(@PathVariable Integer id) {
     return userRepository.findByBarbershopId(id);
   }
+
 
 }
 

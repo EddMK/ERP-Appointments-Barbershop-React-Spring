@@ -59,18 +59,6 @@ const StyledWeekViewDayScaleCell = styled(WeekView.DayScaleCell)(({ theme }) => 
   },
 }));
 
-
-const DayScaleCell = (props) => {
-  const { startDate, today } = props;
-
-  if (today) {
-    return <StyledWeekViewDayScaleCell {...props} className={classes.today} />;
-  } if (startDate.getDay() === 0 || startDate.getDay() === 6) {
-    return <StyledWeekViewDayScaleCell {...props} className={classes.weekend} />;
-  } return <StyledWeekViewDayScaleCell {...props} />;
-};
-
-
 const resources = [{
     fieldName: 'type',
     title: 'Type',
@@ -82,7 +70,6 @@ const resources = [{
   }];
 /*
 Pas fait de validaiton pour les retards , tenir compte des absence 
-
 */
 
 class Employee extends React.Component{
@@ -118,7 +105,32 @@ class Employee extends React.Component{
         this.handleOpenDialogDelay = this.handleOpenDialogDelay.bind(this)
         this.timeTableCell = this.timeTableCell.bind(this);
         this.dayScaleCell = this.dayScaleCell.bind(this);
+        this.handleContent = this.handleContent.bind(this);
+        this.handleContentTest = this.handleContentTest.bind(this);
         console.log(this.state.availability);
+    }
+
+    handleContentTest(children, buttonError,  appointmentData, ...restProps){
+        console.log(appointmentData)
+        console.log(children)
+        return (<AppointmentTooltip.Content {...restProps} appointmentData={children.appointmentData} >
+                    <Grid container alignItems="center">
+                        <p>{children}</p>
+                        <Grid sx={{ m: 2 }}>
+                            <QuestionMarkIcon />
+                        </Grid>
+                        <Grid item xs={10}>
+                            <p>Did the customer come ?
+                                <IconButton color="success" onClick={() => this.handleSuccesButton(appointmentData)} >
+                                    <CheckIcon />
+                                </IconButton>
+                                <IconButton color="error" onClick={() => this.handleErrorButton(appointmentData)}  >
+                                    <ClearIcon />
+                                </IconButton>
+                            </p>
+                        </Grid>
+                    </Grid>
+                </AppointmentTooltip.Content>)
     }
 
     handleContent = (  ({children, buttonError,  appointmentData, ...restProps}
@@ -131,10 +143,7 @@ class Employee extends React.Component{
                 </Grid>
                 <Grid item xs={10}>
                     <p>Did the customer come ?
-                        <IconButton color="success" onClick={() => this.handleSuccesButton(appointmentData)} >
-                            <CheckIcon />
-                        </IconButton>
-                        <IconButton color="error" onClick={() => this.handleErrorButton(appointmentData)}  >
+                        <IconButton color="error" onClick={() => this.handleErrorButton(appointmentData.id)}  >
                             <ClearIcon />
                         </IconButton>
                     </p>
@@ -143,14 +152,17 @@ class Employee extends React.Component{
         </AppointmentTooltip.Content>
       ));
 
-    handleErrorButton(app){
+    handleErrorButton(id){
         const newData = this.state.data.slice() //copy the array
-        const ind = newData.findIndex(obj => obj.id === app.id);
+        const ind = newData.findIndex(obj => obj.id === id);
         newData[ind].type="absent";
         this.setState({data: newData}) //set the new state
+        ///absenceCustomer/{appointmentId}
+        fetch('http://localhost:8080/appointment/absencecustomer/'+id, { method: 'DELETE' }).then(() => console.log("success"));
     }
 
     handleSuccesButton(id){
+        console.log(id);
         const newData = this.state.data.slice() //copy the array
         const ind = newData.findIndex(obj => obj.id === id);
         newData[ind].type="present";
@@ -344,9 +356,9 @@ class Employee extends React.Component{
             unavailable = true
         }
         
-        if (date.getDate() === new Date().getDate()) {
+        /*if (date.getDate() === new Date().getDate()) {
           return <StyledWeekViewTimeTableCell {...props} className={classes.todayCell} />;
-        } if (unavailable) {
+        }*/ if (unavailable) {
           return <StyledWeekViewTimeTableCell {...props} className={classes.weekendCell} />;
         } return <StyledWeekViewTimeTableCell {...props} />;
       };
@@ -356,21 +368,23 @@ class Employee extends React.Component{
             <div className="Employee">
                 <h1>Schedule</h1>
                 { Object.keys(this.state.availability).length === 0  ? <CircularProgress />   :
-                    <Scheduler data={this.state.data}  height={500} firstDayOfWeek={1} error={this.handleErrorButton}>
-                        <ViewState currentDate={this.state.currentDate} onCurrentDateChange={this.handleChangeDate} />
-                        <WeekView startDayHour={9} endDayHour={21} cellDuration={15} dayScaleCellComponent={this.dayScaleCell} timeTableCellComponent={this.timeTableCell} />
-                        <Toolbar />
-                        <DateNavigator />
-                        <TodayButton />
-                        <Appointments/>
-                        <AppointmentTooltip showCloseButton  contentComponent={this.handleContent} />
-                        <Resources data={resources} />
-                        <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true}  updateInterval={true} />
-                    </Scheduler>
+                    <>
+                        <Scheduler data={this.state.data}  height={500} firstDayOfWeek={1} error={this.handleErrorButton}>
+                            <ViewState currentDate={this.state.currentDate} onCurrentDateChange={this.handleChangeDate} />
+                            <WeekView startDayHour={9} endDayHour={21} cellDuration={15} dayScaleCellComponent={this.dayScaleCell} timeTableCellComponent={this.timeTableCell} />
+                            <Toolbar />
+                            <DateNavigator />
+                            <TodayButton />
+                            <Appointments/>
+                            <AppointmentTooltip showCloseButton  contentComponent={ this.handleContent} />
+                            <Resources data={resources} />
+                            <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true}  updateInterval={true} />
+                        </Scheduler>
+                        <Button variant="contained" onClick={this.handleOpenDialog} >Add day(s) off</Button>
+                        <Button variant="contained" onClick={this.handleOpenDialogAbsence} >Absence this week</Button>
+                        <Button variant="contained" onClick={this.handleOpenDialogDelay}>A delay today</Button>
+                    </>
                 }
-                <Button variant="contained" onClick={this.handleOpenDialog} >Add day(s) off</Button>
-                <Button variant="contained" onClick={this.handleOpenDialogAbsence} >Absence this week</Button>
-                <Button variant="contained" onClick={this.handleOpenDialogDelay}>A delay today</Button>
                 {this.state.showDialog ? <AddDaysOff  open={true}  close={this.handleCloseDialog} id={250} /> : null }
                 {this.state.showDialogAbsence ? <Absence open={true} date={this.state.currentDate} absence={this.handleAddAbsence}  close={this.handleCloseDialogAbsence} id={250} /> : null }
                 {this.state.showDialogDelay ? <Delay open={true} date={this.state.currentDate} delay={this.handleDelay}   close={this.handleCloseDialogDelay} id={250} /> : null }
