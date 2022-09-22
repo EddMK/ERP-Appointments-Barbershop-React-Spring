@@ -1,6 +1,7 @@
 import * as React from "react";
 import {Dialog,DialogTitle,  Grid, DialogContent, TextField, Autocomplete, Button, InputLabel} from '@mui/material/';
 import {LocalizationProvider, DatePicker} from '@mui/x-date-pickers/';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import DateAdapter from '@mui/lab/AdapterMoment';
 import moment from "moment";
 import 'moment/locale/fr';
@@ -29,7 +30,6 @@ const minutes = [
 ]
 
 /*
--attendtion quand c est la semaine courrant faire attention au minDate peut pas prendre absence pour jours precendants
 -faire attention quand change de minute remettre les heures à null
 -ajouter absence toute la journee
 */
@@ -38,13 +38,13 @@ export default class Absence extends React.Component{
 
     constructor(props){
         super(props)
-        console.log(this.props.date);
         this.state = {
             showDialog : true,
+            availability : {},
             date : moment(this.props.date),
             from : moment(this.props.date),
             to : moment(this.props.date),
-            min : moment(this.props.date).startOf('week'),
+            min : moment() > moment(this.props.date).startOf('week') ? moment() : moment(this.props.date).startOf('week') ,
             max : moment(this.props.date).endOf('week'),
             fromHour : "",
             toHour : "",
@@ -68,7 +68,7 @@ export default class Absence extends React.Component{
         }
         this.props.absence(abs);
         this.setState({showDialog : false})
-        this.props.close()
+        //this.props.close()
     }
 
     handleReason(e){
@@ -76,7 +76,7 @@ export default class Absence extends React.Component{
     }
 
     handleFrom(e, t){
-        console.log(e)
+        //console.log(e)
         if(e !== ""){
             var nbr = parseInt(e)
             if(t === "hour"){
@@ -92,7 +92,7 @@ export default class Absence extends React.Component{
     }
 
     handleTo(e, t){
-        console.log(e)
+        //console.log(e)
         if(e !== ""){
             var nbr = parseInt(e)
             if(t === "hour"){
@@ -122,12 +122,13 @@ export default class Absence extends React.Component{
             <Dialog onClose={this.props.close} open={this.state.showDialog} fullWidth maxWidth="sm" >
                     <DialogTitle sx={{ textAlign : "center"}} >Absence</DialogTitle>
                     <DialogContent>
+                    <LocalizationProvider dateAdapter={DateAdapter} >
+
                         <Grid container spacing={2}>
                             <Grid item xs={4}>
                                 <InputLabel htmlFor="component-helper" sx={{mr : 0}}>Choose a date :</InputLabel>
                             </Grid>
                             <Grid item xs={8}>
-                                <LocalizationProvider dateAdapter={DateAdapter} >
                                     <DatePicker
                                         value={this.state.date}
                                         minDate={this.state.min}
@@ -137,7 +138,6 @@ export default class Absence extends React.Component{
                                         }}
                                         renderInput={(params) => <TextField {...params} />}
                                     />
-                                </LocalizationProvider>
                             </Grid>
                             <Grid item xs={4}>
                                 <InputLabel  sx={{mr : 0}}>From :</InputLabel>
@@ -169,6 +169,8 @@ export default class Absence extends React.Component{
                                 <Button onClick={this.handleConfirm} disabled={this.state.fromHour === "" || this.state.toHour === "" ||  this.state.fromMinute === "" ||  this.state.toMinute === "" || this.state.reason === ""} variant="contained">Confirm</Button>
                             </Grid>
                         </Grid>
+                        </LocalizationProvider>
+
                     </DialogContent>
             </Dialog>
         )

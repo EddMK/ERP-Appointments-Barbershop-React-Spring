@@ -39,11 +39,11 @@ const CustomPickersDay = styled(PickersDay, {
 
 // CHANGER LE DIALOG A LA PLACE D UN ONGLET PSK CA A RIEN A VOIR AVEC LA SEMAINE C EST GLOBAL
 //METTRE A JOUR LE ID HAIRDRESSER ET BARBERSHOP
-//les inputs des dates formats => francais pas use kfr
+//les inputs des dates formats => francais pas use en
 // DERNIER AGENDA ENLEVER LA COULEUR BLEU DU CLICK
 // REGARDER COMMENT FAIRE POUR LE JOUR AUJOURD HUI AVEC LE LENDEMAIN MEME VALIDATION
 // ESSAYER DE METTRE EN EVIDENCE LES ERREURS Y EN A BCP 
-// QUAND ON COMMENCE UN DAY OFF A 1H DU MAT
+// QUAND ON COMMENCE UN DAY OFF A 1H DU MAT => ON COMMENCE à 00:00 et termine à 23:59
 export default class AddDaysOff extends React.Component{
 
     constructor(props){

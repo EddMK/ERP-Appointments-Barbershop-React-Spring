@@ -11,6 +11,9 @@ import ClearIcon from '@mui/icons-material/Clear';
 import moment from "moment";
 import {Dialog,Alert, DialogContent, Grid, Button, IconButton, CircularProgress} from '@mui/material/';
 import { styled, alpha } from '@mui/material/styles';
+import Forward10Icon from '@mui/icons-material/Forward10';
+import LinearProgress from '@mui/material/LinearProgress';
+
 
 
 
@@ -18,6 +21,7 @@ import { styled, alpha } from '@mui/material/styles';
 Essayer avec le id d un coiffeur
 id = 250 
 Sebahat
+un moyen d afficher la raison de l'absence dans la notification
 */
 
 const PREFIX = 'Demo';
@@ -78,6 +82,7 @@ class Employee extends React.Component{
     constructor(props){
         super(props);
         this.state = {
+            hairdresserId : 250,
             data : [],
             availability : {},
             currentDate : new Date().getTime(),
@@ -107,7 +112,7 @@ class Employee extends React.Component{
         this.dayScaleCell = this.dayScaleCell.bind(this);
         this.handleContent = this.handleContent.bind(this);
         this.handleContentTest = this.handleContentTest.bind(this);
-        console.log(this.state.availability);
+        //console.log(this.state.availability);
     }
 
     handleContentTest(children, buttonError,  appointmentData, ...restProps){
@@ -136,19 +141,30 @@ class Employee extends React.Component{
     handleContent = (  ({children, buttonError,  appointmentData, ...restProps}
       ) => (
         <AppointmentTooltip.Content {...restProps} appointmentData={appointmentData} >
-            <Grid container alignItems="center">
-                <p>{children}</p>
-                <Grid sx={{ m: 2 }}>
-                    <QuestionMarkIcon />
+            {moment(appointmentData.startDate) < moment() && moment().format('L') === moment(appointmentData.startDate).format('L') ? 
+                <Grid container alignItems="center">
+                    <Grid sx={{ m: 2 }}>
+                        <QuestionMarkIcon />
+                    </Grid>
+                    <Grid item xs={10}>
+                        <p>Did the customer come ?
+                            <IconButton color="error" onClick={() => this.handleErrorButton(appointmentData.id)}  >
+                                <ClearIcon />
+                            </IconButton>
+                        </p>
+                    </Grid>
+                    <Grid sx={{ m: 2 }}>
+                        <Forward10Icon />
+                    </Grid>
+                    <Grid item xs={10}>
+                        <p>Did the customer come late?
+                            <IconButton color="success" onClick={() => this.handleSuccesButton(appointmentData)} >
+                                    <CheckIcon />
+                            </IconButton>
+                        </p>
+                    </Grid>
                 </Grid>
-                <Grid item xs={10}>
-                    <p>Did the customer come ?
-                        <IconButton color="error" onClick={() => this.handleErrorButton(appointmentData.id)}  >
-                            <ClearIcon />
-                        </IconButton>
-                    </p>
-                </Grid>
-            </Grid>
+            : null }
         </AppointmentTooltip.Content>
       ));
 
@@ -162,6 +178,7 @@ class Employee extends React.Component{
     }
 
     handleSuccesButton(id){
+        // PAS UTILISER
         console.log(id);
         const newData = this.state.data.slice() //copy the array
         const ind = newData.findIndex(obj => obj.id === id);
@@ -194,7 +211,7 @@ class Employee extends React.Component{
             }
             //element.type='all';
         })
-        console.log("data",value);
+        //console.log("data",value);
         this.setState({ data : value })
       }
 
@@ -236,27 +253,39 @@ class Employee extends React.Component{
     handleAddAbsence(e){
         console.log("add absence : ",e);
         e.type='absent'
+        e.hairdresserId = this.state.hairdresserId
         var arrayToDelete = this.findAppointment(e.startDate, e.endDate)
+        console.log(arrayToDelete);
         if(arrayToDelete.some(a => a.title === 'day off' ||  a.title === 'absence')){
             this.setState({showDialogValidationAbsence : true})
         }else{
             var data = this.state.data.filter(d => ! arrayToDelete.some( s => s.id ===d.id)).concat(e);       
             this.setState({ data : data})
-            this.deleteAppointmentBackend(arrayToDelete.map((e) => e.id))
+            this.deleteAppointmentBackend(arrayToDelete, e)
             this.addAbsenceBackend(e)
         }
     }
 
-    
-
-    deleteAppointmentBackend(array){
+    deleteAppointmentBackend(array, absence){
         //console.log(array);
         if(array.length !== 0){
-            fetch('http://localhost:8080/appointment/absence?ids='+array, { method: 'DELETE' });
+            array.forEach( (e)  =>{
+                fetch('http://localhost:8080/appointment/delete/'+e.id, { method: 'DELETE'})
+                this.addNotificationBackend(e, absence);
+            })
         }
     }
 
+    async addNotificationBackend(e, absence){
+        //METTRE LE ID DU HAIRDRESSER
+        var json =  JSON.stringify({"fromid": 250, "toid": 255, "message": "Your hairdresser will be absent on "+ absence.startDate.format('dddd') +" from "+absence.startDate.format('HH:mm')+" to "+absence.endDate.format('HH:mm')+". Cause : "+absence.reason});
+        const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
+        const response = await fetch( 'http://localhost:8080/notification/add',requestOptions);
+        const data = await response.text();
+    }
+
     async addAbsenceBackend(e){
+        //METTRE LE ID DU HAIRDRESSER
         var json =  JSON.stringify(e);
         const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
         const response = await fetch( 'http://localhost:8080/appointment/addAbsence',requestOptions);
@@ -300,12 +329,14 @@ class Employee extends React.Component{
     findAppointment(start, end){
         var array = []
         this.state.data.forEach( a =>{
-            console.log("title : "+a.title);
+            //console.log("title : "+a.title);
             if( ( this.dateIsAfter(start,moment(a.startDate) ) && this.dateIsAfter(moment(a.startDate), end ) ) ||  (   this.dateIsAfter(start, moment(a.endDate) )  &&   this.dateIsAfter(moment(a.endDate), end) )    ){
                 array.push(a)
             }else if (this.dateIsSame(start, moment(a.startDate))){
                 array.push(a)
             }else if( this.dateIsAfter(moment(a.startDate), start) && this.dateIsAfter( end, moment(a.endDate))  ){
+                array.push(a)
+            }else if( this.dateIsAfter(moment(a.startDate), start) && this.dateIsSame( end, moment(a.endDate))  ){
                 array.push(a)
             }
         })
@@ -367,7 +398,7 @@ class Employee extends React.Component{
 		return(
             <div className="Employee">
                 <h1>Schedule</h1>
-                { Object.keys(this.state.availability).length === 0  ? <CircularProgress />   :
+                { Object.keys(this.state.availability).length === 0  ? <LinearProgress />   :
                     <>
                         <Scheduler data={this.state.data}  height={500} firstDayOfWeek={1} error={this.handleErrorButton}>
                             <ViewState currentDate={this.state.currentDate} onCurrentDateChange={this.handleChangeDate} />
@@ -386,7 +417,7 @@ class Employee extends React.Component{
                     </>
                 }
                 {this.state.showDialog ? <AddDaysOff  open={true}  close={this.handleCloseDialog} id={250} /> : null }
-                {this.state.showDialogAbsence ? <Absence open={true} date={this.state.currentDate} absence={this.handleAddAbsence}  close={this.handleCloseDialogAbsence} id={250} /> : null }
+                {this.state.showDialogAbsence ? <Absence open={true} date={this.state.currentDate} availability={this.state.availability} absence={this.handleAddAbsence}  close={this.handleCloseDialogAbsence} id={250} /> : null }
                 {this.state.showDialogDelay ? <Delay open={true} date={this.state.currentDate} delay={this.handleDelay}   close={this.handleCloseDialogDelay} id={250} /> : null }
                 {this.state.showDialogValidationAbsence ?
                     <Dialog open={this.state.showDialogValidationAbsence} onClose={this.handleCloseDialogValidation}  >

@@ -8,7 +8,7 @@ import DateAdapter from '@mui/lab/AdapterMoment';
 
 // Faire en sorte de choisir un barbershop
 // Il peut y avoir des répercussions quand on change d'horaire... Il se peut que des rendez-vous soient pris et du coup faut les supprimer
-// barbier change à 17:00 - 20:00 voir comment faire
+// barbier change à 17:00 - 20:00 voir comment faire 
 
 export default class Availability extends  PureComponent{
     

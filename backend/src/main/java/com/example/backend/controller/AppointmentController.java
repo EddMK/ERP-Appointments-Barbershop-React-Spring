@@ -65,6 +65,7 @@ public class AppointmentController {
     return "Saved";
   }
 
+  //essayer de mettre en commun avec addAppoitment psk ils sont dans la meme table
   @CrossOrigin
   @PostMapping(path="/addAbsence") // Map ONLY POST Requests
   public @ResponseBody String addAbsence (@RequestBody Appointment appointment){
@@ -162,10 +163,12 @@ public class AppointmentController {
 
   @CrossOrigin
   @DeleteMapping(path="/absence")
-  public @ResponseBody String addAbsence(@RequestParam List<Integer> ids) {
+  public @ResponseBody String deleteAbsence(@RequestParam List<Object> ids) {
     System.out.println("Here we are");
     System.out.println(ids);
+    //System.out.println(object);
 
+/* 
     for(Integer id : ids){
       //appointmentRepository.deleteById(id);
       //PREVENIR LE CLIENTS
@@ -176,8 +179,9 @@ public class AppointmentController {
       notificationRepository.save(n);
 
       //SUPPRIMER LE RENDEZ VOUS
-      appointmentRepository.deleteById(id);
-    }
+      //appointmentRepository.deleteById(id);
+    }*/
+
     //appointmentRepository.deleteById(id);
     //PREVENIR LES CLIENTS
     return "deleted";
@@ -201,9 +205,9 @@ public class AppointmentController {
     Notification n = new Notification(app.getHairdresser().getId(),app.getCustomer().getId(), "You were not present for your appointment on "+day+" at "+hour+".");
     notificationRepository.save(n);
     //supprimer le rendez-vous
-    //appointmentRepository.deleteById(appointmentId);
+    appointmentRepository.deleteById(appointmentId);
     
-    return "Saved";
+    return "Deleted";
   }
 
   @CrossOrigin
@@ -220,13 +224,12 @@ public class AppointmentController {
       Appointment appointment = app.get();
       int idCustomer = appointment.getCustomer().getId();
       int idHairdresser = appointment.getHairdresser().getId();
-      Notification n = new Notification(idHairdresser,idCustomer, "delay");
+      Notification n = new Notification(idHairdresser,idCustomer, "The hairdresser arrives late. Your appointment will be postponed for "+minutes+" minutes.");
       notificationRepository.save(n);      
       appointment.setStart( new Timestamp(appointment.getStart().getTime() + TimeUnit.MINUTES.toMillis(minutes)) );
       appointment.setEnd(new Timestamp(appointment.getEnd().getTime() + TimeUnit.MINUTES.toMillis(minutes)));
       appointmentRepository.save(appointment);
     }
-
     //appointmentRepository.deleteById(id);
     //PREVENIR LES CLIENTS
     return "deleted";
