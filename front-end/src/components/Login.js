@@ -21,41 +21,14 @@ Atention mots de passe compris entre 5 et 10 caractères
 	}
  
 	async handleConfirm(){
-		/*
-		AuthService.login(this.state.username, this.state.password).then(
-			() => {
-
-				console.log("QOUTA D EMOKH")
-				this.props.router.navigate("/");
-				
-			  this.props.router.navigate("/profile");
-			  window.location.reload();
-			},
-			error => {
-				
-			  const resMessage =
-				(error.response &&
-				  error.response.data &&
-				  error.response.data.message) ||
-				error.message ||
-				error.toString();
-				console.log(resMessage);
-			  
-			}
-		  );
-*/
-		const requestOptions = {
-			method: 'POST',
-			headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' },
-			body: JSON.stringify({	email : this.state.username, password : this.state.password})
-		};
+		const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({	email : this.state.username, password : this.state.password})};
 		await fetch( 'http://localhost:8080/authentication/login',requestOptions).then((response) => response.json())
 		.then((data) => {
-		  console.log(data);
-		});;
-		//const data = response.text();
-		//console.log(data);
-		  
+			if (data.accessToken) {
+				localStorage.setItem("user", JSON.stringify(data));
+			}
+		  	console.log(data);
+		});
 	}
 
 	render(){

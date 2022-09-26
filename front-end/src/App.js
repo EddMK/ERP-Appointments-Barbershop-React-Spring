@@ -1,7 +1,7 @@
 import React from "react";
 import './App.css';
 import reportWebVitals from './reportWebVitals';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route , useNavigate} from "react-router-dom";
 import Signup from './components/Signup.js';
 import Home from './components/Home';
 import Login from './components/Login';
@@ -30,12 +30,19 @@ import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettin
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
+import AuthService from "./services/AuthService";
+import { withRouter } from './common/with-router';
 
 //cacher : turnover, statistique de l employe
 //ajouter un liste customer et aussi rendez-vous pour voir l'emploi du temps des autres employés
 //ajouter une partie services pour montrer les differents services et si il veut en ajouter d autres
 
 const drawerWidth = 160;
+
+const CartDropDown = () => {
+	const navigate = useNavigate() // <-- hooks must be INSIDE the component
+	navigate('/admin')
+}
 
 class App extends React.Component{
 	
@@ -53,10 +60,32 @@ class App extends React.Component{
         
 	}
 
+	componentDidMount() {
+		var user = AuthService.getCurrentUser();
+		console.log(user);
+		if (user) {
+		  this.setState({
+			currentUser: user,
+			showCustomer: user.role.includes("CUSTOMER"),
+			showEmployee: user.role.includes("EMPLOYEE"),
+			showAdmin: user.role.includes("ADMIN"),
+		  });
+		}
+		if(user.role.includes("ADMIN")){
+			//this.props.router.navigate("/admin");
+			CartDropDown();
+		}
+
+		/*
+		EventBus.on("logout", () => {
+		  this.logOut();
+		});*/
+	  }
+
 	render(){
 		return(
             <BrowserRouter>
-            {this.state.admin ?
+            {this.state.showAdmin ?
                     <Drawer
 							sx={{ width: drawerWidth, flexShrink: 0,
 							'& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box', },
@@ -123,12 +152,12 @@ class App extends React.Component{
 						</List>
 					  </Drawer>
                       :
-                      <nav >
+                      	<nav >
 							<ul className='menu'>
 								<li><Link to="/signup">Sign Up</Link></li>
 								<li><Link to="/login">Log In</Link></li>
-								<li><Link to="/agenda">Make an appointment</Link></li>
-								<li><Link to="/employee">Schedule</Link></li>
+								{this.state.showCustomer ?<li><Link to="/agenda">Make an appointment</Link></li>: null}
+								{this.state.showEmployee ?<li><Link to="/employee">Schedule</Link></li> : null}
 								<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
 							</ul>
 						</nav>
@@ -152,4 +181,4 @@ class App extends React.Component{
 	}
 }
 
-export default App;
+export default  withRouter(App);

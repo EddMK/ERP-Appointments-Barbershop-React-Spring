@@ -54,7 +54,8 @@ public class User{
     @JoinColumn(nullable = true)
     private LocalDate start;
 
-    public User(String lastName, String firstName, String email, String phoneNumber, String password, Role role, Barbershop barbershop, LocalDate start){
+    public User(Integer id, String lastName, String firstName, String email, String phoneNumber, String password, Role role, Barbershop barbershop, LocalDate start){
+        this.id = id;
         this.lastName = lastName;
         this.firstName = firstName;
         this.email = email;
@@ -76,6 +77,7 @@ public class User{
     private Set<Appointment> appointmentEmployees;
 
 
+    @JsonProperty("id")
     public Integer getId() {
         return id;
     }

@@ -44,9 +44,11 @@ public class AuthenticationController {
                 .collect(Collectors.toList());
             System.out.println("Roles"+roles);
             String accessToken = jwtUtil.generateAccessToken(user);
-            AuthResponse response = new AuthResponse(user.getUsername(), accessToken);
-            
-            return ResponseEntity.ok().body(response);
+            //AuthResponse response = new AuthResponse(user.getUsername(), accessToken);
+
+            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, accessToken)
+        .body(new AuthResponse(user.renvoieid(), user.getUsername(), roles, accessToken));
+            //return ResponseEntity.ok().body(response);
              
         } catch (BadCredentialsException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

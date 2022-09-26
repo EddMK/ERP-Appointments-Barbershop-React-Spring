@@ -15,20 +15,6 @@ class AuthService {
 		  const data =  response.text();
 		  console.log(data.accessToken);
       return data
-    /*
-    return axios
-      .post(API_URL + "signin", {
-        username,
-        password
-      })
-      .then(response => {
-        if (response.data.accessToken) {
-          localStorage.setItem("user", JSON.stringify(response.data));
-        }
-
-        return response.data;
-      });
-      */
   }
 
   logout() {

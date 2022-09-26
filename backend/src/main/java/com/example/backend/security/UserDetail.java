@@ -17,9 +17,8 @@ import com.example.backend.entity.User;
 
 public class UserDetail implements UserDetails {
  
-    // rest of the code not shown...
-    @Id 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@Id 
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
      
     @Column(nullable = false, length = 50, unique = true)
@@ -42,7 +41,7 @@ public class UserDetail implements UserDetails {
     public static UserDetail build(User user) {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();      
         authorities.add(new SimpleGrantedAuthority(user.getRole()));
-        //System.out.println(user.getPassword());
+        System.out.println(user.getId());
         return new UserDetail(
             user.getId(), 
             user.getEmail(), 
@@ -50,6 +49,9 @@ public class UserDetail implements UserDetails {
             authorities);
       }
 
+    public Integer renvoieid() {
+        return this.id;
+    }
 
     @Override
     public String getUsername() {
