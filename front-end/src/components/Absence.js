@@ -30,8 +30,9 @@ const minutes = [
 ]
 
 /*
--faire attention quand change de minute remettre les heures à null
 -ajouter absence toute la journee
+-remplacer ces autocomplete par des timepickers
+-verifier en fonction des dispo
 */
 
 export default class Absence extends React.Component{

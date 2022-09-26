@@ -1,6 +1,8 @@
 package com.example.backend.security;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -8,7 +10,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.example.backend.entity.User;
 
 public class UserDetail implements UserDetails {
  
@@ -22,14 +27,30 @@ public class UserDetail implements UserDetails {
      
     @Column(nullable = false, length = 64)
     private String password;
+
+    private Collection<? extends GrantedAuthority> authorities;
  
     public UserDetail() { }
      
-    public UserDetail(String email, String password) {
+    public UserDetail(Integer id, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
         this.email = email;
         this.password = password;
+        this.authorities = authorities;
     }
- 
+
+    public static UserDetail build(User user) {
+        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();      
+        authorities.add(new SimpleGrantedAuthority(user.getRole()));
+        //System.out.println(user.getPassword());
+        return new UserDetail(
+            user.getId(), 
+            user.getEmail(), 
+            user.getPassword(),
+            authorities);
+      }
+
+
     @Override
     public String getUsername() {
         return this.email;
@@ -55,15 +76,16 @@ public class UserDetail implements UserDetails {
         return true;
     }
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // TODO Auto-generated method stub
-        return null;
+        return this.authorities;
     }
 
     @Override
     public String getPassword() {
         // TODO Auto-generated method stub
-        return null;
+        return this.password;
     }
 }

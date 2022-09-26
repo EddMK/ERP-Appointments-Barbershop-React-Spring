@@ -13,16 +13,16 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+//import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-
+//implements UserDetails  
 @Entity
-public class User implements UserDetails  {
+public class User{
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
@@ -170,7 +170,7 @@ public class User implements UserDetails  {
     public void setPassword(LocalDate date) {
         this.start = date;
     }
-
+/* 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // TODO Auto-generated method stub
@@ -207,6 +207,7 @@ public class User implements UserDetails  {
         return true;
     }
 
+*/
 
 }
 

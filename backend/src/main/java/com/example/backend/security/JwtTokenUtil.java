@@ -15,10 +15,21 @@ public class JwtTokenUtil {
      
     /* @Value("${app.jwt.secret}")
     private String SECRET_KEY;*/
-     
+     /* 
     public String generateAccessToken(User user) {
         return Jwts.builder()
                 .setSubject(String.format("%s", user.getEmail()))
+                .setIssuer("CodeJava")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRE_DURATION))
+                .signWith(SignatureAlgorithm.HS512, "Mnmk")
+                .compact();
+                 
+    }*/
+
+    public String generateAccessToken(UserDetail user) {
+        return Jwts.builder()
+                .setSubject(String.format("%s", user.getUsername()))
                 .setIssuer("CodeJava")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRE_DURATION))

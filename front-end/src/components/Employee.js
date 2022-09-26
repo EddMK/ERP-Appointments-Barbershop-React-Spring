@@ -282,6 +282,7 @@ class Employee extends React.Component{
         const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
         const response = await fetch( 'http://localhost:8080/notification/add',requestOptions);
         const data = await response.text();
+        console.log(data);
     }
 
     async addAbsenceBackend(e){

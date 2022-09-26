@@ -44,6 +44,12 @@ const CustomPickersDay = styled(PickersDay, {
 // REGARDER COMMENT FAIRE POUR LE JOUR AUJOURD HUI AVEC LE LENDEMAIN MEME VALIDATION
 // ESSAYER DE METTRE EN EVIDENCE LES ERREURS Y EN A BCP 
 // QUAND ON COMMENCE UN DAY OFF A 1H DU MAT => ON COMMENCE à 00:00 et termine à 23:59
+
+/*
+ADAPTATION AVEC LES DISPOS est que 
+- il peut pas quand son employé est absent 
+- son cours de week end n est pas considére comme un jours de congé
+*/
 export default class AddDaysOff extends React.Component{
 
     constructor(props){
@@ -76,10 +82,10 @@ export default class AddDaysOff extends React.Component{
         this.addArrayFrontend =this.addArrayFrontend.bind(this);
         this.notValidDayoff = this.notValidDayoff.bind(this);
         this.handleClickAgenda = this.handleClickAgenda.bind(this);
-        this.handleLeave = this.handleLeave.bind(this);
+        this.handleDelete = this.handleDelete.bind(this);
     }
 
-    handleLeave(){
+    handleDelete(){
         var str  = moment(this.state.dayAgenda).format('L')
         var dayoff = this.state.database.find(e => e.title==='day off' && e.hairdresser_id.id === 250 && moment(e.startDate).format('L') === str)
         this.setState({ database: this.state.database.filter( data => data !== dayoff) , 
@@ -93,6 +99,7 @@ export default class AddDaysOff extends React.Component{
         .then(data => { var unv = new Set(data.filter(e => e.title !=='day off' || e.hairdresser_id.id !== 250).map(e=>moment(e.startDate).format('L'))); 
                         var dof = data.filter(e => e.title ==='day off' && e.hairdresser_id.id === 250).map(e=>moment(e.startDate).format('L'));
                         this.setState({database : data, unavailable : unv, dayoffCount : dof}); });
+        fetch('http://localhost:8080/availability/daysoff/'+245+'/'+250).then(response => response.json()).then(data => console.log(data));
 	}
 
     handleColorAgenda(date, selectedDates, pickersDayProps){
@@ -169,6 +176,7 @@ export default class AddDaysOff extends React.Component{
     }
 
     notValidDayoff(e){
+        console.log("VALID ?",e);
         var stringFormat = moment(e).format('L');
         return this.state.unavailable.has(stringFormat) || this.state.dayoffCount.some(v => v === stringFormat); 
     }
@@ -345,7 +353,7 @@ export default class AddDaysOff extends React.Component{
                     </DialogContent>
                     <DialogActions sx={{ justifyContent : "center"}} >
                         <IconButton disabled={this.state.error || this.state.errorLast || 20-this.state.dayoffCount.length===0 || this.state.alertAvailable} color="success"  onClick={() => { this.handleConfirm()}} ><AddIcon /></IconButton>
-                        <IconButton color="error" disabled={!this.state.showButton} onClick={() => {this.handleLeave()}} ><DeleteForeverIcon /></IconButton>
+                        <IconButton color="error" disabled={!this.state.showButton} onClick={() => {this.handleDelete()}} ><DeleteForeverIcon /></IconButton>
                     </DialogActions>
                 </Dialog>
         )

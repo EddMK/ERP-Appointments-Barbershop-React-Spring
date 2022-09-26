@@ -1,5 +1,8 @@
 package com.example.backend.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Entity;
 //import java.sql.Timestamp;
 import javax.persistence.GeneratedValue;
@@ -109,6 +112,54 @@ public class Availability {
 
     public void setSunday(String sunday){
         this.sunday = sunday;
+    }
+
+    public List<String> dayoff(){
+        List<String> array = new ArrayList<String>();
+        if(this.getMonday() == "day off"){
+            array.add("Monday");
+        }if(this.getTuesday() == "day off"){
+            array.add("Tuesday");
+        }
+        if(this.getWednesday() == "day off"){
+            array.add("Wednesday");
+        }
+        if(this.getThursday() == "day off"){
+            array.add("Thursday");
+        }
+        if(this.friday == "day off"){
+            array.add("Friday");
+        }
+        if(this.getSaturday() == "day off"){
+            array.add("Saturday");
+        }if(this.getSunday() == "day off"){
+            array.add("Sunday");
+        }
+        return array;
+    }
+
+    public List<String> close(){
+        List<String> array = new ArrayList<String>();
+        if(this.getMonday() == "close"){
+            array.add("Monday");
+        }if(this.getTuesday() == "close"){
+            array.add("Tuesday");
+        }
+        if(this.getWednesday() == "close"){
+            array.add("Wednesday");
+        }
+        if(this.getThursday() == "close"){
+            array.add("Thursday");
+        }
+        if(this.friday == "close"){
+            array.add("Friday");
+        }
+        if(this.getSaturday() == "close"){
+            array.add("Saturday");
+        }if(this.getSunday() == "close"){
+            array.add("Sunday");
+        }
+        return array;
     }
     
 }
