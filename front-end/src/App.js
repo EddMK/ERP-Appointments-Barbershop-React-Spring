@@ -1,5 +1,19 @@
-import './Menu.css';
-import React, { Component } from "react";
+import React from "react";
+import './App.css';
+import reportWebVitals from './reportWebVitals';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Signup from './components/Signup.js';
+import Home from './components/Home';
+import Login from './components/Login';
+import Agenda from './components/Agenda';
+import Employee from './components/Employee';
+import Admin from './components/Admin';
+import Invoice from './components/Invoice';
+import ListEmployees from './components/ListEmployees';
+import Turnover from './components/Turnover';
+import StatEmployee from './components/StatEmployee'
+import Barbershop from './components/Barbershop';
+import Availability from './components/Availability';
 import { Link } from "react-router-dom";
 import Drawer from '@mui/material/Drawer';
 import ListItem from '@mui/material/ListItem';
@@ -7,63 +21,49 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import {Badge, Collapse} from '@mui/material/';
 import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
 import List from '@mui/material/List';
-import ListSubheader from '@mui/material/ListSubheader';
-import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Divider from '@mui/material/Divider';
-import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
-import StarBorder from '@mui/icons-material/StarBorder';
 import moment from "moment";
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
 
-
 //cacher : turnover, statistique de l employe
 //ajouter un liste customer et aussi rendez-vous pour voir l'emploi du temps des autres employés
 //ajouter une partie services pour montrer les differents services et si il veut en ajouter d autres
 
-
 const drawerWidth = 160;
 
-class Menu extends React.Component{
+class App extends React.Component{
 	
 	constructor(props){
 		super(props);
+        
 		this.state={
 			admin : false,
+            showAdmin : false,
+            showEmployee : false,
+            showCustomer : false,
 			showBadge : moment().date() === 1 ? 1 : 0,
 			openListEmployee : false
-		}		
+		}	
+        
 	}
+
 	render(){
 		return(
-			
-				<div className='Menu'>
-					{this.state.admin ?
-						<Drawer
-							sx={{
-							width: drawerWidth,
-							flexShrink: 0,
-							'& .MuiDrawer-paper': {
-								width: drawerWidth,
-								boxSizing: 'border-box',
-							},
-							backgroundColor: 'red'
-							}}
+            <BrowserRouter>
+            {this.state.admin ?
+                    <Drawer
+							sx={{ width: drawerWidth, flexShrink: 0,
+							'& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box', },
+							backgroundColor: 'red' }}
 							variant="permanent"
 							anchor="left"
-							PaperProps={{
-								sx: {
-									backgroundColor: '#333', 
-									color : 'white'
-								}
-							}}
+							PaperProps={{ sx: { backgroundColor: '#333',  color : 'white' } }}
 					  	>
 						<Toolbar />
 						<Divider />
@@ -122,8 +122,8 @@ class Menu extends React.Component{
 							</Link>
 						</List>
 					  </Drawer>
-					: 
-						<nav >
+                      :
+                      <nav >
 							<ul className='menu'>
 								<li><Link to="/signup">Sign Up</Link></li>
 								<li><Link to="/login">Log In</Link></li>
@@ -132,58 +132,24 @@ class Menu extends React.Component{
 								<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
 							</ul>
 						</nav>
-					}
-				</div>
-
+                        }
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/agenda" element={<Agenda />} />
+                    <Route path="/employee" element={<Employee />} />
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/invoice" element={<Invoice />} />
+                    <Route path="/employees" element={<ListEmployees />} />
+                    <Route path="/turnover" element={<Turnover />} />
+                    <Route path="/statEmployee" element={<StatEmployee />} />
+                    <Route path="/barbershop" element={<Barbershop />} />
+                    <Route path="/availability" element={<Availability />} />
+                </Routes> 
+            </BrowserRouter>
 		)
 	}
 }
 
-export default Menu;
-
-/*
-
-<div class="sidenav">
-	<a href="#about">About</a>
-	<a href="#services">Services</a>
-	<a href="#clients">Clients</a>
-	<a href="#contact">Contact</a>
-</div>
-
-
-*/
-
-
-/*
-<ListItem button disablePadding>
-									<ListItemButton onClick={() => {this.setState({openListEmployee : !this.state.openListEmployee})}}>
-										<ListItemIcon>
-											<GroupsOutlinedIcon />							
-										</ListItemIcon>
-										<ListItemText primary="Employees" />
-									</ListItemButton>
-</ListItem>
-<Collapse in={this.state.openListEmployee} timeout="auto" unmountOnExit>
-								<Link to="/statEmployee"  style={{ textDecoration: 'none', color:'white' }} >
-									<List component="div" disablePadding>
-										<ListItemButton sx={{ pl: 4 }}>
-											<ListItemIcon>
-												<StarBorder />
-											</ListItemIcon>
-											<ListItemText primary="Statistiques" />
-										</ListItemButton>
-									</List>
-								</Link>
-								<Link to="/employees"  style={{ textDecoration: 'none', color:'white' }} >
-									<List component="div" disablePadding>
-										<ListItemButton sx={{ pl: 4 }}>
-											<ListItemIcon>
-												<StarBorder />
-											</ListItemIcon>
-											<ListItemText primary="List" />
-										</ListItemButton>
-									</List>
-								</Link>
-							</Collapse>
-
-*/
+export default App;

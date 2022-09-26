@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import './Login.css'
+import AuthService from "../services/AuthService.js";
+import { withRouter } from '../common/with-router';
 
 class Login extends React.Component{
 /*
@@ -17,23 +19,43 @@ Atention mots de passe compris entre 5 et 10 caractères
 		}	
 		this.handleConfirm = this.handleConfirm.bind(this);
 	}
-
+ 
 	async handleConfirm(){
-		console.log("click login");
-		console.log(this.state.username)
-		console.log(this.state.password)
+		/*
+		AuthService.login(this.state.username, this.state.password).then(
+			() => {
+
+				console.log("QOUTA D EMOKH")
+				this.props.router.navigate("/");
+				
+			  this.props.router.navigate("/profile");
+			  window.location.reload();
+			},
+			error => {
+				
+			  const resMessage =
+				(error.response &&
+				  error.response.data &&
+				  error.response.data.message) ||
+				error.message ||
+				error.toString();
+				console.log(resMessage);
+			  
+			}
+		  );
+*/
 		const requestOptions = {
 			method: 'POST',
-			headers: { 
-			  'Accept': 'application/json',
-			  'Content-Type': 'application/json' 
-			},
-			body: JSON.stringify({	email : this.state.username,
-									password : this.state.password})
-		  };
-		  const response = await fetch( 'http://localhost:8080/authentication/login',requestOptions);
-		  const data = await response.text();
+			headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' },
+			body: JSON.stringify({	email : this.state.username, password : this.state.password})
+		};
+		await fetch( 'http://localhost:8080/authentication/login',requestOptions).then((response) => response.json())
+		.then((data) => {
 		  console.log(data);
+		});;
+		//const data = response.text();
+		//console.log(data);
+		  
 	}
 
 	render(){
@@ -44,7 +66,7 @@ Atention mots de passe compris entre 5 et 10 caractères
 					<TextField 
 						fullWidth 
 						id="username" 
-						label="Last Name" 
+						label="Email" 
 						variant="outlined" 
 						onChange={(event) => this.setState({username : event.target.value})}/>
 				</div>
@@ -65,4 +87,4 @@ Atention mots de passe compris entre 5 et 10 caractères
 	}
 }
 
-export default Login;
+export default  withRouter(Login);
