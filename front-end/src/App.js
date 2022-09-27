@@ -1,7 +1,7 @@
 import React from "react";
 import './App.css';
 import reportWebVitals from './reportWebVitals';
-import { BrowserRouter, Routes, Route , useNavigate} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Signup from './components/Signup.js';
 import Home from './components/Home';
 import Login from './components/Login';
@@ -31,7 +31,9 @@ import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
 import AuthService from "./services/AuthService";
-import { withRouter } from './common/with-router';
+import EventBus from "./common/eventBus.js";
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+
 
 //cacher : turnover, statistique de l employe
 //ajouter un liste customer et aussi rendez-vous pour voir l'emploi du temps des autres employés
@@ -39,10 +41,6 @@ import { withRouter } from './common/with-router';
 
 const drawerWidth = 160;
 
-const CartDropDown = () => {
-	const navigate = useNavigate() // <-- hooks must be INSIDE the component
-	navigate('/admin')
-}
 
 class App extends React.Component{
 	
@@ -57,6 +55,8 @@ class App extends React.Component{
 			showBadge : moment().date() === 1 ? 1 : 0,
 			openListEmployee : false
 		}	
+
+		this.logOut = this.logOut.bind(this);
         
 	}
 
@@ -71,29 +71,28 @@ class App extends React.Component{
 			showAdmin: user.role.includes("ADMIN"),
 		  });
 		}
-		if(user.role.includes("ADMIN")){
-			//this.props.router.navigate("/admin");
-			CartDropDown();
-		}
 
-		/*
+
 		EventBus.on("logout", () => {
 		  this.logOut();
-		});*/
+		});
+	  }
+
+	  logOut() {
+		AuthService.logout();
+		this.setState({
+			showCustomer: false,
+			showEmployee: false,
+			showAdmin: false,
+		});
 	  }
 
 	render(){
 		return(
             <BrowserRouter>
-            {this.state.showAdmin ?
-                    <Drawer
-							sx={{ width: drawerWidth, flexShrink: 0,
-							'& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box', },
-							backgroundColor: 'red' }}
-							variant="permanent"
-							anchor="left"
-							PaperProps={{ sx: { backgroundColor: '#333',  color : 'white' } }}
-					  	>
+            	{this.state.showAdmin ?
+                    <Drawer sx={{ width: drawerWidth, flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box', }, backgroundColor: 'red' }}
+							variant="permanent" anchor="left" PaperProps={{ sx: { backgroundColor: '#333',  color : 'white' } }} >
 						<Toolbar />
 						<Divider />
 						<List>
@@ -149,6 +148,16 @@ class App extends React.Component{
 									</ListItemButton>
 								</ListItem>
 							</Link>
+							<Link to="/"  style={{ textDecoration: 'none', color:'white' }} >
+								<ListItem button disablePadding>
+										<ListItemButton  onClick={this.logOut} >
+											<ListItemIcon>
+													<LogoutOutlinedIcon />
+											</ListItemIcon>
+											<ListItemText primary="Log out" />
+										</ListItemButton>
+								</ListItem>
+							</Link>
 						</List>
 					  </Drawer>
                       :
@@ -156,6 +165,7 @@ class App extends React.Component{
 							<ul className='menu'>
 								<li><Link to="/signup">Sign Up</Link></li>
 								<li><Link to="/login">Log In</Link></li>
+								<li><Link to="/" onClick={this.logOut}>Log Out</Link></li>
 								{this.state.showCustomer ?<li><Link to="/agenda">Make an appointment</Link></li>: null}
 								{this.state.showEmployee ?<li><Link to="/employee">Schedule</Link></li> : null}
 								<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
@@ -181,4 +191,4 @@ class App extends React.Component{
 	}
 }
 
-export default  withRouter(App);
+export default  App;

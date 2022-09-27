@@ -26,6 +26,15 @@ Atention mots de passe compris entre 5 et 10 caractères
 		.then((data) => {
 			if (data.accessToken) {
 				localStorage.setItem("user", JSON.stringify(data));
+				if(data.role.includes("ADMIN")){
+					this.props.router.navigate("/admin");
+				}
+				if(data.role.includes("EMPLOYEE")){
+					this.props.router.navigate("/employee");
+				}
+				if(data.role.includes("CUSTOMER")){
+					this.props.router.navigate("/agenda");
+				}
 			}
 		  	console.log(data);
 		});
