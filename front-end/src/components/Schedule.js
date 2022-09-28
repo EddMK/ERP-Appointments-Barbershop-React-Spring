@@ -37,10 +37,11 @@ class Schedule extends React.Component{
       super(props);
       this.state={
         schedulerData : [],
+        listHours : [],
         date : this.props.date,
         hairdresser : this.props.hairdresser,
         startDay : 10,
-        endDay : 20,
+        endDay : "20:30",
         services :  [],
         service : null,
         error : null,
@@ -77,13 +78,54 @@ class Schedule extends React.Component{
     }
 
     handleJsonReturn(value){
+      this.handleCreneau(value)
       value.forEach( (element) =>{
           element.title = "busy";
           element.type='all';
       })
-      this.setState({
-        schedulerData : value
+      this.setState({ schedulerData : value })
+    }
+
+    //DEPEND DU SERVICE
+    //minutes
+    handleCreneau(value){
+      //exemple couper par 30 minutes 
+      console.log(value);
+      var unavailable = [];
+      var st = moment(this.state.date.locale('en').format('L'));
+      st.set({ hour: 10 , minute: 30});
+      //console.log(st)
+      var en = moment(this.state.date.locale('en').format('L'));
+      en.set({ hour: 20 , minute: 0});
+      //console.log(en)
+      //console.log(this.verificationCreneau(null,null))
+      while(st < en){
+        //console.log(start.format('HH:mm'))
+        //CONDITION LE TEMPO DOIT PAS ETRE DEJA OCCUPE
+        var test = moment(st);
+        var testEnd = moment(test).add(30, 'minutes');
+        //this.verificationCreneau(test, testEnd)
+        //console.log(this.verificationCreneau(test, testEnd))
+        if(this.verificationCreneau(test, testEnd)){
+          unavailable.push(st.format('HH:mm'))
+        }
+        st.add(30, 'minutes')
+        //unavailable.push(st.format('HH:mm'))
+      }
+      //listHours
+      this.setState({listHours : unavailable })
+    }
+
+    verificationCreneau(start, end){
+      var boulou = true;
+      this.state.schedulerData.forEach( e => {
+        if(  (moment(e.startDate) < start && start < moment(e.endDate))  || (moment(e.startDate) < end && end < moment(e.endDate)) || (start.format('HH:mm') === moment(e.startDate).format('HH:mm'))  ){
+          //console.log(e);
+          console.log(start);
+          boulou = false;
+        }
       })
+      return boulou;
     }
 
     async handleChangeDate(value){
@@ -133,7 +175,7 @@ class Schedule extends React.Component{
     async addAppointmentBackend(start, end){
         var titre = this.state.service.name;
         var json =  JSON.stringify({ title : titre , startDate : start, endDate : end, hairdresser_id : this.state.hairdresser});
-        console.log(json);
+        //console.log(json);
         const requestOptions = {
           method: 'POST',
           headers: { 
@@ -144,7 +186,7 @@ class Schedule extends React.Component{
         };
         const response = await fetch( 'http://localhost:8080/appointment/add',requestOptions);
         const data = await response.text();
-        console.log('data add backend : '+data)
+        //console.log('data add backend : '+data)
         //AFFICHER LA REPONSE
     }
 
@@ -152,7 +194,7 @@ class Schedule extends React.Component{
       var valid = true;
       if(this.state.service != null ){
         var endingApp = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');
-        console.log("VALIDATION SCHEDULE",this.validationSchedule());
+        //console.log("VALIDATION SCHEDULE",this.validationSchedule());
         if(this.validationSchedule()){
           this.state.schedulerData.forEach(element => {
             var tmpStart = moment(element.startDate)
@@ -182,7 +224,7 @@ class Schedule extends React.Component{
 
     validationSchedule(){
       var valid = true;
-      console.log("START APPOINTMENT", this.state.startAppointement)
+      //console.log("START APPOINTMENT", this.state.startAppointement)
       if(moment().format('L') === moment(this.state.startAppointement).format('L')){
         if(moment(this.state.startAppointement) <= moment()){
           valid = false;
@@ -225,12 +267,10 @@ class Schedule extends React.Component{
                   <Box>
                     <p>To make an appointment, complete the followings input:</p>
                     <Autocomplete
-                      id="combo-box-demo"
+                      id="service"
                       options={this.state.services}
                       getOptionLabel={(option) => option.name}
-                      onChange={(event,newValue) => {
-                        this.handleServiceChoosen(newValue);
-                      }}
+                      onChange={(event,newValue) => { this.handleServiceChoosen(newValue); }}
                       style={{ width: 300 }}
                       renderInput={(params) => <TextField {...params} label="Choose the service" variant="outlined" />}
                     />
@@ -240,6 +280,14 @@ class Schedule extends React.Component{
                         renderInput={(params) => <TextField style={{ width: 300 }} {...params} />}
                       />
                     </LocalizationProvider>
+                    <Autocomplete
+                      id="creneaux"
+                      options={this.state.listHours}
+                      //getOptionLabel={(option) => option.name}
+                      onChange={(event,newValue) => { console.log(newValue); }}
+                      style={{ width: 300 }}
+                      renderInput={(params) => <TextField {...params} label="Choose the hour" variant="outlined" />}
+                    />
                   </Box>
                 </td>
                 <td>

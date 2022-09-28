@@ -38,6 +38,7 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 //cacher : turnover, statistique de l employe
 //ajouter un liste customer et aussi rendez-vous pour voir l'emploi du temps des autres employés
 //ajouter une partie services pour montrer les differents services et si il veut en ajouter d autres
+// ATTENTION LE REDIRECT DE L ADMIN FONCTIONNE PAS LE MENU N EST PAS MISE A JOUR
 
 const drawerWidth = 160;
 

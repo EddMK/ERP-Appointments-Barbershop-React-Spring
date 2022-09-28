@@ -111,31 +111,7 @@ class Employee extends React.Component{
         this.timeTableCell = this.timeTableCell.bind(this);
         this.dayScaleCell = this.dayScaleCell.bind(this);
         this.handleContent = this.handleContent.bind(this);
-        this.handleContentTest = this.handleContentTest.bind(this);
         //console.log(this.state.availability);
-    }
-
-    handleContentTest(children, buttonError,  appointmentData, ...restProps){
-        console.log(appointmentData)
-        console.log(children)
-        return (<AppointmentTooltip.Content {...restProps} appointmentData={children.appointmentData} >
-                    <Grid container alignItems="center">
-                        <p>{children}</p>
-                        <Grid sx={{ m: 2 }}>
-                            <QuestionMarkIcon />
-                        </Grid>
-                        <Grid item xs={10}>
-                            <p>Did the customer come ?
-                                <IconButton color="success" onClick={() => this.handleSuccesButton(appointmentData)} >
-                                    <CheckIcon />
-                                </IconButton>
-                                <IconButton color="error" onClick={() => this.handleErrorButton(appointmentData)}  >
-                                    <ClearIcon />
-                                </IconButton>
-                            </p>
-                        </Grid>
-                    </Grid>
-                </AppointmentTooltip.Content>)
     }
 
     handleContent = (  ({children, buttonError,  appointmentData, ...restProps}

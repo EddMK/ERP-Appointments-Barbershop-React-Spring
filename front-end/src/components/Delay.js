@@ -6,8 +6,8 @@ import moment from "moment";
 import 'moment/locale/fr';
 
 /*
--REGARDEZ POUR LE CHOIX DES JOURS
-
+ENLEVER LE CHOIX DU JOUR
+C EST UN RETARD AUJOURD HUI PAR DEMAIN OU HIER
 */
 
 const minutes = [

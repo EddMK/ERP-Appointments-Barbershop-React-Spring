@@ -99,7 +99,7 @@ export default class AddDaysOff extends React.Component{
         .then(data => { var unv = new Set(data.filter(e => e.title !=='day off' || e.hairdresser_id.id !== 250).map(e=>moment(e.startDate).format('L'))); 
                         var dof = data.filter(e => e.title ==='day off' && e.hairdresser_id.id === 250).map(e=>moment(e.startDate).format('L'));
                         this.setState({database : data, unavailable : unv, dayoffCount : dof}); });
-        fetch('http://localhost:8080/availability/daysoff/'+245+'/'+250).then(response => response.json()).then(data => console.log(data));
+        //fetch('http://localhost:8080/availability/daysoff/'+245+'/'+250).then(response => response.json()).then(data => console.log(data));
 	}
 
     handleColorAgenda(date, selectedDates, pickersDayProps){
