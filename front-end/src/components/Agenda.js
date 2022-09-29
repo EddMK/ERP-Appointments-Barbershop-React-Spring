@@ -20,12 +20,7 @@ class Agenda extends React.Component{
 	}
 
 	handleDisplaySchedule(choosendate, hairdresser) {
-		
-		this.setState({ showSchedule: true, 
-						returnDate : false ,
-						choosenDate : choosendate,
-						hairDresser : hairdresser
-		});
+		this.setState({ showSchedule: true,  returnDate : false , choosenDate : choosendate, hairDresser : hairdresser });
 	}
 
 	handleDisplayDate(value) {

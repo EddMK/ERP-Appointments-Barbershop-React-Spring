@@ -11,6 +11,7 @@ import com.example.backend.repository.AppointmentRepository;
 import com.example.backend.repository.BarbershopRepository;
 import com.example.backend.repository.ServiceRepository;
 import com.example.backend.repository.UserRepository;
+import org.modelmapper.ModelMapper;
 
 
 @SpringBootApplication
@@ -29,6 +30,10 @@ public class BackendApplication  {
 	@Autowired 
   	private UserRepository userRepository;
 	
+	@Bean
+	public ModelMapper modelMapper() {
+		return new ModelMapper();
+	}
 	
 
 	public static void main(String[] args) {

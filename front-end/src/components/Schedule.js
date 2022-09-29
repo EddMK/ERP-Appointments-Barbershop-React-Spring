@@ -10,16 +10,15 @@ import moment from 'moment';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import CircularProgress from '@mui/material/CircularProgress';
+import AuthService from "../services/AuthService";
 
 
 /*
--AFFICHER LE RENDEZ VOUS D UN CLIENT ET LE METTRE EN EVIDENCE
--PRENDRE UN RENDEZ VOUS QU UNE FOIS PAR SEMAINE
--ADAPETER LE BACKEND APPOINTMENT
--Il faut afficher l'horaire du client
--Utiliser une classe pour mettre dans les tableaux de schedulerData
--Analyser les temps libres, Essayer de combler les trous 
+-PRENDRE UN RENDEZ VOUS QU UNE FOIS PAR SEMAINE?
 -Coiffeur Sans préférence.. regarder comment faire 
+-POUR LES CONGES D APPOINTMENT RECUPERE A L AVANCE DANS AGENDA
+-AFFICHER LES RESERVATIONS QUI ARRIVENT
+-ENVOYER UN MAIL
 */
 
 const resources = [{
@@ -38,11 +37,14 @@ class Schedule extends React.Component{
       this.state={
         schedulerData : [],
         listHours : [],
+        services :  [],
+        availability : {},
         date : this.props.date,
         hairdresser : this.props.hairdresser,
-        startDay : 10,
-        endDay : "20:30",
-        services :  [],
+        startDay : "8:00",
+        endDay : "20:00",
+        customerId : null,
+        timeChoosen : null,
         service : null,
         error : null,
         showDialogConfirm : false,
@@ -61,58 +63,70 @@ class Schedule extends React.Component{
       this.handleJsonReturn = this.handleJsonReturn.bind(this);
       this.handleChangeDate = this.handleChangeDate.bind(this);
       this.handleDataSchedule = this.handleDataSchedule.bind(this);
-      this.validationSchedule = this.validationSchedule.bind(this)
+      this.validationSchedule = this.validationSchedule.bind(this);
+      this.handleServiceChoosen = this.handleServiceChoosen.bind(this);
+      console.log(this.state.hairdresser)
+      var user = AuthService.getCurrentUser();
+      console.log(user);
     }
 
     componentDidMount() {
-      //POUR LES AUTRES RENDEZ VOUS METTRE Token Pour le connecte Votre rendez-vous
-      //OBTENIR LE RENDEZ VOUS DU CLIENT ET LE METTRE EN EVIDENCE
-      this.handleDataSchedule();                                   
-      fetch("http://localhost:8080/service/all").then((res) => res.json()).then((json) => this.setState({ services : json }) );
+      var user = AuthService.getCurrentUser();
+      if(user.role.includes("CUSTOMER")){
+        this.setState({customerId : user.id})
+        var day = this.state.date.locale('en').format('dddd').toLowerCase();
+        fetch("http://localhost:8080/hairdresser/availibility/"+this.state.hairdresser.id).then((res) => res.json()).then((json) => {console.log(json[day] ) ; this.setState({availability : json , startDay : json[day].split("-")[0].trim(), endDay : json[day].split("-")[1].trim() }) ;});
+        this.handleDataSchedule(user.id);                                   
+        fetch("http://localhost:8080/service/all").then((res) => res.json()).then((json) => this.setState({ services : json }) );
+      }//REDIRECT 
     }
 
-    handleDataSchedule(){
+    handleDataSchedule(userid){
       var id = this.state.hairdresser.id;
       var timestamp = this.state.date.valueOf()/1000;
-      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json) );
+      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json, userid) );
     }
 
-    handleJsonReturn(value){
-      this.handleCreneau(value)
+    handleJsonReturn(value, userid){
+      console.log(this.state.customerId);
       value.forEach( (element) =>{
-          element.title = "busy";
-          element.type='all';
+          //console.log(element);
+          if(element.customer_id.id === this.state.customerId ){
+            element.title = "your appointment";
+            element.type='own';
+          }else{
+            element.title = "busy";
+            element.type='all';
+          }
       })
       this.setState({ schedulerData : value })
     }
 
-    //DEPEND DU SERVICE
-    //minutes
-    handleCreneau(value){
-      //exemple couper par 30 minutes 
-      console.log(value);
+    handleServiceChoosen(value){
+      if(value !== null){
+        this.setState({ service : value });
+        this.handleCreneau(value.duration);
+      }else{
+        this.setState({service : value, listHours : [] })
+      }
+    }
+
+    handleCreneau(duration){
+      var startHour = moment(this.state.startDay, 'HH:mm');
+      var endHour = moment(this.state.endDay, 'HH:mm');
       var unavailable = [];
       var st = moment(this.state.date.locale('en').format('L'));
-      st.set({ hour: 10 , minute: 30});
-      //console.log(st)
+      st.set({ hour: startHour.hour() , minute: startHour.minute()});
       var en = moment(this.state.date.locale('en').format('L'));
-      en.set({ hour: 20 , minute: 0});
-      //console.log(en)
-      //console.log(this.verificationCreneau(null,null))
+      en.set({ hour: endHour.hour() , minute: endHour.minute()});
       while(st < en){
-        //console.log(start.format('HH:mm'))
-        //CONDITION LE TEMPO DOIT PAS ETRE DEJA OCCUPE
         var test = moment(st);
-        var testEnd = moment(test).add(30, 'minutes');
-        //this.verificationCreneau(test, testEnd)
-        //console.log(this.verificationCreneau(test, testEnd))
-        if(this.verificationCreneau(test, testEnd)){
+        var testEnd = moment(test).add(duration, 'minutes');
+        if(this.verificationCreneau(test, testEnd) && st > moment()){
           unavailable.push(st.format('HH:mm'))
         }
-        st.add(30, 'minutes')
-        //unavailable.push(st.format('HH:mm'))
+        st.add(duration, 'minutes')
       }
-      //listHours
       this.setState({listHours : unavailable })
     }
 
@@ -120,8 +134,6 @@ class Schedule extends React.Component{
       var boulou = true;
       this.state.schedulerData.forEach( e => {
         if(  (moment(e.startDate) < start && start < moment(e.endDate))  || (moment(e.startDate) < end && end < moment(e.endDate)) || (start.format('HH:mm') === moment(e.startDate).format('HH:mm'))  ){
-          //console.log(e);
-          console.log(start);
           boulou = false;
         }
       })
@@ -129,21 +141,28 @@ class Schedule extends React.Component{
     }
 
     async handleChangeDate(value){
-      this.setState({showProgress : true});
       var newDate = moment(this.state.date).add(value, 'days');
-      var newDateFormat = newDate.format('L');
+      var day = newDate.locale('en').format('dddd').toLowerCase();
+      while(this.state.availability[day]==="day off"){
+        newDate = moment(newDate).add(value, 'days')
+        day = newDate.locale('en').format('dddd').toLowerCase()
+      }
       await this.setState({  
           date : newDate,
           service : null,
+          timeChoosen : null,
           error : null,
           showDialogConfirm : false,  
+          startDay : this.state.availability[day].split("-")[0].trim(),
+          endDay : this.state.availability[day].split("-")[1].trim(), 
+
           startAppointement : newDate,
           endAppointement : null,
-          disableRight : ( moment().add(2, 'months').format('L') === newDateFormat ) ? true : false ,
-          disableLeft : ( moment().format('L') === newDateFormat  ) ? true : false
+
+          disableRight : ( moment().locale('en').add(2, 'months').format('L') === newDate.format('L') ) ? true : false ,
+          disableLeft : ( moment().locale('en').format('L') === newDate.format('L')  ) ? true : false
       });
       this.handleDataSchedule(); 
-      this.setState({showProgress : false});
     }
 
     handleTimePicker(value){
@@ -152,10 +171,16 @@ class Schedule extends React.Component{
       });
     }
 
-    handleServiceChoosen(value){
-      this.setState({ service : value });
+    handleConfirm(){
+      var service = this.state.service;
+      var time = this.state.timeChoosen;
+      var startTime = moment(this.state.date.locale('en').format('L')).set({ hour: parseInt(time.split(":")[0]) , minute: parseInt(time.split(":")[1]) });
+      var endTime = moment(startTime).add(service.duration, 'minutes')
+      this.setState({ schedulerData : [...this.state.schedulerData,{startDate: startTime ,endDate: endTime , title:"your appointment", type:'own'}]});///type:'all'
+      this.addAppointmentBackend(startTime,endTime); 
     }
 
+/*
     handleConfirm(){
       this.state.startAppointement.set('year', this.state.date.year());
       this.state.startAppointement.set('month', this.state.date.month());
@@ -171,23 +196,13 @@ class Schedule extends React.Component{
         this.addAppointmentBackend(temps,temps2);
       }      
     }
-
+*/
     async addAppointmentBackend(start, end){
         var titre = this.state.service.name;
-        var json =  JSON.stringify({ title : titre , startDate : start, endDate : end, hairdresser_id : this.state.hairdresser});
-        //console.log(json);
-        const requestOptions = {
-          method: 'POST',
-          headers: { 
-            'Accept': 'application/json',
-            'Content-Type': 'application/json' 
-          },
-          body: json
-        };
-        const response = await fetch( 'http://localhost:8080/appointment/add',requestOptions);
+        var json =  JSON.stringify({ title : titre , startDate : start, endDate : end, hairdresserId: this.state.hairdresser.id, customerId : this.state.customerId});
+        const requestOptions = { method: 'POST',  headers: {  'Accept': 'application/json', 'Content-Type': 'application/json'   }, body: json };
+        const response = await fetch( 'http://localhost:8080/customer/add',requestOptions);
         const data = await response.text();
-        //console.log('data add backend : '+data)
-        //AFFICHER LA REPONSE
     }
 
     validationAppointment(){
@@ -268,6 +283,7 @@ class Schedule extends React.Component{
                     <p>To make an appointment, complete the followings input:</p>
                     <Autocomplete
                       id="service"
+                      value = {this.state.service}
                       options={this.state.services}
                       getOptionLabel={(option) => option.name}
                       onChange={(event,newValue) => { this.handleServiceChoosen(newValue); }}
@@ -283,8 +299,8 @@ class Schedule extends React.Component{
                     <Autocomplete
                       id="creneaux"
                       options={this.state.listHours}
-                      //getOptionLabel={(option) => option.name}
-                      onChange={(event,newValue) => { console.log(newValue); }}
+                      value={this.state.timeChoosen}
+                      onChange={(event,newValue) => { this.setState({timeChoosen : newValue});console.log(newValue); }}
                       style={{ width: 300 }}
                       renderInput={(params) => <TextField {...params} label="Choose the hour" variant="outlined" />}
                     />
@@ -314,7 +330,7 @@ class Schedule extends React.Component{
               </tbody>
               </table>
               <div className="buttons">
-                <Button variant="contained" color="success"  onClick={() => { this.handleConfirm() ;}} >Confirm</Button>
+                <Button variant="contained" color="success" disabled={this.state.timeChoosen ===null  || this.state.service===null}  onClick={() => { this.handleConfirm() ;}} >Confirm</Button>
                 <Button variant="contained" color="error"  onClick={() => { this.handleCancel() ;}}  >Cancel</Button>
               </div>
               <Dialog onClose={this.handleCloseDialog}  open={this.state.error != null}><Alert variant="filled" severity="warning">{this.state.error}</Alert></Dialog>

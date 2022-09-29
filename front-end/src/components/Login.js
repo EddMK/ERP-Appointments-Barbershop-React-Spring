@@ -24,19 +24,23 @@ Atention mots de passe compris entre 5 et 10 caractères
 		const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({	email : this.state.username, password : this.state.password})};
 		await fetch( 'http://localhost:8080/authentication/login',requestOptions).then((response) => response.json())
 		.then((data) => {
+			console.log(data);
+			
 			if (data.accessToken) {
 				localStorage.setItem("user", JSON.stringify(data));
 				if(data.role.includes("ADMIN")){
 					this.props.router.navigate("/admin");
+					window.location.reload();
 				}
 				if(data.role.includes("EMPLOYEE")){
 					this.props.router.navigate("/employee");
+					window.location.reload();
 				}
 				if(data.role.includes("CUSTOMER")){
 					this.props.router.navigate("/agenda");
+					window.location.reload();
 				}
 			}
-		  	console.log(data);
 		});
 	}
 
