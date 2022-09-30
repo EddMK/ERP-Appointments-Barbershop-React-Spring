@@ -51,7 +51,8 @@ class ChosenDate extends React.Component{
 		this.handleClick = this.handleClick.bind(this);
 		this.handleCloseDialog = this.handleCloseDialog.bind(this);
 		this.setHairdresserList = this.setHairdresserList.bind(this);
-		this.renderWeekPickerDay = this.renderWeekPickerDay.bind(this)
+		this.renderWeekPickerDay = this.renderWeekPickerDay.bind(this);
+		this.disableDays = this.disableDays.bind(this);
 	}
 
 	componentDidMount() {
@@ -59,15 +60,17 @@ class ChosenDate extends React.Component{
 	}
 
 	handleBarbershopChange(value) {
-		//alert(value);
-		this.setState({localisation : value});
-		//console.log(value.id);
-		this.setHairdresserList(value.id);
+		if(value !== null){
+			this.setState({localisation : value});
+			this.setHairdresserList(value.id);
+		}else{
+			this.setState({localisation : null, hairdressers : [], employee : null });
+		}
 	}
 
 	setHairdresserList(id){
 		//console.log("GET THE HAIRDRESSERS FROM ");
-		fetch('http://localhost:8080/user/hairdressByBarbershop/'+id)
+		fetch('http://localhost:8080/customer/hairdressByBarbershop/'+id)
         .then(response => response.json())
         .then(data => this.setState({hairdressers : data}));
 	}
@@ -92,11 +95,7 @@ class ChosenDate extends React.Component{
 	}
 
 	handleClick() {
-		if(this.state.localisation != null &&  this.state.date != null && this.state.employee != null){
-			this.props.click(this.state.date, this.state.employee);
-		}else{
-			this.setState({showDialogConfirm : true});
-		}
+		this.props.click(this.state.date, this.state.employee);
 	}
 
 	// IL MANQUE L APPEL AU BACKEND
@@ -160,6 +159,19 @@ class ChosenDate extends React.Component{
 		return reponse;
 	}
 
+	disableDays(date){
+		if( (date.locale('en').format('L') === moment().locale('en').format('L')) || (moment() < date)  ){
+			if(this.state.employee !== null){
+				var heureStr = this.state.employee.availability[date.locale('en').format('dddd').toLowerCase()];
+				if(heureStr === "day off"){
+					return true;
+				}else{
+					return false;
+				}
+			}
+		}
+	}
+
 
     render(){
 		return(
@@ -169,23 +181,21 @@ class ChosenDate extends React.Component{
 					<Autocomplete
 						disablePortal
 						id="barbershop"
+						value = {this.state.localisation}
 						options={this.state.barbershops}
 						getOptionLabel={(option) => option.name}
 						sx={{ width: 300, marginTop : 2 }}
-						onChange={(event,newValue) => {
-							this.handleBarbershopChange(newValue);
-						}}
+						onChange={(event,newValue) => { this.handleBarbershopChange(newValue); }}
 						renderInput={(params) => <TextField {...params} label="Choose a barbershop" />}
 					/>
 					<Autocomplete
 						disablePortal
 						id="hairdresser"
+						value = {this.state.employee}
 						options={this.state.hairdressers}
 						getOptionLabel={(option) => option.lastName+" "+option.firstName}
 						sx={{ width: 300 , marginTop : 2 }}
-						onChange={(event,newValue) => {
-							this.handleHairdressChange(newValue);
-						}}
+						onChange={(event,newValue) => { this.handleHairdressChange(newValue); }}
 						renderInput={(params) => <TextField {...params} label="Choose a hairdresser" />}
 					/>
 				</div>
@@ -199,22 +209,18 @@ class ChosenDate extends React.Component{
 							value = {null}
 							onChange={(newValue) => { this.handleDateChange(newValue); }}
 							orientation = "portrait"
-							renderDay={(day, selectedDate, isInCurrentMonth, dayComponent) => this.renderWeekPickerDay(day, selectedDate, isInCurrentMonth, dayComponent)}
+							renderDay={ this.state.employee!==null? this.renderWeekPickerDay : null}
+							shouldDisableDate={this.disableDays}
 							renderInput={(params) => <TextField {...params}  />}
 						/>
 				</LocalizationProvider>
 				<div className="Button">
-					<Button variant="contained" onClick={() => { this.handleClick() ;}}>Confirm</Button>
+					<Button variant="contained" disabled={this.state.localisation == null ||  this.state.date == null || this.state.employee == null} onClick={() => { this.handleClick() ;}}>Confirm</Button>
 				</div>
 				<Dialog onClose={this.handleCloseDialog} open={this.state.showDialogConfirm}><Alert variant="filled" severity="warning">You have to complete the inputs and choose a date to continue</Alert></Dialog> 
 			</div>
 		)
     }
 }
-/*
-renderDay={this.renderDay}
-renderInput={(params) => <TextField {...params} />}
-
-*/
 
 export default ChosenDate;

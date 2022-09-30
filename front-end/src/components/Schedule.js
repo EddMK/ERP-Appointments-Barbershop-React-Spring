@@ -52,7 +52,7 @@ class Schedule extends React.Component{
         startAppointement : this.props.date,
         endAppointement : null,
         disableRight : ( moment().add(2, 'months').format('L') === moment(this.props.date).format('L')) ? true : false ,
-        disableLeft : ( moment().format('L') === moment(this.props.date).format('L')) ? true : false ,
+        disableLeft : ( moment().locale('en').format('L') === moment(this.props.date).locale('en').format('L')) ? true : false ,
       }
       this.handleTimePicker = this.handleTimePicker.bind(this);
       this.handleCancel = this.handleCancel.bind(this);
@@ -71,20 +71,22 @@ class Schedule extends React.Component{
     }
 
     componentDidMount() {
+      console.log("hairdresser",this.state.hairdresser);
       var user = AuthService.getCurrentUser();
       if(user.role.includes("CUSTOMER")){
         this.setState({customerId : user.id})
         var day = this.state.date.locale('en').format('dddd').toLowerCase();
+        //FAIRE ATTENTION QUAND C EST DAY OFF
         fetch("http://localhost:8080/hairdresser/availibility/"+this.state.hairdresser.id).then((res) => res.json()).then((json) => {console.log(json[day] ) ; this.setState({availability : json , startDay : json[day].split("-")[0].trim(), endDay : json[day].split("-")[1].trim() }) ;});
         this.handleDataSchedule(user.id);                                   
-        fetch("http://localhost:8080/service/all").then((res) => res.json()).then((json) => this.setState({ services : json }) );
+        fetch("http://localhost:8080/customer/allServices").then((res) => res.json()).then((json) => this.setState({ services : json }) );
       }//REDIRECT 
     }
 
     handleDataSchedule(userid){
       var id = this.state.hairdresser.id;
       var timestamp = this.state.date.valueOf()/1000;
-      fetch("http://localhost:8080/appointment/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json, userid) );
+      fetch("http://localhost:8080/customer/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json, userid) );
     }
 
     handleJsonReturn(value, userid){

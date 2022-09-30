@@ -3,9 +3,11 @@ package com.example.backend.controller;
 import com.example.backend.dto.AppointmentDto;
 import com.example.backend.entity.Appointment;
 import com.example.backend.entity.Role;
+import com.example.backend.entity.Service;
 import com.example.backend.entity.User;
 import com.example.backend.repository.AppointmentRepository;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.ServiceRepository;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class CustomerController {
 
 	@Autowired 
   	private UserRepository userRepository;
+	
+	@Autowired 
+  	private ServiceRepository serviceRepository;
 
 	@CrossOrigin
 	@PostMapping(path="/add") // Map ONLY POST Requests
@@ -47,11 +52,29 @@ public class CustomerController {
 		return "Saved";
   	}
 
-	  @CrossOrigin
-	  @GetMapping(path="/hours/{id}") // Map ONLY POST Requests
-	  public @ResponseBody List<Object> getHoursDay(@PathVariable Integer id){
+	@CrossOrigin
+	@GetMapping(path="/hours/{id}") // Map ONLY POST Requests
+	public @ResponseBody List<Object> getHoursDay(@PathVariable Integer id){
 			return appointmentRepository.hoursDayAfterToday(id);
-		}
+	}
+
+	@CrossOrigin
+  	@GetMapping(path="/hairdressByBarbershop/{id}")
+	public @ResponseBody List<User> getHairdressByBarbershop(@PathVariable Integer id) {
+		return userRepository.findByBarbershopId(id);
+	}
+
+	@CrossOrigin
+	@GetMapping(path="/byStartDate/{timestamp}/{id}")
+	public @ResponseBody List<Appointment> getAppointmentsByDate(@PathVariable long timestamp, @PathVariable int id ) {
+		return appointmentRepository.findByStartDate(timestamp, id);
+	}
+
+	@CrossOrigin
+	@GetMapping(path="/allServices")
+	public @ResponseBody Iterable<Service> getAllServices() {
+		return serviceRepository.findAll();
+	}
 
 }
 
