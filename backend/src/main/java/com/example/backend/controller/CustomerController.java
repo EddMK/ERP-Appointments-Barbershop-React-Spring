@@ -26,9 +26,6 @@ import org.modelmapper.ModelMapper;
 @Controller 
 @RequestMapping(path="/customer") 
 public class CustomerController {
-
-    @Autowired
-	private ModelMapper modelMapper;
   
   	@Autowired 
   	private AppointmentRepository appointmentRepository;
@@ -48,7 +45,13 @@ public class CustomerController {
 		a.setCustomer(userRepository.findById(appointment.customerId).get());
 		appointmentRepository.save(a);
 		return "Saved";
-  }
+  	}
+
+	  @CrossOrigin
+	  @GetMapping(path="/hours/{id}") // Map ONLY POST Requests
+	  public @ResponseBody List<Object> getHoursDay(@PathVariable Integer id){
+			return appointmentRepository.hoursDayAfterToday(id);
+		}
 
 }
 

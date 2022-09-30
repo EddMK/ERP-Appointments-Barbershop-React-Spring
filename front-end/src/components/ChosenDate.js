@@ -40,6 +40,7 @@ class ChosenDate extends React.Component{
 			localisation : null,
 			employee : null,
             date : null,
+			hoursByDay : [],
 			barbershops : [],
 			hairdressers : [],//ATTENTION NE PAS OUBLIER LE PAS DE PREFERENCE,
 			showDialogConfirm : false
@@ -73,7 +74,13 @@ class ChosenDate extends React.Component{
 
     handleHairdressChange(value) {
 		this.setState({ employee: value });
-		//console.log("coiffeur : ",value);
+		console.log("coiffeur : ",value);
+		if(value !== null){
+			//ON CHECK DANS LA BASE DE DONNEES
+			fetch('http://localhost:8080/customer/hours/'+value.id)
+				.then(response => response.json())
+				.then(data => this.setState({hoursByDay : data}));
+		}
 	}
 
 	handleDateChange(value) {
@@ -94,33 +101,64 @@ class ChosenDate extends React.Component{
 
 	// IL MANQUE L APPEL AU BACKEND
 	// TENIR COMPTE DU MOIS, DU COIFFEUR, 
+	// IL TIENT PAS COMPTE DES ABSENCES ET DES JOURS DE CONGE
 	renderWeekPickerDay(date, selectedDates, pickersDayProps){
-		/*
-		cette méthode fait les tours des dates du mois
-		pour chaque jour tester si c est rempli ou pas
-		*/
-		var test = moment().add(1, 'days');
-		//moment().format('L');
-		var test2 = moment().add(2, 'days');
-		var free;//les booleans
+		var free;
 		var halfFilled;
 		var full;
-		if(date.format('L') === test.format('L')){
-			free = true;
-		}else{
-			full = true;
+		//console.log(date.format('L'));
+
+		if( (date.locale('en').format('L') === moment().locale('en').format('L')) || (moment() < date)  ){
+			//console.log(date);
+			//AVOIR LES HEURES DE TRAVAIL
+			if(this.state.employee !== null){
+				var heureStr = this.state.employee.availability[date.locale('en').format('dddd').toLowerCase()];
+				if(heureStr !== "day off"){
+					var duree = moment.duration(moment(heureStr.split("-")[1], "HH:mm").diff(moment(heureStr.split("-")[0], "HH:mm"))).as('minutes');
+					//AVOIR LES MINUTES
+					if(this.state.hoursByDay.length !== 0){
+						var work = this.contains(date)
+						if(work === null){
+							free = true;
+						}else{
+							var division = work/duree;
+							if(division === 1){
+								full= true;
+							}else if(division > 0.7){
+								halfFilled = true;
+							}else{
+								free = true;
+							}
+						}
+					}else{
+						free = true;
+					}
+				}else{
+					full= true;
+				}
+			}
 		}
+
 		return (
-		  <CustomPickersDay
-			{...pickersDayProps}
-			//disableMargin
-			free = {free}
-			halfFilled = {null}
-			full = {full}
-		  />
+			<CustomPickersDay
+				{...pickersDayProps}
+				//disableMargin
+				free = {free}
+				halfFilled = {halfFilled}
+				full = {full}
+			/>
 		);
-		
-	  };
+	};
+
+	contains(date){
+		var reponse = null;
+		this.state.hoursByDay.forEach((row) => {
+			if(moment(row[0]).locale('en').format('L') === date.locale('en').format('L')){
+				reponse = row[1];
+			}
+		})
+		return reponse;
+	}
 
 
     render(){

@@ -46,4 +46,6 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
     @Query(value = "SELECT COALESCE(SUM(service.price), 0) FROM appointment, service WHERE appointment.title = service.name AND month(appointment.start_date) = :month AND year(appointment.start_date) = :year AND appointment.hairdresser_id = :hairdresserId ; " ,nativeQuery = true)
     Integer findTurnoverMonthByHairdresser(@Param("month") int month, @Param("year") int year, @Param("hairdresserId") int hairdresserId );
 
+    @Query(value = "SELECT DATE(start_date), SUM(service.duration)  FROM appointment, service WHERE appointment.title = service.name AND DATE(now()) <=DATE(start_date) AND appointment.hairdresser_id = :id  GROUP BY DATE(appointment.start_date);" ,nativeQuery = true)
+    List<Object> hoursDayAfterToday(@Param("id") int id );
 }
