@@ -134,9 +134,11 @@ class Schedule extends React.Component{
       value.forEach( (element) =>{
           //console.log(element);
           //VERIFIER QUE LE CUSTOMER N EST PAS NULL
-          if(element.customer_id.id === this.state.customerId ){
-            element.title = "your appointment";
-            element.type='own';
+          if( element.customer_id !== null ){
+            if(element.customer_id.id === this.state.customerId ){
+              element.title = "your appointment";
+              element.type='own';
+            }
           }else{
             element.title = "busy";
             element.type='all';
@@ -244,7 +246,8 @@ class Schedule extends React.Component{
 */
     async addAppointmentBackend(start, end){
         var titre = this.state.service.name;
-        var json =  JSON.stringify({ title : titre , startDate : start, endDate : end, hairdresserId: this.state.hairdresser.id, customerId : this.state.customerId});
+        var duree = this.state.service.duration;
+        var json =  JSON.stringify({ title : titre , startDate : start, endDate : end,  duration : duree  ,   hairdresserId: this.state.hairdresser.id, customerId : this.state.customerId});
         const requestOptions = { method: 'POST',  headers: {  'Accept': 'application/json', 'Content-Type': 'application/json'   }, body: json };
         const response = await fetch( 'http://localhost:8080/customer/add',requestOptions);
         const data = await response.text();

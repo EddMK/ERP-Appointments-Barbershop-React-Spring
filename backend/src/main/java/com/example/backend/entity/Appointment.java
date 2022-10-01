@@ -21,6 +21,8 @@ public class Appointment {
   private Timestamp endDate;
 
   private String title;
+
+  private Integer duration;
  
   @ManyToOne
   @JoinColumn(name = "customer_id", nullable = true)
@@ -30,12 +32,13 @@ public class Appointment {
   @JoinColumn(name = "hairdresser_id", nullable = true)
   private User hairdresser;
 
-  public Appointment(Timestamp startDate,Timestamp endDate,String title, User customer, User hairdresser){
+  public Appointment(Timestamp startDate,Timestamp endDate,String title, User customer, User hairdresser, Integer duree){
     this.startDate = startDate;
     this.endDate = endDate; 
     this.title = title;
     this.customer = customer;   
     this.hairdresser = hairdresser;    
+    this.duration = duree;
   }
 
   public Appointment(){
@@ -66,6 +69,14 @@ public class Appointment {
 
   public void setEnd(Timestamp date) {
     this.endDate = date;
+  }
+
+  public Integer getDuration (){
+    return this.duration;
+  }
+
+  public void setDuration (Integer dur){
+    this.duration = dur;
   }
 
   @JsonProperty("title")

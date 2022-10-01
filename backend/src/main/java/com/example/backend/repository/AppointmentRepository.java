@@ -27,6 +27,10 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
     @Query(value = "SELECT * FROM EdBarbershop.appointment WHERE (title='day off' AND hairdresser_id IN ( SELECT id FROM EdBarbershop.user WHERE barbershop_id = :barbershopId)) OR (hairdresser_id = :hairdresserId AND start_date>now()) GROUP BY CAST(start_date AS DATE), title;" ,nativeQuery = true)
     List<Appointment> findDaysoffByBarbershop(@Param("barbershopId") int barbershopId, @Param("hairdresserId") int hairdresserId );
     
+    @Query(value = "SELECT CAST(start_date AS DATE) FROM EdBarbershop.appointment WHERE title='day off' AND hairdresser_id = :hairdresserId  AND DATE(now()) <=DATE(start_date)" ,nativeQuery = true)
+    List<Object> findDaysoffByHairdresser(@Param("hairdresserId") int hairdresserId );
+
+
     // ATTENTION CHANGEZ LE START DATE PAR LE END DATE
     @Query(value = " SELECT SUM(service.price) AS turnover FROM appointment, service WHERE appointment.title = service.name  AND DATE(appointment.start_date) = DATE( NOW() ) AND appointment.start_date < NOW();" ,nativeQuery = true)
     Integer findAppointmentToday();
@@ -46,6 +50,6 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
     @Query(value = "SELECT COALESCE(SUM(service.price), 0) FROM appointment, service WHERE appointment.title = service.name AND month(appointment.start_date) = :month AND year(appointment.start_date) = :year AND appointment.hairdresser_id = :hairdresserId ; " ,nativeQuery = true)
     Integer findTurnoverMonthByHairdresser(@Param("month") int month, @Param("year") int year, @Param("hairdresserId") int hairdresserId );
 
-    @Query(value = "SELECT DATE(start_date), SUM(service.duration)  FROM appointment, service WHERE appointment.title = service.name AND DATE(now()) <=DATE(start_date) AND appointment.hairdresser_id = :id  GROUP BY DATE(appointment.start_date);" ,nativeQuery = true)
+    @Query(value = "SELECT DATE(start_date), SUM(duration)  FROM appointment WHERE title <> 'day off' AND DATE(now()) <=DATE(start_date) AND appointment.hairdresser_id = :id  GROUP BY DATE(appointment.start_date);" ,nativeQuery = true)
     List<Object> hoursDayAfterToday(@Param("id") int id );
 }

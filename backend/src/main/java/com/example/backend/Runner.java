@@ -90,11 +90,13 @@ public class Runner implements CommandLineRunner {
         logger.info("ApplicationStartupRunner run method Started !!");
         
     }
-
+/* 
     public void busyToday(User[] list){
         LocalDateTime today = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
         for (User user : list) {
             appointmentRepository.save(new Appointment(Timestamp.valueOf(today.withHour(10)),Timestamp.valueOf(today.withHour(20)), "test",null,user));
         }
     }
+*/
+
 }

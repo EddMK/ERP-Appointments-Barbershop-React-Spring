@@ -9,5 +9,6 @@ public class AppointmentDto {
     public String title;
     public Integer customerId;
     public Integer hairdresserId;
+    public Integer duration;
 
 }

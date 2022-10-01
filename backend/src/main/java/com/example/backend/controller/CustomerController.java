@@ -2,17 +2,24 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.AppointmentDto;
 import com.example.backend.entity.Appointment;
+import com.example.backend.entity.Barbershop;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.Service;
 import com.example.backend.entity.User;
 import com.example.backend.repository.AppointmentRepository;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.repository.ServiceRepository;
+import com.example.backend.email.*;
+
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,24 +45,69 @@ public class CustomerController {
 	@Autowired 
   	private ServiceRepository serviceRepository;
 
+	@Autowired 
+	private EmailServiceImpl emailService;
+ 
+
 	@CrossOrigin
 	@PostMapping(path="/add") // Map ONLY POST Requests
 	public @ResponseBody String addNewAppointment (@RequestBody AppointmentDto appointment){
 		System.out.println("ARRIVE !");
 		Appointment a = new Appointment();
+		User customer = userRepository.findById(appointment.customerId).get();
 		a.setTitle(appointment.title);
 		a.setStart(appointment.startDate);
 		a.setEnd(appointment.endDate);
+		a.setDuration(appointment.duration);
 		a.setHairdresser(userRepository.findById(appointment.hairdresserId).get());
-		a.setCustomer(userRepository.findById(appointment.customerId).get());
+		a.setCustomer(customer);
 		appointmentRepository.save(a);
+		//SEND MAIL
+		String text = this.sendTextMail(a);
+		String status = emailService.sendSimpleMail("malkekourie@hotmail.com", text, "Reservation confirmation" );
+		System.out.println(status);
 		return "Saved";
   	}
+
+	public String sendTextMail(Appointment a){
+		String rep = "";
+		rep += "Dear customer";
+		rep += "\n";
+		rep += "\n";
+		rep += "Your appointment is confirmed successfully.";
+		rep += "\n";
+		rep += "Details :";
+		rep += "\n";
+		String day = (new SimpleDateFormat("EEEE")).format(a.getStart());
+		String date = (new SimpleDateFormat("dd/MM/yyyy")).format(a.getStart());
+		String from = (new SimpleDateFormat("HH:mm")).format(a.getStart());
+		String to = (new SimpleDateFormat("HH:mm")).format(a.getEnd());
+		rep += "-When ? "+day+" "+date+" from "+from+" to "+to;
+		rep += "\n";
+		rep += "-What ? "+a.getTitle();
+		rep += "\n";
+		Barbershop b = a.getHairdresser().getBarbershop();
+		rep += "-Where ? "+b.getName()+", Adresse : "+b.getAddress();
+		rep += "\n";
+		rep += "-Who ? "+a.getHairdresser().getLastName()+" "+a.getHairdresser().getFirstName();
+		rep += "\n";
+		rep += "\n";
+		rep += "See you soon !";
+		rep += "\n";
+		rep += "EdBarbershop";
+		return rep;
+	}
 
 	@CrossOrigin
 	@GetMapping(path="/hours/{id}") // Map ONLY POST Requests
 	public @ResponseBody List<Object> getHoursDay(@PathVariable Integer id){
 			return appointmentRepository.hoursDayAfterToday(id);
+	}
+
+	@CrossOrigin
+	@GetMapping(path="/dayoff/{id}") // Map ONLY POST Requests
+	public @ResponseBody List<Object> getDayoffHairdresser(@PathVariable Integer id){
+			return appointmentRepository.findDaysoffByHairdresser(id);
 	}
 
 	@CrossOrigin

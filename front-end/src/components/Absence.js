@@ -61,15 +61,18 @@ export default class Absence extends React.Component{
     }
 
     handleConfirm(){
+        var duration = this.state.to.diff(this.state.from, 'minutes')
+        console.log(duration);
         var abs ={
             startDate : this.state.from,
             endDate : this.state.to, 
+            duration : duration,
             title : 'absence',
             reason : this.state.reason
         }
-        this.props.absence(abs);
-        this.setState({showDialog : false})
-        //this.props.close()
+        console.log(abs);
+        //this.props.absence(abs);
+        //this.setState({showDialog : false})
     }
 
     handleReason(e){
