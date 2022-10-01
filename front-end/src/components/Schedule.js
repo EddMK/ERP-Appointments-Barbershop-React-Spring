@@ -65,34 +65,75 @@ class Schedule extends React.Component{
       this.handleDataSchedule = this.handleDataSchedule.bind(this);
       this.validationSchedule = this.validationSchedule.bind(this);
       this.handleServiceChoosen = this.handleServiceChoosen.bind(this);
-      console.log(this.state.hairdresser)
-      var user = AuthService.getCurrentUser();
-      console.log(user);
+      this.handleDisabledRightArrow();
+    }
+
+    handleDisabledRightArrow(date){
+      //console.log(moment().add(2, 'months'));
+      if(moment().add(2, 'months').locale('en').format('L') === moment(date).locale('en').format('L')){
+        console.log("TRUE;")
+        return true;
+      }else{
+        var bool = false;
+        var value = 1;
+        var newDate = moment(date).add(value, 'days');
+        var day = newDate.locale('en').format('dddd').toLowerCase();
+        while(this.state.hairdresser.availability[day]==="day off" ){
+          newDate = moment(newDate).add(value, 'days')
+          day = newDate.locale('en').format('dddd').toLowerCase()
+        }
+        moment().startOf('day').add(2, 'months').diff(newDate, 'days')<0 ? bool = true :   bool = false ; 
+        return bool;
+      }
+    }
+
+    handleDisabledLeftArrow(date){
+      if( moment().locale('en').format('L') === moment(date).locale('en').format('L')){
+        return true;
+      }else{
+        var bool = false;
+        var value = -1;
+        var newDate = moment(date).add(value, 'days');
+        var day = newDate.locale('en').format('dddd').toLowerCase();
+        while(this.state.hairdresser.availability[day]==="day off" ){
+          newDate = moment(newDate).add(value, 'days')
+          day = newDate.locale('en').format('dddd').toLowerCase()
+        }
+        newDate.startOf('day').diff(moment().startOf('day'), 'days')<0 ? bool = true :   bool = false ; 
+        return bool;
+      }
     }
 
     componentDidMount() {
-      console.log("hairdresser",this.state.hairdresser);
+      //console.log("hairdresser",this.state.hairdresser);
       var user = AuthService.getCurrentUser();
       if(user.role.includes("CUSTOMER")){
         this.setState({customerId : user.id})
+        //disable left arrox
+        var boolLeft = this.handleDisabledLeftArrow(this.state.date);
+        var boolRight = this.handleDisabledRightArrow(this.state.date);
+        //this.handleDisabledRightArrow();
+        //var boolRight = this.handleDisabledRightArrow(this.state.date);
+        this.setState({disableLeft : boolLeft, disableRight : boolRight })
         var day = this.state.date.locale('en').format('dddd').toLowerCase();
         //FAIRE ATTENTION QUAND C EST DAY OFF
-        fetch("http://localhost:8080/hairdresser/availibility/"+this.state.hairdresser.id).then((res) => res.json()).then((json) => {console.log(json[day] ) ; this.setState({availability : json , startDay : json[day].split("-")[0].trim(), endDay : json[day].split("-")[1].trim() }) ;});
-        this.handleDataSchedule(user.id);                                   
+        fetch("http://localhost:8080/hairdresser/availibility/"+this.state.hairdresser.id).then((res) => res.json()).then((json) => {this.setState({availability : json , startDay : json[day].split("-")[0].trim(), endDay : json[day].split("-")[1].trim() }) ;});
+        this.handleDataSchedule();                                   
         fetch("http://localhost:8080/customer/allServices").then((res) => res.json()).then((json) => this.setState({ services : json }) );
       }//REDIRECT 
     }
 
-    handleDataSchedule(userid){
+    handleDataSchedule(){
       var id = this.state.hairdresser.id;
       var timestamp = this.state.date.valueOf()/1000;
-      fetch("http://localhost:8080/customer/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json, userid) );
+      fetch("http://localhost:8080/customer/byStartDate/"+timestamp+"/"+id).then((res) => res.json()).then( (json) => this.handleJsonReturn(json) );
     }
 
-    handleJsonReturn(value, userid){
-      console.log(this.state.customerId);
+    handleJsonReturn(value){
+      //console.log(this.state.customerId);
       value.forEach( (element) =>{
           //console.log(element);
+          //VERIFIER QUE LE CUSTOMER N EST PAS NULL
           if(element.customer_id.id === this.state.customerId ){
             element.title = "your appointment";
             element.type='own';
@@ -149,6 +190,8 @@ class Schedule extends React.Component{
         newDate = moment(newDate).add(value, 'days')
         day = newDate.locale('en').format('dddd').toLowerCase()
       }
+      var boolLeft = this.handleDisabledLeftArrow(newDate);
+      var boolRight = this.handleDisabledRightArrow(newDate)
       await this.setState({  
           date : newDate,
           service : null,
@@ -161,8 +204,8 @@ class Schedule extends React.Component{
           startAppointement : newDate,
           endAppointement : null,
 
-          disableRight : ( moment().locale('en').add(2, 'months').format('L') === newDate.format('L') ) ? true : false ,
-          disableLeft : ( moment().locale('en').format('L') === newDate.format('L')  ) ? true : false
+          disableRight : boolRight,
+          disableLeft : boolLeft
       });
       this.handleDataSchedule(); 
     }
