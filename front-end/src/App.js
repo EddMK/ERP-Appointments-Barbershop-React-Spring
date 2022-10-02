@@ -9,6 +9,7 @@ import Agenda from './components/Agenda';
 import Employee from './components/Employee';
 import Admin from './components/Admin';
 import Invoice from './components/Invoice';
+import ListAppointment from './components/ListAppointment';
 import ListEmployees from './components/ListEmployees';
 import Turnover from './components/Turnover';
 import StatEmployee from './components/StatEmployee'
@@ -53,6 +54,7 @@ class App extends React.Component{
             showAdmin : false,
             showEmployee : false,
             showCustomer : false,
+			showFutureAppointment : false,
 			showBadge : moment().date() === 1 ? 1 : 0,
 			openListEmployee : false
 		}	
@@ -63,8 +65,12 @@ class App extends React.Component{
 
 	componentDidMount() {
 		var user = AuthService.getCurrentUser();
-		console.log(user);
+		console.log("USER app",user);
 		if (user) {
+			if(user.role.includes("CUSTOMER")){
+				fetch("http://localhost:8080/customer/getOwnAppointment/"+user.id).then((res) => res.json()).then((json) => json.length !== 0 ? this.setState({ showFutureAppointment : true }) : this.setState({ showFutureAppointment : false }) );//this.setState({ services : json }) 
+			}
+
 		  this.setState({
 			currentUser: user,
 			showCustomer: user.role.includes("CUSTOMER"),
@@ -85,6 +91,7 @@ class App extends React.Component{
 			showCustomer: false,
 			showEmployee: false,
 			showAdmin: false,
+			showFutureAppointment : false
 		});
 	  }
 
@@ -164,10 +171,16 @@ class App extends React.Component{
                       :
                       	<nav >
 							<ul className='menu'>
-								<li><Link to="/signup">Sign Up</Link></li>
-								<li><Link to="/login">Log In</Link></li>
-								<li><Link to="/" onClick={this.logOut}>Log Out</Link></li>
+								{this.state.showCustomer || this.state.showEmployee ? 
+									<li><Link to="/" onClick={this.logOut}>Log Out</Link></li>
+									: 
+									<>
+									<li><Link to="/signup">Sign Up</Link></li>
+									<li><Link to="/login">Log In</Link></li>
+									</>
+								}
 								{this.state.showCustomer ?<li><Link to="/agenda">Make an appointment</Link></li>: null}
+								{this.state.showFutureAppointment ?<li><Link to="/list">Yours upcoming appointments</Link></li>: null}
 								{this.state.showEmployee ?<li><Link to="/employee">Schedule</Link></li> : null}
 								<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
 							</ul>
@@ -186,6 +199,7 @@ class App extends React.Component{
                     <Route path="/statEmployee" element={<StatEmployee />} />
                     <Route path="/barbershop" element={<Barbershop />} />
                     <Route path="/availability" element={<Availability />} />
+					<Route path="/list" element={<ListAppointment />} />
                 </Routes> 
             </BrowserRouter>
 		)

@@ -11,6 +11,7 @@ import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import CircularProgress from '@mui/material/CircularProgress';
 import AuthService from "../services/AuthService";
+import { withRouter } from '../common/with-router';
 
 
 /*
@@ -47,29 +48,21 @@ class Schedule extends React.Component{
         timeChoosen : null,
         service : null,
         error : null,
-        showDialogConfirm : false,
         showProgress : false,
-        startAppointement : this.props.date,
-        endAppointement : null,
         disableRight : ( moment().add(2, 'months').format('L') === moment(this.props.date).format('L')) ? true : false ,
         disableLeft : ( moment().locale('en').format('L') === moment(this.props.date).locale('en').format('L')) ? true : false ,
       }
-      this.handleTimePicker = this.handleTimePicker.bind(this);
       this.handleCancel = this.handleCancel.bind(this);
       this.handleCloseDialog = this.handleCloseDialog.bind(this);
       this.handleConfirm = this.handleConfirm.bind(this);
-      this.validationAppointment = this.validationAppointment.bind(this);
       this.addAppointmentBackend = this.addAppointmentBackend.bind(this);
       this.handleJsonReturn = this.handleJsonReturn.bind(this);
       this.handleChangeDate = this.handleChangeDate.bind(this);
       this.handleDataSchedule = this.handleDataSchedule.bind(this);
-      this.validationSchedule = this.validationSchedule.bind(this);
       this.handleServiceChoosen = this.handleServiceChoosen.bind(this);
-      this.handleDisabledRightArrow();
     }
 
     handleDisabledRightArrow(date){
-      //console.log(moment().add(2, 'months'));
       if(moment().add(2, 'months').locale('en').format('L') === moment(date).locale('en').format('L')){
         console.log("TRUE;")
         return true;
@@ -130,10 +123,7 @@ class Schedule extends React.Component{
     }
 
     handleJsonReturn(value){
-      //console.log(this.state.customerId);
       value.forEach( (element) =>{
-          //console.log(element);
-          //VERIFIER QUE LE CUSTOMER N EST PAS NULL
           if( element.customer_id !== null ){
             if(element.customer_id.id === this.state.customerId ){
               element.title = "your appointment";
@@ -167,7 +157,7 @@ class Schedule extends React.Component{
       while(st < en){
         var test = moment(st);
         var testEnd = moment(test).add(duration, 'minutes');
-        if(this.verificationCreneau(test, testEnd) && st > moment()){
+        if(this.verificationCreneau(test, testEnd) && st > moment() && testEnd<en){
           unavailable.push(st.format('HH:mm'))
         }
         st.add(duration, 'minutes')
@@ -178,7 +168,8 @@ class Schedule extends React.Component{
     verificationCreneau(start, end){
       var boulou = true;
       this.state.schedulerData.forEach( e => {
-        if(  (moment(e.startDate) < start && start < moment(e.endDate))  || (moment(e.startDate) < end && end < moment(e.endDate)) || (start.format('HH:mm') === moment(e.startDate).format('HH:mm'))  ){
+        if(  (moment(e.startDate) < start && start < moment(e.endDate))  || (moment(e.startDate) < end && end < moment(e.endDate)) 
+          || (start.format('HH:mm') === moment(e.startDate).format('HH:mm'))  ){
           boulou = false;
         }
       })
@@ -202,20 +193,10 @@ class Schedule extends React.Component{
           showDialogConfirm : false,  
           startDay : this.state.availability[day].split("-")[0].trim(),
           endDay : this.state.availability[day].split("-")[1].trim(), 
-
-          startAppointement : newDate,
-          endAppointement : null,
-
           disableRight : boolRight,
           disableLeft : boolLeft
       });
       this.handleDataSchedule(); 
-    }
-
-    handleTimePicker(value){
-      this.setState({
-        startAppointement : value
-      });
     }
 
     handleConfirm(){
@@ -224,26 +205,10 @@ class Schedule extends React.Component{
       var startTime = moment(this.state.date.locale('en').format('L')).set({ hour: parseInt(time.split(":")[0]) , minute: parseInt(time.split(":")[1]) });
       var endTime = moment(startTime).add(service.duration, 'minutes')
       this.setState({ schedulerData : [...this.state.schedulerData,{startDate: startTime ,endDate: endTime , title:"your appointment", type:'own'}]});///type:'all'
-      this.addAppointmentBackend(startTime,endTime); 
+      var appt = this.addAppointmentBackend(startTime,endTime); 
+      this.props.router.navigate("/list", {state:{appt}});
     }
 
-/*
-    handleConfirm(){
-      this.state.startAppointement.set('year', this.state.date.year());
-      this.state.startAppointement.set('month', this.state.date.month());
-      this.state.startAppointement.set('date', this.state.date.date());
-      if(this.validationAppointment()){
-        var temps = moment(this.state.startAppointement);
-        var temps2 = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');//AJOUTER LA DURER DU SERVICE
-        this.setState({ startAppointement : moment(this.state.startAppointement) });
-        this.setState({
-          schedulerData : [...this.state.schedulerData,{startDate: temps ,endDate: temps2 , title:"token", type:'own'}]//type:'all',
-        });
-        //AJOUTER DANS LE BACKEND
-        this.addAppointmentBackend(temps,temps2);
-      }      
-    }
-*/
     async addAppointmentBackend(start, end){
         var titre = this.state.service.name;
         var duree = this.state.service.duration;
@@ -251,59 +216,7 @@ class Schedule extends React.Component{
         const requestOptions = { method: 'POST',  headers: {  'Accept': 'application/json', 'Content-Type': 'application/json'   }, body: json };
         const response = await fetch( 'http://localhost:8080/customer/add',requestOptions);
         const data = await response.text();
-    }
-
-    validationAppointment(){
-      var valid = true;
-      if(this.state.service != null ){
-        var endingApp = moment(this.state.startAppointement, "hh:mm A").add(this.state.service.duration, 'minutes');
-        //console.log("VALIDATION SCHEDULE",this.validationSchedule());
-        if(this.validationSchedule()){
-          this.state.schedulerData.forEach(element => {
-            var tmpStart = moment(element.startDate)
-            var tmpEnd = moment(element.endDate)
-            if(tmpStart<this.state.startAppointement &&  tmpEnd>this.state.startAppointement){
-              valid = false;
-              this.setState({error : "You cannot make an appointment when an other has already start."});
-            }
-            if(tmpStart<endingApp &&  tmpEnd>endingApp){
-              valid = false;
-              this.setState({error : "The appointment cannot encroach on the next."});
-            }
-            if(tmpStart.isSame(this.state.startAppointement)){
-              valid = false;
-              this.setState({error : "There is already an appointment at this time."});
-            }
-          });
-        }else{
-          valid = false;
-        }
-      }else{
-        valid = false;
-        this.setState({error : "You have to choose a service to confirm the appointment."});
-      }
-      return valid;
-    }
-
-    validationSchedule(){
-      var valid = true;
-      //console.log("START APPOINTMENT", this.state.startAppointement)
-      if(moment().format('L') === moment(this.state.startAppointement).format('L')){
-        if(moment(this.state.startAppointement) <= moment()){
-          valid = false;
-          this.setState({error : "You cannot make an appointment in the past"});
-        }
-      }else{
-        if( this.state.startAppointement.hour() <= this.state.startDay){
-          valid = false;
-          this.setState({error : "You cannot make an appointment when we do not work"});
-        }
-      }
-      if(  (this.state.endDay  <=  this.state.startAppointement.hour()) || (this.state.startAppointement.hour() == this.state.endDay-1 && this.state.startAppointement.minute()>30 ) ){
-          valid = false;
-          this.setState({error : "You cannot make an appointment when we are gonna finish the job day"}); 
-      }
-      return valid;
+        return data;
     }
 
     handleCancel(){
@@ -338,12 +251,6 @@ class Schedule extends React.Component{
                       style={{ width: 300 }}
                       renderInput={(params) => <TextField {...params} label="Choose the service" variant="outlined" />}
                     />
-                    <LocalizationProvider dateAdapter={DateAdapter}>
-                      <TimePicker
-                        onChange={(newValue) => { this.handleTimePicker(newValue); }}
-                        renderInput={(params) => <TextField style={{ width: 300 }} {...params} />}
-                      />
-                    </LocalizationProvider>
                     <Autocomplete
                       id="creneaux"
                       options={this.state.listHours}
@@ -386,5 +293,4 @@ class Schedule extends React.Component{
         )
     }
 }
-
-export default Schedule;
+export default  withRouter(Schedule);

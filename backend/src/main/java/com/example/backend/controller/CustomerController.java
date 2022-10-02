@@ -22,6 +22,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,7 +52,7 @@ public class CustomerController {
 
 	@CrossOrigin
 	@PostMapping(path="/add") // Map ONLY POST Requests
-	public @ResponseBody String addNewAppointment (@RequestBody AppointmentDto appointment){
+	public @ResponseBody ResponseEntity<Appointment> addNewAppointment (@RequestBody AppointmentDto appointment){
 		System.out.println("ARRIVE !");
 		Appointment a = new Appointment();
 		User customer = userRepository.findById(appointment.customerId).get();
@@ -60,13 +61,15 @@ public class CustomerController {
 		a.setEnd(appointment.endDate);
 		a.setDuration(appointment.duration);
 		a.setHairdresser(userRepository.findById(appointment.hairdresserId).get());
+		System.out.println("email"+customer.getEmail());
 		a.setCustomer(customer);
-		appointmentRepository.save(a);
+		Appointment newAppointment = appointmentRepository.save(a);
+
 		//SEND MAIL
 		String text = this.sendTextMail(a);
 		String status = emailService.sendSimpleMail("malkekourie@hotmail.com", text, "Reservation confirmation" );
 		System.out.println(status);
-		return "Saved";
+		return new ResponseEntity<>(newAppointment, HttpStatus.OK);
   	}
 
 	public String sendTextMail(Appointment a){
@@ -123,9 +126,22 @@ public class CustomerController {
 	}
 
 	@CrossOrigin
+	@GetMapping(path="/getOwnAppointment/{id}")
+	public @ResponseBody List<Appointment> getOwnAppointment(@PathVariable int id ) {
+		return appointmentRepository.findOwnAppointment(id);
+	}
+
+	@CrossOrigin
 	@GetMapping(path="/allServices")
 	public @ResponseBody Iterable<Service> getAllServices() {
 		return serviceRepository.findAll();
+	}
+
+	@CrossOrigin
+	@DeleteMapping(path="/delete/{id}")
+	public @ResponseBody String deleteAppointment(@PathVariable int id) {
+		appointmentRepository.deleteById(id);
+		return "deleted";
 	}
 
 }

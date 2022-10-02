@@ -102,23 +102,13 @@ class ChosenDate extends React.Component{
 		var free;
 		var halfFilled;
 		var full;
-		//console.log(date.format('L'));
-
 		var format = date.locale('en').format('L');
-
-		if(this.state.dayoffHairdresser.includes(format) ){
-			console.log(format)
-		}
-
 		if( ( format === moment().locale('en').format('L')) || (moment() < date)  ){
-			//console.log(date);
 			if(!this.state.dayoffHairdresser.includes(format)){
-				//AVOIR LES HEURES DE TRAVAIL
 				if(this.state.employee !== null){
 					var heureStr = this.state.employee.availability[date.locale('en').format('dddd').toLowerCase()];
 					if( heureStr !== "day off"){
 						var duree = moment.duration(moment(heureStr.split("-")[1], "HH:mm").diff(moment(heureStr.split("-")[0], "HH:mm"))).as('minutes');
-						//AVOIR LES MINUTES
 						if(this.state.hoursByDay.length !== 0){
 							var work = this.contains(date)
 							if(work === null){
@@ -137,7 +127,6 @@ class ChosenDate extends React.Component{
 							free = true;
 						}
 					}else{
-						//console.log(format)
 						full= true;
 					}
 				}
@@ -145,7 +134,6 @@ class ChosenDate extends React.Component{
 				full= true;
 			}
 		}
-
 		return (
 			<CustomPickersDay
 				{...pickersDayProps}
