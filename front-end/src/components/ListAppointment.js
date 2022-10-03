@@ -27,13 +27,18 @@ class ListAppointment extends  PureComponent{
 
     componentDidMount() {
         var user = AuthService.getCurrentUser();
-        if(user.role.includes("CUSTOMER")){
-            fetch("http://localhost:8080/customer/getOwnAppointment/"+user.id).then((res) => res.json()).then((json) => {this.setState({ appointments : json })}  );
-        }
+		if(user !== null){
+			if(user.role.includes("CUSTOMER")){
+				fetch("http://localhost:8080/customer/getOwnAppointment/"+user.id).then((res) => res.json()).then((json) => { json.length===0? this.setState({ show : false }) : this.setState({ show : true })   ; this.setState({ appointments : json })   }  );
+			}else{
+                this.setState({ show : false });
+            }
+		}else{
+			this.setState({ show : false });
+		}
     }
 
     handleDeleteAppointment(id){
-        console.log("delete"+id);
         var direct = false;
         if(this.state.appointments.length === 1){
             direct = true;
@@ -41,7 +46,6 @@ class ListAppointment extends  PureComponent{
         this.setState({appointments: this.state.appointments.filter(obj => { return obj.id !== id; })});
         fetch('http://localhost:8080/customer/delete/'+id, { method: 'DELETE' });
         if(direct){
-            console.log("il ne reste plus rien ");
             this.props.router.navigate("/");
             window.location.reload();
         }
@@ -81,9 +85,6 @@ class ListAppointment extends  PureComponent{
                         </Card>
                     ))}
                 </>
-
-
         )}
 }
-
 export default  withRouter(ListAppointment);
