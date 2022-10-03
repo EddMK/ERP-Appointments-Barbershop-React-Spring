@@ -8,11 +8,13 @@ import { Scheduler, Resources, AppointmentTooltip,WeekView, CurrentTimeIndicator
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
-import moment from "moment";
 import {Dialog,Alert, DialogContent, Grid, Button, IconButton, CircularProgress} from '@mui/material/';
 import { styled, alpha } from '@mui/material/styles';
 import Forward10Icon from '@mui/icons-material/Forward10';
 import LinearProgress from '@mui/material/LinearProgress';
+import AuthService from "../services/AuthService";
+import moment from "moment";
+import { Navigate } from "react-router-dom";
 
 
 
@@ -82,10 +84,11 @@ class Employee extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            hairdresserId : 250,
+            hairdresserId : 0,
             data : [],
             availability : {},
             currentDate : new Date().getTime(),
+            show : true,
             showProgress : false,
             showDialog : false,
             showDialogAbsence : false,
@@ -111,7 +114,6 @@ class Employee extends React.Component{
         this.timeTableCell = this.timeTableCell.bind(this);
         this.dayScaleCell = this.dayScaleCell.bind(this);
         this.handleContent = this.handleContent.bind(this);
-        //console.log(this.state.availability);
     }
 
     handleContent = (  ({children, buttonError,  appointmentData, ...restProps}
@@ -129,28 +131,17 @@ class Employee extends React.Component{
                             </IconButton>
                         </p>
                     </Grid>
-                    <Grid sx={{ m: 2 }}>
-                        <Forward10Icon />
-                    </Grid>
-                    <Grid item xs={10}>
-                        <p>Did the customer come late?
-                            <IconButton color="success" onClick={() => this.handleSuccesButton(appointmentData)} >
-                                    <CheckIcon />
-                            </IconButton>
-                        </p>
-                    </Grid>
                 </Grid>
             : null }
         </AppointmentTooltip.Content>
       ));
 
     handleErrorButton(id){
-        const newData = this.state.data.slice() //copy the array
+        const newData = this.state.data.slice() 
         const ind = newData.findIndex(obj => obj.id === id);
         newData[ind].type="absent";
-        this.setState({data: newData}) //set the new state
-        ///absenceCustomer/{appointmentId}
-        fetch('http://localhost:8080/appointment/absencecustomer/'+id, { method: 'DELETE' }).then(() => console.log("success"));
+        this.setState({data: newData}) 
+        fetch('http://localhost:8080/hairdresser/absencecustomer/'+id, { method: 'DELETE' }).then(() => console.log("success"));
     }
 
     handleSuccesButton(id){
@@ -163,16 +154,25 @@ class Employee extends React.Component{
     }
 
     componentDidMount() {
-        fetch('http://localhost:8080/hairdresser/availibility/250').then(response => response.json()).then(data => this.setState({availability : data}) ); //this.setState({availability : data})                                 
-        this.handleDataSchedule();
+        var user = AuthService.getCurrentUser();
+		if(user !== null){
+			if(user.role.includes("EMPLOYEE")){
+                this.setState({ hairdresserId : user.id})
+                fetch('http://localhost:8080/hairdresser/availibility/'+user.id).then(response => response.json()).then(data => this.setState({availability : data}) );
+                this.handleDataSchedule(user.id);                                
+			}else{
+                this.setState({ show : false });
+            }
+		}else{
+			this.setState({ show : false });
+		}
     }
 
-    handleDataSchedule(){
-        var idHairdresser = 250;
+    handleDataSchedule(idHairdresser){
         var timestamp = this.state.currentDate;
         var date = new Date(timestamp); 
         var long = date.getTime();
-        fetch("http://localhost:8080/appointment/weekWorks/"+long+"/"+idHairdresser).then((res) => res.json()).then( (json) => this.handleJsonReturn(json) );
+        fetch("http://localhost:8080/hairdresser/weekWorks/"+long+"/"+idHairdresser).then((res) => res.json()).then( (json) => this.handleJsonReturn(json) );
     }
 
     handleJsonReturn(value){
@@ -219,19 +219,17 @@ class Employee extends React.Component{
     handleOpenDialogDelay(){
         this.setState({ showDialogDelay: true })
     }
-
+    // ATTENTION LA METHODE ENVOYER LE ID DU COIFFEUR
     async handleChangeDate(value){
         await this.setState({ showProgress : true, currentDate : value });
-        this.handleDataSchedule();
+        this.handleDataSchedule(this.state.hairdresserId);
         this.setState({ showProgress : false }); 
     }
 
     handleAddAbsence(e){
-        console.log("add absence : ",e);
         e.type='absent'
         e.hairdresserId = this.state.hairdresserId
         var arrayToDelete = this.findAppointment(e.startDate, e.endDate)
-        console.log(arrayToDelete);
         if(arrayToDelete.some(a => a.title === 'day off' ||  a.title === 'absence')){
             this.setState({showDialogValidationAbsence : true})
         }else{
@@ -243,7 +241,6 @@ class Employee extends React.Component{
     }
 
     deleteAppointmentBackend(array, absence){
-        //console.log(array);
         if(array.length !== 0){
             array.forEach( (e)  =>{
                 fetch('http://localhost:8080/appointment/delete/'+e.id, { method: 'DELETE'})
@@ -253,19 +250,21 @@ class Employee extends React.Component{
     }
 
     async addNotificationBackend(e, absence){
-        //METTRE LE ID DU HAIRDRESSER
-        var json =  JSON.stringify({"fromid": 250, "toid": 255, "message": "Your hairdresser will be absent on "+ absence.startDate.format('dddd') +" from "+absence.startDate.format('HH:mm')+" to "+absence.endDate.format('HH:mm')+". Cause : "+absence.reason});
+        console.log("ABSENCE ASYNC", e);
+        var json =  JSON.stringify({"sender": this.state.hairdresserId, "receiver": e.customer_id.id, 
+        "message": "Your hairdresser will be absent on "+ absence.startDate.format('dddd') +" from "+absence.startDate.format('HH:mm')
+        +" to "+absence.endDate.format('HH:mm')+". Cause : "+absence.reason});
         const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
         const response = await fetch( 'http://localhost:8080/notification/add',requestOptions);
         const data = await response.text();
-        console.log(data);
     }
 
     async addAbsenceBackend(e){
-        //METTRE LE ID DU HAIRDRESSER
+        console.log("absence",e);
+        e.hairdresser_id = this.state.hairdresserId;
         var json =  JSON.stringify(e);
         const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
-        const response = await fetch( 'http://localhost:8080/appointment/addAbsence',requestOptions);
+        const response = await fetch( 'http://localhost:8080/hairdresser/addAbsence',requestOptions);
         const data = await response.text();
     }
     
@@ -306,8 +305,8 @@ class Employee extends React.Component{
     findAppointment(start, end){
         var array = []
         this.state.data.forEach( a =>{
-            //console.log("title : "+a.title);
-            if( ( this.dateIsAfter(start,moment(a.startDate) ) && this.dateIsAfter(moment(a.startDate), end ) ) ||  (   this.dateIsAfter(start, moment(a.endDate) )  &&   this.dateIsAfter(moment(a.endDate), end) )    ){
+            if( ( this.dateIsAfter(start,moment(a.startDate) ) && this.dateIsAfter(moment(a.startDate), end ) ) 
+            ||  (   this.dateIsAfter(start, moment(a.endDate) )  &&   this.dateIsAfter(moment(a.endDate), end) )    ){
                 array.push(a)
             }else if (this.dateIsSame(start, moment(a.startDate))){
                 array.push(a)
@@ -317,7 +316,6 @@ class Employee extends React.Component{
                 array.push(a)
             }
         })
-        //console.log("findappointment ",array);
         return array;
     }
 
@@ -372,6 +370,11 @@ class Employee extends React.Component{
       };
 
     render(){
+
+        if(this.state.show === false){
+            return <Navigate to='/' />
+        }
+
 		return(
             <div className="Employee">
                 <h1>Schedule</h1>
@@ -388,12 +391,12 @@ class Employee extends React.Component{
                             <Resources data={resources} />
                             <CurrentTimeIndicator shadePreviousCells={true} shadePreviousAppointments={true}  updateInterval={true} />
                         </Scheduler>
-                        <Button variant="contained" onClick={this.handleOpenDialog} >Add day(s) off</Button>
-                        <Button variant="contained" onClick={this.handleOpenDialogAbsence} >Absence this week</Button>
+                        <>
+                        <Button variant="contained" onClick={this.handleOpenDialogAbsence}>Absence this week</Button>
                         <Button variant="contained" onClick={this.handleOpenDialogDelay}>A delay today</Button>
+                        </>
                     </>
                 }
-                {this.state.showDialog ? <AddDaysOff  open={true}  close={this.handleCloseDialog} id={250} /> : null }
                 {this.state.showDialogAbsence ? <Absence open={true} date={this.state.currentDate} availability={this.state.availability} absence={this.handleAddAbsence}  close={this.handleCloseDialogAbsence} id={250} /> : null }
                 {this.state.showDialogDelay ? <Delay open={true} date={this.state.currentDate} delay={this.handleDelay}   close={this.handleCloseDialogDelay} id={250} /> : null }
                 {this.state.showDialogValidationAbsence ?

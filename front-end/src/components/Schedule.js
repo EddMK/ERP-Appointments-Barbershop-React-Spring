@@ -204,7 +204,7 @@ class Schedule extends React.Component{
       var time = this.state.timeChoosen;
       var startTime = moment(this.state.date.locale('en').format('L')).set({ hour: parseInt(time.split(":")[0]) , minute: parseInt(time.split(":")[1]) });
       var endTime = moment(startTime).add(service.duration, 'minutes')
-      this.setState({ schedulerData : [...this.state.schedulerData,{startDate: startTime ,endDate: endTime , title:"your appointment", type:'own'}]});///type:'all'
+      this.setState({ schedulerData : [...this.state.schedulerData,{startDate: startTime ,endDate: endTime , title:"your appointment", type:'own'}]});
       var appt = this.addAppointmentBackend(startTime,endTime); 
       this.props.router.navigate("/list", {state:{appt}});
     }
@@ -212,7 +212,8 @@ class Schedule extends React.Component{
     async addAppointmentBackend(start, end){
         var titre = this.state.service.name;
         var duree = this.state.service.duration;
-        var json =  JSON.stringify({ title : titre , startDate : start, endDate : end,  duration : duree  ,   hairdresserId: this.state.hairdresser.id, customerId : this.state.customerId});
+        var json =  JSON.stringify({ title : titre , startDate : start, endDate : end,  duration : duree  ,  
+           hairdresserId: this.state.hairdresser.id, customerId : this.state.customerId});
         const requestOptions = { method: 'POST',  headers: {  'Accept': 'application/json', 'Content-Type': 'application/json'   }, body: json };
         const response = await fetch( 'http://localhost:8080/customer/add',requestOptions);
         const data = await response.text();

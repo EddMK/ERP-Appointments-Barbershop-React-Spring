@@ -1,7 +1,4 @@
 import * as React from "react";
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
 import DateAdapter from '@mui/lab/AdapterMoment';
 import moment from "moment";
@@ -9,15 +6,16 @@ import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import DialogContentText from '@mui/material/DialogContentText';
+import Box from '@mui/material/Box';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
-import DialogActions from '@mui/material/DialogActions';
 import { styled } from '@mui/material/styles';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
+import AuthService from "../services/AuthService";
+import { Navigate } from "react-router-dom";
 
 const CustomPickersDay = styled(PickersDay, {
 	shouldForwardProp: (prop) =>
@@ -50,14 +48,20 @@ ADAPTATION AVEC LES DISPOS est que
 - il peut pas quand son employé est absent 
 - son cours de week end n est pas considére comme un jours de congé
 */
+
+/*
+ATTENTION !!!!!!!!!!!!!
+QUAND UN CONGE EST AJOUTE ON LE RECUPERE DE LA BASE DE DONNEES POUR LE ID SINON ON PEUT PAS SUPPRIMER !!!!
+*/
+
 export default class AddDaysOff extends React.Component{
 
     constructor(props){
         super(props)
         this.state = {
-            id : this.props.id, 
-            showDialog : this.props.open,
+            hairdresserId : null, 
             checked : true,
+            show : true,
             from : moment(),
             lastDate : moment().add(1,'day'),
             dayAgenda : moment(),
@@ -87,24 +91,31 @@ export default class AddDaysOff extends React.Component{
 
     handleDelete(){
         var str  = moment(this.state.dayAgenda).format('L')
-        var dayoff = this.state.database.find(e => e.title==='day off' && e.hairdresser_id.id === 250 && moment(e.startDate).format('L') === str)
+        var dayoff = this.state.database.find(e => e.title==='day off' && e.hairdresser_id.id === this.state.hairdresserId && moment(e.startDate).format('L') === str)
         this.setState({ database: this.state.database.filter( data => data !== dayoff) , 
             dayoffCount: this.state.dayoffCount.filter( data => data !== str), showButton : false});
-        fetch('http://localhost:8080/appointment/delete/'+dayoff.id, { method: 'DELETE' });
+        fetch('http://localhost:8080/hairdresser/delete/'+dayoff.id, { method: 'DELETE' });
     }
 
-    componentDidMount() {
-		fetch('http://localhost:8080/appointment/daysoff/'+245+'/'+250)
-        .then(response => response.json())
-        .then(data => { var unv = new Set(data.filter(e => e.title !=='day off' || e.hairdresser_id.id !== 250).map(e=>moment(e.startDate).format('L'))); 
-                        var dof = data.filter(e => e.title ==='day off' && e.hairdresser_id.id === 250).map(e=>moment(e.startDate).format('L'));
-                        this.setState({database : data, unavailable : unv, dayoffCount : dof}); });
-        //fetch('http://localhost:8080/availability/daysoff/'+245+'/'+250).then(response => response.json()).then(data => console.log(data));
+    componentDidMount(){
+        var user = AuthService.getCurrentUser();
+		if(user !== null){
+			if(user.role.includes("EMPLOYEE")){
+                this.setState({ hairdresserId : user.id})
+                fetch('http://localhost:8080/hairdresser/daysoffBarbershop/'+user.id)
+                    .then(response => response.json())
+                    .then(data => { var unv = new Set(data.filter(e => e.title !=='day off' || e.hairdresser_id.id !== user.id).map(e=>moment(e.startDate).format('L'))); 
+                                    var dof = data.filter(e => e.title ==='day off' && e.hairdresser_id.id === user.id).map(e=>moment(e.startDate).format('L'));
+                                    this.setState({database : data, unavailable : unv, dayoffCount : dof}); });                               
+			}else{
+                this.setState({ show : false });
+            }
+		}else{
+			this.setState({ show : false });
+		}
 	}
 
     handleColorAgenda(date, selectedDates, pickersDayProps){
-        //console.log(selectedDates);
-        //console.log(pickersDayProps)
 		var dayoffownPast = false;
         var dayoffownFutur = false;
         var unavailable = false;
@@ -113,7 +124,7 @@ export default class AddDaysOff extends React.Component{
         this.state.database.forEach(e => {  
             if(date.format('L') === moment(e.startDate).format('L')){
                 if(e.title ==='day off'){
-                    if(e.hairdresser_id.id === 250){
+                    if(e.hairdresser_id.id === this.state.hairdresserId){
                         if(moment()> moment(e.startDate)){
                             dayoffownPast = true;
                         }else{
@@ -154,15 +165,14 @@ export default class AddDaysOff extends React.Component{
     }
 
     handleDateFirst(e){
-        console.log(this.state.dayoffCount);
         this.notValidDayoff(e) ? this.setState({error : true}) : this.setState({error : false})
         var start ;
         start = e.set({hour:0,minute:0,second:0,millisecond:0});
         if(!this.state.checked){
             var array = [];
             if(start>this.state.lastDate || moment(start).format('L') === moment(this.state.lastDate).format('L') ){
-                this.setState({ lastDate : moment(start).add(1,'day')})
                 var lastDate = moment(start).add(1,'day')
+                this.setState({ lastDate : lastDate})
                 array = this.betweenTwoDates(start, lastDate)
             }else{
                 array = this.betweenTwoDates(start, this.state.lastDate)
@@ -176,7 +186,6 @@ export default class AddDaysOff extends React.Component{
     }
 
     notValidDayoff(e){
-        console.log("VALID ?",e);
         var stringFormat = moment(e).format('L');
         return this.state.unavailable.has(stringFormat) || this.state.dayoffCount.some(v => v === stringFormat); 
     }
@@ -220,7 +229,7 @@ export default class AddDaysOff extends React.Component{
             start.title = 'day off'; 
             start.startDate = moment(this.state.from).set({hour:0,minute:0,second:0,millisecond:0});
             start.hairdresser_id = {};
-            start.hairdresser_id.id = 250;
+            start.hairdresser_id.id = this.state.hairdresserId;
             this.setState({database: [...this.state.database, start], dayoffCount : [...this.state.dayoffCount, moment(start.startDate).format('L')]  });
         }else{
             this.addArrayFrontend();
@@ -237,7 +246,7 @@ export default class AddDaysOff extends React.Component{
             start.title = 'day off'; 
             start.startDate = moment(e);
             start.hairdresser_id = {};
-            start.hairdresser_id.id = 250;
+            start.hairdresser_id.id = this.state.hairdresserId;
             newArray.push(start);
             newArrayFormat.push(moment(e).format('L'))
         })
@@ -269,20 +278,21 @@ export default class AddDaysOff extends React.Component{
           },
           body: json
         };
-        const response = await fetch( 'http://localhost:8080/appointment/addDayOff',requestOptions);
+        const response = await fetch( 'http://localhost:8080/hairdresser/addDayOff',requestOptions);
         const data = await response.text();
         console.log('data add backend : '+data)
         //AFFICHER LA REPONSE
     }
 
     render(){
+        if(this.state.show === false){
+            return <Navigate to='/' />
+        }
         return(
-            <Dialog onClose={this.props.close} open={this.state.showDialog}>
-                    <DialogTitle sx={{ textAlign : "center"}} >Days Off</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="alert-dialog-description" sx={{ mb : 2 }}>
-                            In order to add day off, the coworker must not be on vacation, pas de rendez-vous dans la journée et avoir des jours disponible
-                        </DialogContentText>
+                    <>
+                    <LocalizationProvider dateAdapter={DateAdapter} >
+
+                        <p>In order to add day off, the coworker must not be on vacation, no customer has appointment this day and must have available days</p>
                         <TextField
                             id="outlined-read-only-input"
                             label="Number of days available for this year"
@@ -292,7 +302,6 @@ export default class AddDaysOff extends React.Component{
                             sx={{ width: "100%", mb : 2 }}
                         />
                         <FormControlLabel  sx={{ pr : 35, mb : 2 }} control={<Checkbox  checked={this.state.checked} onChange={this.handleChangeCheck} />} label="One day" />
-                        <LocalizationProvider dateAdapter={DateAdapter} >
                         { this.state.error ?
                             <DatePicker
                                 label= {this.state.checked ? "Choose a day" : "From"}
@@ -311,10 +320,8 @@ export default class AddDaysOff extends React.Component{
                                 renderInput={ (params) => <TextField {...params}  />} 
                             />
                         }
-                        </LocalizationProvider>
                         { ! this.state.checked ? 
                             this.state.errorLast ? 
-                                <LocalizationProvider  dateAdapter={DateAdapter}>
                                     <DatePicker
                                         label="To"
                                         value={this.state.lastDate}
@@ -322,9 +329,7 @@ export default class AddDaysOff extends React.Component{
                                         onChange={(newValue) => { this.handleDateLast(newValue); }}
                                         renderInput={(params) => <TextField {...params} sx={{ml : 5}} error helperText="You can't take time off theses days."/>}
                                     />
-                                </LocalizationProvider>
                             :
-                            <LocalizationProvider  dateAdapter={DateAdapter}>
                                 <DatePicker
                                     label="To"
                                     value={this.state.lastDate}
@@ -332,12 +337,10 @@ export default class AddDaysOff extends React.Component{
                                     onChange={(newValue) => { this.handleDateLast(newValue); }}
                                     renderInput={(params) => <TextField {...params} sx={{ml : 5}} />}
                                 />
-                            </LocalizationProvider>
                         :null
                         }
                         {20-this.state.dayoffCount.length===0 || this.state.alertAvailable ? <InputLabel error>Vous ne pouvez pas dépasser les nombres de jours de congés disponibles</InputLabel> : null}
                         <p>Here you can see your days off (in green) and when you can not take time off (red). In order to remove a day off, you click on the wright day and the button</p>
-                        <LocalizationProvider dateAdapter={DateAdapter}>
                             <StaticDatePicker 
                                 displayStaticWrapperAs="desktop"
                                 openTo="day"
@@ -349,13 +352,12 @@ export default class AddDaysOff extends React.Component{
                                 renderDay={(day, selectedDate, isInCurrentMonth, dayComponent) => this.handleColorAgenda(day, selectedDate, isInCurrentMonth, dayComponent)}
                                 renderInput={(params) => <TextField {...params} />}
                             />
+                        <Box textAlign='center'>
+                            <IconButton disabled={this.state.error || this.state.errorLast || 20-this.state.dayoffCount.length===0 || this.state.alertAvailable} color="success"  onClick={() => { this.handleConfirm()}} ><AddIcon /></IconButton>
+                            <IconButton color="error" disabled={!this.state.showButton} onClick={() => {this.handleDelete()}} ><DeleteForeverIcon /></IconButton>
+                        </Box>
                         </LocalizationProvider>
-                    </DialogContent>
-                    <DialogActions sx={{ justifyContent : "center"}} >
-                        <IconButton disabled={this.state.error || this.state.errorLast || 20-this.state.dayoffCount.length===0 || this.state.alertAvailable} color="success"  onClick={() => { this.handleConfirm()}} ><AddIcon /></IconButton>
-                        <IconButton color="error" disabled={!this.state.showButton} onClick={() => {this.handleDelete()}} ><DeleteForeverIcon /></IconButton>
-                    </DialogActions>
-                </Dialog>
+                    </>
         )
     }
 }

@@ -53,6 +53,6 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
     @Query(value = "SELECT DATE(start_date), SUM(duration)  FROM appointment WHERE title <> 'day off' AND DATE(now()) <=DATE(start_date) AND appointment.hairdresser_id = :id  GROUP BY DATE(appointment.start_date);" ,nativeQuery = true)
     List<Object> hoursDayAfterToday(@Param("id") int id );
 
-    @Query(value = "SELECT * FROM EdBarbershop.appointment WHERE customer_id = :hairdresserId AND now()<start_date ;" ,nativeQuery = true)
+    @Query(value = "SELECT * FROM EdBarbershop.appointment WHERE customer_id = :hairdresserId AND now()<start_date ORDER BY start_date ASC ;" ,nativeQuery = true)
     List<Appointment> findOwnAppointment(@Param("hairdresserId") int hairdresserId );
 }

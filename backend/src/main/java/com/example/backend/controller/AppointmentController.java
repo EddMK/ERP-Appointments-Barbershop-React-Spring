@@ -131,8 +131,6 @@ public class AppointmentController {
   @CrossOrigin
   @GetMapping(path="/weekWorks/{timestamp}/{id}")
   public @ResponseBody List<Appointment> getAppointmentsWeek(@PathVariable long timestamp, @PathVariable int id ) {
-    //System.out.println(timestamp);
-    //System.out.println(id);
     LocalDate localDate = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDate();
     LocalDate monday = localDate;
     while (monday.getDayOfWeek() != DayOfWeek.MONDAY)
@@ -149,8 +147,9 @@ public class AppointmentController {
   }
 
   @CrossOrigin
-  @GetMapping(path="/daysoff/{barbershopId}/{hairdresserId}")
-  public @ResponseBody List<Appointment> getDaysoffByBarbershop(@PathVariable int barbershopId, @PathVariable int hairdresserId ) {
+  @GetMapping(path="/daysoff/{hairdresserId}")
+  public @ResponseBody List<Appointment> getDaysoffByBarbershop(@PathVariable int hairdresserId ) {
+    int barbershopId = userRepository.findById(hairdresserId).get().getBarbershop().getId();
     return appointmentRepository.findDaysoffByBarbershop(barbershopId, hairdresserId);
   }
 
@@ -202,11 +201,10 @@ public class AppointmentController {
     String hour = (new SimpleDateFormat("HH:mm")).format(ts.getTime());
     System.out.println(day);
     System.out.println(hour);
-    Notification n = new Notification(app.getHairdresser().getId(),app.getCustomer().getId(), "You were not present for your appointment on "+day+" at "+hour+".");
+    Notification n = new Notification(app.getHairdresser(),app.getCustomer(), "You were not present for your appointment on "+day+" at "+hour+".");
     notificationRepository.save(n);
     //supprimer le rendez-vous
     appointmentRepository.deleteById(appointmentId);
-    
     return "Deleted";
   }
 
@@ -222,9 +220,7 @@ public class AppointmentController {
       //PREVENIR LE CLIENTS
       Optional<Appointment> app  = appointmentRepository.findById(id);
       Appointment appointment = app.get();
-      int idCustomer = appointment.getCustomer().getId();
-      int idHairdresser = appointment.getHairdresser().getId();
-      Notification n = new Notification(idHairdresser,idCustomer, "The hairdresser arrives late. Your appointment will be postponed for "+minutes+" minutes.");
+      Notification n = new Notification(appointment.getHairdresser(),appointment.getCustomer(), "The hairdresser arrives late. Your appointment will be postponed for "+minutes+" minutes.");
       notificationRepository.save(n);      
       appointment.setStart( new Timestamp(appointment.getStart().getTime() + TimeUnit.MINUTES.toMillis(minutes)) );
       appointment.setEnd(new Timestamp(appointment.getEnd().getTime() + TimeUnit.MINUTES.toMillis(minutes)));

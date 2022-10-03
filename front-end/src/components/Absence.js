@@ -71,8 +71,8 @@ export default class Absence extends React.Component{
             reason : this.state.reason
         }
         console.log(abs);
-        //this.props.absence(abs);
-        //this.setState({showDialog : false})
+        this.props.absence(abs);
+        this.setState({showDialog : false})
     }
 
     handleReason(e){

@@ -12,6 +12,7 @@ import Invoice from './components/Invoice';
 import ListAppointment from './components/ListAppointment';
 import ListEmployees from './components/ListEmployees';
 import Turnover from './components/Turnover';
+import AddDaysOff from './components/AddDaysOff';
 import StatEmployee from './components/StatEmployee'
 import Barbershop from './components/Barbershop';
 import Availability from './components/Availability';
@@ -182,6 +183,7 @@ class App extends React.Component{
 								{this.state.showCustomer ?<li><Link to="/agenda">Make an appointment</Link></li>: null}
 								{this.state.showFutureAppointment ?<li><Link to="/list">Yours upcoming appointments</Link></li>: null}
 								{this.state.showEmployee ?<li><Link to="/employee">Schedule</Link></li> : null}
+								{this.state.showEmployee ?<li><Link to="/daysoff">Days Off</Link></li> : null}
 								<li style={{ float: "left" }}><Link to="/">Ed Barbershop</Link></li>
 							</ul>
 						</nav>
@@ -200,6 +202,7 @@ class App extends React.Component{
                     <Route path="/barbershop" element={<Barbershop />} />
                     <Route path="/availability" element={<Availability />} />
 					<Route path="/list" element={<ListAppointment />} />
+					<Route path="/daysoff" element={<AddDaysOff />} />
                 </Routes> 
             </BrowserRouter>
 		)

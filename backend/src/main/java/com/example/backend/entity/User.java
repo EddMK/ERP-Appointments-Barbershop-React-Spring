@@ -76,6 +76,12 @@ public class User{
     @OneToMany(mappedBy = "hairdresser")
     private Set<Appointment> appointmentEmployees;
 
+    @OneToMany(mappedBy = "sender")
+    private Set<Notification> senders;
+
+    @OneToMany(mappedBy = "receiver")
+    private Set<Notification> receivers;
+
 
     @JsonProperty("id")
     public Integer getId() {

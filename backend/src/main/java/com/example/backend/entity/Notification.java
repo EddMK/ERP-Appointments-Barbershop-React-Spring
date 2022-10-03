@@ -4,6 +4,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 //import javax.persistence.JoinColumn;
 import com.fasterxml.jackson.annotation.JsonProperty;
 //import javax.persistence.ManyToOne;
@@ -15,15 +18,19 @@ public class Notification {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
 
-    private Integer fromId;
+    @ManyToOne
+    @JoinColumn(name = "sender", nullable = true)
+    private User sender;
 
-    private Integer toId;
+    @ManyToOne
+    @JoinColumn(name = "receiver", nullable = true)
+    private User receiver;
 
     private String message;
 
-    public Notification(Integer fromId,Integer toId,String message){
-        this.fromId = fromId;
-        this.toId = toId; 
+    public Notification(User sender,User receiver,String message){
+        this.sender = sender;
+        this.receiver = receiver; 
         this.message = message;  
     }
     
@@ -37,20 +44,20 @@ public class Notification {
         this.id = id;
     }
 
-    public Integer getFromid() {
-        return fromId;
+    public User getSender() {
+        return sender;
     }
     
-    public void setFromid(Integer id) {
-        this.fromId = id;
+    public void setSender(User id) {
+        this.sender = id;
     }
 
-    public Integer getToid() {
-        return toId;
+    public User getReceiver() {
+        return receiver;
     }
     
-    public void setToid(Integer id) {
-        this.toId = id;
+    public void setReceiver(User id) {
+        this.receiver = id;
     }
 
     @JsonProperty("message")

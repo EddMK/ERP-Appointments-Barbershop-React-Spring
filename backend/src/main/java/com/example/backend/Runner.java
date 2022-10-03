@@ -82,9 +82,9 @@ public class Runner implements CommandLineRunner {
         appointmentRepository.save(new Appointment(Timestamp.valueOf(tomorrowStart.withHour(10)),Timestamp.valueOf(tomorrowStart.withHour(20)), "test",null,hairdresser1));
         */
         
-        User rachid = userRepository.findById(255).get();
+        User rachid = userRepository.findById(250).get();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String password = passwordEncoder.encode("malke");
+        String password = passwordEncoder.encode("michel");
         rachid.setPassword(password);
         userRepository.save(rachid);
         logger.info("ApplicationStartupRunner run method Started !!");
