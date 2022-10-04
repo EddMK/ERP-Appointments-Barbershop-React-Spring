@@ -4,6 +4,9 @@ import java.sql.Timestamp;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity 
@@ -11,19 +14,21 @@ public class Expense {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
+    private Integer id;
 
     private String name;
 
     private String type;
 
-    private Integer barbershop;
+    @ManyToOne
+    @JoinColumn(name = "barbershop", nullable = true)
+    private Barbershop barbershop;
 
     private Double  price;
 
     private Timestamp date;
 
-    public Expense(String name, Double price, Timestamp date, String type, Integer barbershopId){
+    public Expense(String name, Double price, Timestamp date, String type, Barbershop barbershopId){
         this.name = name;
         this.price = price; 
         this.date = date;
@@ -33,11 +38,11 @@ public class Expense {
     
     public Expense(){}
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -69,11 +74,11 @@ public class Expense {
     }
 
     @JsonProperty("barbershop")
-    public Integer getBarbershop() {
+    public Barbershop getBarbershop() {
         return barbershop;
     }
     
-    public void setBarbershop(Integer id) {
+    public void setBarbershop(Barbershop id) {
         this.barbershop = id;
     }
 

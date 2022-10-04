@@ -28,6 +28,9 @@ public class Barbershop {
     @JoinColumn(name = "availability_id", referencedColumnName = "id")
     private Availability availability;
 
+    @OneToMany(mappedBy = "barbershop")
+    private Set<Expense> expenses;
+
 
     public Barbershop (String name, String address){
         this.name = name;

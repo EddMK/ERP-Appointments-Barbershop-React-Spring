@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -258,6 +259,12 @@ public class AdminController {
   }
 
   @CrossOrigin
+  @GetMapping(path="/expenses")
+  public @ResponseBody Iterable<Expense> getAllExpenses() {
+    return expenseRepository.findAll();
+  }
+
+  @CrossOrigin
   @GetMapping(path="/availability")
   public @ResponseBody List<Object> getAvailability() {
     int id = 245;
@@ -294,6 +301,19 @@ public class AdminController {
     a.setSunday(availability.getSunday());
     availabilityRepository.save(a);
     return "Saved";
+  }
+
+  @CrossOrigin
+  @GetMapping(path="/minExpenses")
+  public @ResponseBody Timestamp getMinDateExpense() {
+    return expenseRepository.getMinDate();//getMinDate
+  }
+
+  @CrossOrigin
+  @DeleteMapping(path="/deleteExpense/{id}")
+  public @ResponseBody String deleteExpense(@PathVariable int id) {
+      expenseRepository.deleteById(id);
+      return "deleted";
   }
 
 

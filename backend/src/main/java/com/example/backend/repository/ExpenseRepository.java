@@ -2,6 +2,7 @@ package com.example.backend.repository;
 
 import com.example.backend.entity.Expense;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
@@ -20,5 +21,7 @@ public interface ExpenseRepository extends CrudRepository<Expense, Integer> {
     @Query(value = "SELECT SUM(price) AS expense  FROM expense WHERE   MONTH(date) = MONTH( NOW() )   AND YEAR(date) = YEAR( NOW() ) ;" ,nativeQuery = true)
     Integer findExpenseThisMonth();
 
+    @Query(value = "SELECT min(date) FROM EdBarbershop.expense; " ,nativeQuery = true)
+    Timestamp getMinDate();
 
 }

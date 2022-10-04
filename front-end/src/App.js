@@ -1,12 +1,12 @@
 import React from "react";
 import './App.css';
-import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Signup from './components/Signup.js';
 import Home from './components/Home';
 import Login from './components/Login';
 import Agenda from './components/Agenda';
 import Employee from './components/Employee';
+import ListExpense from './components/ListExpense';
 import Admin from './components/Admin';
 import Invoice from './components/Invoice';
 import ListAppointment from './components/ListAppointment';
@@ -21,7 +21,7 @@ import Drawer from '@mui/material/Drawer';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import {Badge, Collapse} from '@mui/material/';
+import {Collapse} from '@mui/material/';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import Toolbar from '@mui/material/Toolbar';
@@ -35,6 +35,11 @@ import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutl
 import AuthService from "./services/AuthService";
 import EventBus from "./common/eventBus.js";
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import FormatListBulletedOutlinedIcon from '@mui/icons-material/FormatListBulletedOutlined';
+import PointOfSaleOutlinedIcon from '@mui/icons-material/PointOfSaleOutlined';
 
 
 //cacher : turnover, statistique de l employe
@@ -57,11 +62,17 @@ class App extends React.Component{
             showCustomer : false,
 			showFutureAppointment : false,
 			showBadge : moment().date() === 1 ? 1 : 0,
-			openListEmployee : false
+			openListEmployee : false,
+			open : false
 		}	
 
 		this.logOut = this.logOut.bind(this);
-        
+        this.handleClick = this.handleClick.bind(this);
+	}
+
+	handleClick(){
+		console.log("clicke");
+		this.setState({open : !this.state.open})
 	}
 
 	componentDidMount() {
@@ -125,18 +136,37 @@ class App extends React.Component{
 									</ListItemButton>
 								</ListItem>
 							</Link>
+							<ListItem button disablePadding>
+									<ListItemButton onClick={this.handleClick}>
+										<ListItemIcon>
+												<PointOfSaleOutlinedIcon />
+										</ListItemIcon>
+										<ListItemText primary="Expenses" />
+										{this.state.open ? <ExpandLess /> : <ExpandMore />}
+									</ListItemButton>
+								</ListItem>
+							<Collapse in={this.state.open} timeout="auto" unmountOnExit>
 							<Link to="/invoice"  style={{ textDecoration: 'none', color:'white' }} >
 								<ListItem button disablePadding>
 									<ListItemButton>
 										<ListItemIcon>
-											<Badge badgeContent={this.state.showBadge} color="primary">
-												<AddShoppingCartOutlinedIcon />
-											</Badge>											
+											<AddCircleOutlineIcon />											
 										</ListItemIcon>
-										<ListItemText primary="Expense" />
+										<ListItemText primary="Add" />
 									</ListItemButton>
 								</ListItem>
 							</Link>
+							<Link to="/listExpense"  style={{ textDecoration: 'none', color:'white' }} >
+								<ListItem button disablePadding>
+										<ListItemButton>
+											<ListItemIcon>
+													<FormatListBulletedOutlinedIcon />
+											</ListItemIcon>
+											<ListItemText primary="List" />
+										</ListItemButton>
+								</ListItem>
+							</Link>
+							</Collapse>
 							<Link to="/employees"  style={{ textDecoration: 'none', color:'white' }} >
 								<ListItem button disablePadding>
 									<ListItemButton >
@@ -203,10 +233,35 @@ class App extends React.Component{
                     <Route path="/availability" element={<Availability />} />
 					<Route path="/list" element={<ListAppointment />} />
 					<Route path="/daysoff" element={<AddDaysOff />} />
-                </Routes> 
+					<Route path="/listExpense" element={<ListExpense />} />
+                </Routes> //ListExpense
             </BrowserRouter>
 		)
 	}
 }
 
 export default  App;
+/*
+
+
+
+
+<ListItemButton onClick={handleClick}>
+        <ListItemIcon>
+          <InboxIcon />
+        </ListItemIcon>
+        <ListItemText primary="Inbox" />
+        {open ? <ExpandLess /> : <ExpandMore />}
+      </ListItemButton>
+      <Collapse in={open} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          <ListItemButton sx={{ pl: 4 }}>
+            <ListItemIcon>
+              <StarBorder />
+            </ListItemIcon>
+            <ListItemText primary="Starred" />
+          </ListItemButton>
+        </List>
+      </Collapse>
+
+*/
