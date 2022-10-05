@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.backend.dto.ExpenseDto;
 import com.example.backend.entity.Availability;
 import com.example.backend.entity.Barbershop;
 import com.example.backend.entity.User;
@@ -239,15 +240,14 @@ public class AdminController {
 
   @CrossOrigin
   @PostMapping(path="/addExpense")
-  public @ResponseBody String addExpense (@RequestBody Expense expense){
+  public @ResponseBody String addExpense (@RequestBody ExpenseDto expense){
     System.out.println("bien arrivé !");
-    System.out.println(expense.getName()+" "+expense.getBarbershop()+" "+expense.getType());
     Expense e = new Expense();
-    e.setName(expense.getName());
-    e.setDate(expense.getDate());
-    e.setPrice(expense.getPrice());
-    e.setBarbershop(expense.getBarbershop());
-    e.setType(expense.getType());
+    e.setName(expense.name);
+    e.setDate(expense.date);
+    e.setPrice(expense.price);
+    e.setBarbershop(barbershopRepository.findById(expense.barbershop).get());
+    e.setType(expense.type);
     expenseRepository.save(e);
     return "Saved";
   }
@@ -261,14 +261,13 @@ public class AdminController {
   @CrossOrigin
   @GetMapping(path="/expenses")
   public @ResponseBody Iterable<Expense> getAllExpenses() {
-    return expenseRepository.findAll();
+    return expenseRepository.findAll();//PAR ORDRE CHRONOLOGIQUE
   }
 
   @CrossOrigin
-  @GetMapping(path="/availability")
-  public @ResponseBody List<Object> getAvailability() {
-    int id = 245;
-    Optional<Barbershop> b = barbershopRepository.findById(245);
+  @GetMapping(path="/availability/{id}")
+  public @ResponseBody List<Object> getAvailability(@PathVariable int id) {
+    Optional<Barbershop> b = barbershopRepository.findById(id);
     Barbershop c = b.get();
     Availability av = c.getAvailability();
     String name = c.getName();

@@ -234,34 +234,10 @@ class App extends React.Component{
 					<Route path="/list" element={<ListAppointment />} />
 					<Route path="/daysoff" element={<AddDaysOff />} />
 					<Route path="/listExpense" element={<ListExpense />} />
-                </Routes> //ListExpense
+                </Routes> 
             </BrowserRouter>
 		)
 	}
 }
 
 export default  App;
-/*
-
-
-
-
-<ListItemButton onClick={handleClick}>
-        <ListItemIcon>
-          <InboxIcon />
-        </ListItemIcon>
-        <ListItemText primary="Inbox" />
-        {open ? <ExpandLess /> : <ExpandMore />}
-      </ListItemButton>
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
-          <ListItemButton sx={{ pl: 4 }}>
-            <ListItemIcon>
-              <StarBorder />
-            </ListItemIcon>
-            <ListItemText primary="Starred" />
-          </ListItemButton>
-        </List>
-      </Collapse>
-
-*/

@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import moment from "moment";
 import 'moment/locale/fr'
-import { Paper, Grid , Typography,  Table, Checkbox, FormControlLabel, TextField, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, DialogTitle,  Dialog , DialogActions, DialogContent}from '@mui/material/';
+import { Paper, Grid , Autocomplete, Typography,  Table, Checkbox, FormControlLabel, TextField, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, DialogTitle,  Dialog , DialogActions, DialogContent}from '@mui/material/';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import DateAdapter from '@mui/lab/AdapterMoment';
@@ -18,8 +18,10 @@ export default class Availability extends  PureComponent{
             showBarbershopEdit : false,
             choosen : {},
             barberChoosen : false,
+            barberSelected : null,
             error : false,
             titleDialog : "",
+            barbershops : [],
             arrayHide : {},
             minimum : moment('8:00','HH:mm'),
             maximum : moment('22:00','HH:mm'),
@@ -31,10 +33,23 @@ export default class Availability extends  PureComponent{
         this.handleChangeTime = this.handleChangeTime.bind(this)
         this.handleEdit = this.handleEdit.bind(this);
         this.handleCheckbox = this.handleCheckbox.bind(this);
+        this.handleBarbershopChange = this.handleBarbershopChange.bind(this);
+        this.getAvailabilityBarbers = this.getAvailabilityBarbers.bind(this);
     }
 
     componentDidMount() {
-        fetch("http://localhost:8080/admin/availability/").then((res) => res.json()).then( (json) => this.setState({agenda : json})); 
+        fetch('http://localhost:8080/barbershop/all').then(response => response.json()).then(data => this.setState({barbershops : data}));
+    }
+
+    handleBarbershopChange(value) {
+        if(value !== null){
+          this.setState({barberSelected : value});
+          this.getAvailabilityBarbers(value.id);
+        }
+    }
+
+    getAvailabilityBarbers(id){
+        fetch("http://localhost:8080/admin/availability/"+id).then((res) => res.json()).then( (json) =>{ console.log(json)   ;this.setState({agenda : json}); }  ); 
     }
 
     async putAvailability(available){
@@ -95,7 +110,7 @@ export default class Availability extends  PureComponent{
             }
             
         });
-        return bool;
+        return bool; 
     }
 
     handleEdit(){
@@ -174,6 +189,19 @@ export default class Availability extends  PureComponent{
 		return(
             <div className='availability' style={{marginLeft: 160 + 'px'}}>
                 <Typography variant="h3" align="center" marginBottom={5}>Availability</Typography>
+
+                <Autocomplete
+						disablePortal
+						id="barbershop"
+                        value={this.state.barberSelected}
+						options={this.state.barbershops}
+						getOptionLabel={(option) => option.name}
+						sx={{ width: 300, marginTop : 2 }}
+						onChange={(event,newValue) => {
+							this.handleBarbershopChange(newValue);
+						}}
+						renderInput={(params) => <TextField {...params} label="Choose a barbershop" />}
+				/>
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
                         <TableHead>
@@ -191,6 +219,7 @@ export default class Availability extends  PureComponent{
                         </TableHead>
                         <TableBody>
                             {this.state.agenda.map((row) => (
+                                row[1] !== null ? 
                                 <TableRow key={row[0]} sx={{ '&:last-child td, &:last-child th': { border: 0 } }} >
                                     <TableCell component="th" scope="row"> {row[0]} </TableCell>
                                     <TableCell align="right">{row[1].monday}</TableCell>
@@ -202,6 +231,7 @@ export default class Availability extends  PureComponent{
                                     <TableCell align="right">{row[1].sunday}</TableCell>
                                     <TableCell align="right"><Button onClick={() => this.handleEditBarbershopSchedule(row)}>{row[0]}</Button></TableCell>
                                 </TableRow>
+                                : null
                             ))}
                         </TableBody>
                     </Table>

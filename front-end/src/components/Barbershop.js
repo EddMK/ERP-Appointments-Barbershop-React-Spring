@@ -40,7 +40,7 @@ export default class Barbershop extends  PureComponent{
 
 
     changeJsonData(json){
-      //console.log(json);
+      console.log(json);
         var array = json.map((e) => {
           var rObj = {};
           rObj.name = e[0];

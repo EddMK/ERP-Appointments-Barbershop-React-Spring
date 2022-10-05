@@ -1,10 +1,7 @@
 import React, { PureComponent } from 'react';
-import {Paper, Autocomplete, Grid , Typography, InputAdornment, Button, TextField}from '@mui/material/';
+import {Paper, Autocomplete , Typography,TextField}from '@mui/material/';
 import moment from "moment";
-import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import DateAdapter from '@mui/lab/AdapterMoment';
-import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 
 export default class ComparisonBarbershops extends  PureComponent{
@@ -39,12 +36,10 @@ export default class ComparisonBarbershops extends  PureComponent{
         timeValues.pop()
       }
 
-      console.log(timeValues);
       this.setState({ list : timeValues})
     }
 
     changeJsonData(json){
-      console.log(json)
       var array = json.map((e) => {
         var rObj = {};
         rObj.name = e[0];
@@ -65,7 +60,6 @@ export default class ComparisonBarbershops extends  PureComponent{
       if(e === null){
         this.setState({barChart : null});
       }else{
-        console.log(e);
         var year = parseInt(e.slice(0, 4));
         var month = parseInt(e.slice(5, 7));
         fetch("http://localhost:8080/admin/barChart/"+month+"/"+year+"/").then((res) => res.json()).then( (json) => this.changeJsonData(json));
@@ -76,7 +70,6 @@ export default class ComparisonBarbershops extends  PureComponent{
 		return(
               <Paper sx={{width:600, height: 450 , backgroundColor: '#F4F6F6'}}>
                 <Typography variant="h5" align="center" gutterBottom>Compare barbershops by month</Typography>
-
                 <Autocomplete
                   disablePortal
                   id="barbershop"
@@ -86,18 +79,7 @@ export default class ComparisonBarbershops extends  PureComponent{
                   onChange={(event,newValue) => { this.handleChangeDate(newValue)}}
                   renderInput={(params) => <TextField {...params} label="Choose a month" />}
                 />
-                
-                    <BarChart
-                        width={500}
-                        height={350}
-                        data={this.state.barChart}
-                        margin={{
-                            top: 20,
-                            right: 30,
-                            left: 20,
-                            bottom: 5,
-                        }}
-                        >
+                    <BarChart width={500} height={350} data={this.state.barChart} margin={{ top: 20, right: 30, left: 20, bottom: 5, }} >
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
@@ -109,7 +91,6 @@ export default class ComparisonBarbershops extends  PureComponent{
                         <Bar dataKey="Taxes" stackId="a" fill="#33F9FF" />
                         <Bar dataKey="Materiel" stackId="a" fill="#FFB533" />
                     </BarChart>
-                </Paper>
-
+              </Paper>
         )}
 }

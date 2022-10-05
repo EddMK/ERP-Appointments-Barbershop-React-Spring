@@ -15,7 +15,7 @@ export default class Invoice extends  PureComponent{
             name : "",
             price : "",
             barbershops : [],
-            type : "",
+            type : null,
             barber : null
         };
         this.handleName = this.handleName.bind(this);
@@ -48,22 +48,16 @@ export default class Invoice extends  PureComponent{
         console.log("type", this.state.type)
         console.log("barber", this.state.barber.id)
         
-        var json =  JSON.stringify({ name : this.state.name, 
-                                    date : this.state.date, 
-                                    price : this.state.price,
-                                    type : this.state.type,
-                                    barbershop : this.state.barber.id});
+        var json =  JSON.stringify({ name : this.state.name,  date : this.state.date,  price : this.state.price,
+                                    type : this.state.type, barbershop : this.state.barber.id});
         const requestOptions = {
           method: 'POST',
-          headers: { 
-            'Accept': 'application/json',
-            'Content-Type': 'application/json' 
-          },
+          headers: {  'Accept': 'application/json', 'Content-Type': 'application/json'  },
           body: json
         };
         console.log(requestOptions);
-        const response = await fetch( 'http://localhost:8080/admin/addExpense',requestOptions);
-        this.setState({price : "", name : "", type:"", barbershop : null})
+        //const response = await fetch( 'http://localhost:8080/admin/addExpense',requestOptions);
+        this.setState({price : "", name : "", type:null, barber : null})
         
     }
 
@@ -73,9 +67,10 @@ export default class Invoice extends  PureComponent{
                 <Typography variant="h4" align="center" marginBottom={10}>Expense</Typography>
                 <Container sx={{ width:415 }}>
                         <Autocomplete  
-                            inputValue={this.state.type} 
-                            onInputChange={(event, newInputValue) => { this.setState({type : newInputValue})  }}  
-                             
+                            
+                            value={this.state.type} 
+                            onChange={(event, newInputValue) => { this.setState({type : newInputValue})     }}    
+ 
                             options={['Charges', 'Taxes', 'Matériaux']} 
                             sx={{ marginBottom: 2 }} 
                             renderInput={(params) => <TextField {...params} 
@@ -84,6 +79,7 @@ export default class Invoice extends  PureComponent{
                             <Autocomplete
                                 disablePortal
                                 id="barbershop"
+                                value={this.state.barber}
                                 options={this.state.barbershops}
                                 getOptionLabel={(option) => option.name}
                                 onChange={(event,newValue) => { this.setState({barber : newValue});}}
@@ -113,7 +109,7 @@ export default class Invoice extends  PureComponent{
                                     renderInput={(params) => <TextField {...params} sx={{ width: 415 , marginBottom: 2 }}  />}
                                 />
                             </LocalizationProvider>        
-                        <Button onClick={this.handleConfirm} disabled={this.state.name === "" || this.state.price === "" || this.state.type === "" || this.state.barber === null } variant="contained">Confirm</Button>     
+                        <Button onClick={this.handleConfirm} disabled={this.state.name.trim() === "" || isNaN(this.state.price) || this.state.price === "" || this.state.type === null || this.state.barber === null } variant="contained">Confirm</Button>     
                 </Container>                
             </div>
         )

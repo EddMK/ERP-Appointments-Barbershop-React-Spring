@@ -16,7 +16,6 @@ public interface ExpenseRepository extends CrudRepository<Expense, Integer> {
 
     @Query(value = " SELECT type, COALESCE(SUM(price), 0)  FROM expense WHERE MONTH(date) = :month   AND YEAR(date) = :year AND  barbershop = :barbershopId GROUP BY type;" ,nativeQuery = true)
     List<List<String>> getExpenseByBarbershop( @Param("month") int month, @Param("year") int year, @Param("barbershopId") int barbershopId );
-    //List<Object> getExpenseByBarbershop(@Param("month") int month, @Param("year") int year, @Param("barbershopId") int barbershopId );
 
     @Query(value = "SELECT SUM(price) AS expense  FROM expense WHERE   MONTH(date) = MONTH( NOW() )   AND YEAR(date) = YEAR( NOW() ) ;" ,nativeQuery = true)
     Integer findExpenseThisMonth();
