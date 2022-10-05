@@ -1,8 +1,9 @@
 import React, { PureComponent } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area, Legend, ResponsiveContainer } from 'recharts';
+import {  XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area} from 'recharts';
 import {Paper, Grid , Typography}from '@mui/material/';
-import moment from "moment";
 import ComparisonBarbershops from './ComparisonBarbershops';
+import { Navigate } from "react-router-dom";
+import AuthService from "../services/AuthService";
 
 
 
@@ -14,17 +15,28 @@ export default class Admin extends  PureComponent{
             turnover : null,
             turnoverMonth : null,
             expenseMonth : null,
-            evolutionTurnoverExpense : null
+            evolutionTurnoverExpense : null,
+            showComponent : true
         };
 		    // faire en sorte que le premier du mois il paye tout 
     }
 
      componentDidMount() {
-         fetch("http://localhost:8080/admin/evolutionTurnoverExpense/").then((res) => res.json()).then( (json) => this.changeJsonDataEvolution(json));
+        var user = AuthService.getCurrentUser();
+        if(user !== null){
+          if(! user.role.includes("ADMIN")){
+            this.setState({ showComponent : false });
+          }else{
+            fetch("http://localhost:8080/admin/evolutionTurnoverExpense/").then((res) => res.json()).then( (json) => this.changeJsonDataEvolution(json));
          fetch("http://localhost:8080/admin/turnoverToday/").then((res) => res.json()).then( (json) => this.setState({turnover : json})); 
          fetch("http://localhost:8080/admin/turnoverThisMonth/").then((res) => res.json()).then( (json) => this.setState({turnoverMonth : json}));   
          fetch("http://localhost:8080/admin/expenseThisMonth/").then((res) => res.json()).then( (json) => this.setState({expenseMonth : json}));   
-    }
+
+          }
+        }else{
+          this.setState({ showComponent : false });
+        }
+      }
 
     changeJsonDataEvolution(json){
       console.log(json)
@@ -41,6 +53,10 @@ export default class Admin extends  PureComponent{
     }
 
     render(){
+
+      if(this.state.showComponent === false){
+        return <Navigate to='/' />
+    }
 		return(
             <div className='admin' style={{marginLeft: 160 + 'px'}}>
                 <Typography variant="h4" align="center" gutterBottom  style={{marginBottom: 50 + 'px'}}>Admin</Typography>

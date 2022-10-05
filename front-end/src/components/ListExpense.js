@@ -5,6 +5,8 @@ import DateAdapter from '@mui/lab/AdapterMoment';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import DatePicker from '@mui/lab/DatePicker';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { Navigate } from "react-router-dom";
+import AuthService from "../services/AuthService";
 
 
 export default class ListExpense extends  PureComponent{
@@ -21,6 +23,7 @@ export default class ListExpense extends  PureComponent{
             typeChoosen : null,
             monthChoosen : null , 
             checked : true,
+            showComponent : true,
         };
         this.handleBarber = this.handleBarber.bind(this);
         this.handleType = this.handleType.bind(this);
@@ -30,10 +33,19 @@ export default class ListExpense extends  PureComponent{
     }
 
     componentDidMount() {
-        fetch("http://localhost:8080/admin/expenses/").then((res) => res.json()).then( (json) => this.setState({expenses : json, showTable : json}));
-        fetch("http://localhost:8080/barbershop/all/").then((res) => res.json()).then( (json) => this.setState({barbershops : json})); 
-        fetch("http://localhost:8080/admin/minExpenses/").then((res) => res.json()).then( (json) => this.setState({dateMin : moment(json)})); 
-    }
+        var user = AuthService.getCurrentUser();
+        if(user !== null){
+          if(! user.role.includes("ADMIN")){
+            this.setState({ showComponent : false });
+          }else{
+            fetch("http://localhost:8080/admin/expenses/").then((res) => res.json()).then( (json) => this.setState({expenses : json, showTable : json}));
+            fetch("http://localhost:8080/barbershop/all/").then((res) => res.json()).then( (json) => this.setState({barbershops : json})); 
+            fetch("http://localhost:8080/admin/minExpenses/").then((res) => res.json()).then( (json) => this.setState({dateMin : moment(json)})); 
+          }
+        }else{
+          this.setState({ showComponent : false });
+        }
+            }
 
     handleDelete(id){
         console.log(id);
@@ -88,6 +100,9 @@ export default class ListExpense extends  PureComponent{
     }
 
     render(){
+        if(this.state.showComponent === false){
+            return <Navigate to='/' />
+        }
 		return(
             <div className='listExpense' style={{marginLeft: 160 + 'px'}}>
                 <Typography marginBottom={3} variant="h4" align="center" gutterBottom>Expenses</Typography>

@@ -4,6 +4,8 @@ import moment from "moment";
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import DateAdapter from '@mui/lab/AdapterMoment';
+import { Navigate } from "react-router-dom";
+import AuthService from "../services/AuthService";
 
 
 export default class Invoice extends  PureComponent{
@@ -16,7 +18,8 @@ export default class Invoice extends  PureComponent{
             price : "",
             barbershops : [],
             type : null,
-            barber : null
+            barber : null,
+            showComponent : true
         };
         this.handleName = this.handleName.bind(this);
         this.handlePrice = this.handlePrice.bind(this);
@@ -25,7 +28,16 @@ export default class Invoice extends  PureComponent{
     }
 
     componentDidMount() {
-		fetch('http://localhost:8080/barbershop/all').then(response => response.json()).then(data => this.setState({barbershops : data}));
+        var user = AuthService.getCurrentUser();
+        if(user !== null){
+          if(! user.role.includes("ADMIN")){
+            this.setState({ showComponent : false });
+          }else{
+            fetch('http://localhost:8080/barbershop/all').then(response => response.json()).then(data => this.setState({barbershops : data}));
+          }
+        }else{
+          this.setState({ showComponent : false });
+        }
 	}
 
     handleName(e){
@@ -62,6 +74,9 @@ export default class Invoice extends  PureComponent{
     }
 
     render(){
+        if(this.state.showComponent === false){
+            return <Navigate to='/' />
+        }
 		return(
             <div className='invoice' style={{marginLeft: 160 + 'px'}}>
                 <Typography variant="h4" align="center" marginBottom={10}>Expense</Typography>

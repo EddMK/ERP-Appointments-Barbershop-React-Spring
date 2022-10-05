@@ -5,8 +5,9 @@ import { Paper, Grid , Autocomplete, Typography,  Table, Checkbox, FormControlLa
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import DateAdapter from '@mui/lab/AdapterMoment';
+import { Navigate } from "react-router-dom";
+import AuthService from "../services/AuthService";
 
-// Faire en sorte de choisir un barbershop
 // Il peut y avoir des répercussions quand on change d'horaire... Il se peut que des rendez-vous soient pris et du coup faut les supprimer
 // barbier change à 17:00 - 20:00 voir comment faire 
 
@@ -26,6 +27,7 @@ export default class Availability extends  PureComponent{
             minimum : moment('8:00','HH:mm'),
             maximum : moment('22:00','HH:mm'),
             agenda :[],
+            showComponent : true
         };
         moment.locale('fr');
         this.handleEditBarbershopSchedule = this.handleEditBarbershopSchedule.bind(this);
@@ -38,7 +40,16 @@ export default class Availability extends  PureComponent{
     }
 
     componentDidMount() {
-        fetch('http://localhost:8080/barbershop/all').then(response => response.json()).then(data => this.setState({barbershops : data}));
+        var user = AuthService.getCurrentUser();
+        if(user !== null){
+          if(! user.role.includes("ADMIN")){
+            this.setState({ showComponent : false });
+          }else{
+            fetch('http://localhost:8080/barbershop/all').then(response => response.json()).then(data => this.setState({barbershops : data}));
+          }
+        }else{
+          this.setState({ showComponent : false });
+        }
     }
 
     handleBarbershopChange(value) {
@@ -186,9 +197,12 @@ export default class Availability extends  PureComponent{
     }
 
     render(){
+        if(this.state.showComponent === false){
+            return <Navigate to='/' />
+        }
 		return(
             <div className='availability' style={{marginLeft: 160 + 'px'}}>
-                <Typography variant="h3" align="center" marginBottom={5}>Availability</Typography>
+                <Typography variant="h3" align="center" marginBottom={5}>Schedule</Typography>
 
                 <Autocomplete
 						disablePortal

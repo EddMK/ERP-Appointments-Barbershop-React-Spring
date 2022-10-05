@@ -26,12 +26,10 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import Toolbar from '@mui/material/Toolbar';
 import Divider from '@mui/material/Divider';
-import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import moment from "moment";
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
-import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
 import AuthService from "./services/AuthService";
 import EventBus from "./common/eventBus.js";
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
@@ -107,6 +105,11 @@ class App extends React.Component{
 		});
 	  }
 
+	  componentWillUnmount() {
+		alert('REMOVE');
+		EventBus.remove("logout");
+	  }
+
 	render(){
 		return(
             <BrowserRouter>
@@ -167,23 +170,13 @@ class App extends React.Component{
 								</ListItem>
 							</Link>
 							</Collapse>
-							<Link to="/employees"  style={{ textDecoration: 'none', color:'white' }} >
-								<ListItem button disablePadding>
-									<ListItemButton >
-										<ListItemIcon>
-											<GroupsOutlinedIcon />	
-										</ListItemIcon>
-										<ListItemText primary="Employees" />
-									</ListItemButton>
-								</ListItem>
-							</Link>
 							<Link to="/availability"  style={{ textDecoration: 'none', color:'white' }} >
 								<ListItem button disablePadding>
 									<ListItemButton >
 										<ListItemIcon>
 												<EventAvailableOutlinedIcon />
 										</ListItemIcon>
-										<ListItemText primary="Availability" />
+										<ListItemText primary="Schedule" />
 									</ListItemButton>
 								</ListItem>
 							</Link>
@@ -241,3 +234,17 @@ class App extends React.Component{
 }
 
 export default  App;
+
+/*
+<Link to="/employees"  style={{ textDecoration: 'none', color:'white' }} >
+								<ListItem button disablePadding>
+									<ListItemButton >
+										<ListItemIcon>
+											<GroupsOutlinedIcon />	
+										</ListItemIcon>
+										<ListItemText primary="Employees" />
+									</ListItemButton>
+								</ListItem>
+							</Link>
+
+*/

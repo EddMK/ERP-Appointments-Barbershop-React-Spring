@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
-import {Paper, Autocomplete, Grid , Typography, InputAdornment, Button, TextField}from '@mui/material/';
-import moment from "moment";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {Paper, Autocomplete, Grid , Typography, TextField}from '@mui/material/';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { Navigate } from "react-router-dom";
+import AuthService from "../services/AuthService";
 
 export default class Barbershop extends  PureComponent{
     
@@ -12,7 +13,8 @@ export default class Barbershop extends  PureComponent{
             hairdressers : [],
             barberChoosen : null,
             evolutionExpense : [],
-            evolutionHairdresser : []
+            evolutionHairdresser : [],
+            showComponent : true
         };
         this.handleBarbershopChange = this.handleBarbershopChange.bind(this);
         this.stringToColor = this.stringToColor.bind(this);
@@ -20,9 +22,17 @@ export default class Barbershop extends  PureComponent{
     }
 
     componentDidMount() {
-        fetch('http://localhost:8080/barbershop/all').then(response => response.json()).then(data => this.setState({barbershops : data}));
-
-            }
+        var user = AuthService.getCurrentUser();
+        if(user !== null){
+          if(! user.role.includes("ADMIN")){
+            this.setState({ showComponent : false });
+          }else{
+            fetch('http://localhost:8080/barbershop/all').then(response => response.json()).then(data => this.setState({barbershops : data}));
+          }
+        }else{
+          this.setState({ showComponent : false });
+        }
+    }
 
     changeJsonDataSecond(json){
       console.log(json)
@@ -79,7 +89,7 @@ export default class Barbershop extends  PureComponent{
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
     var colour = '#';
-    for (var i = 0; i < 3; i++) {
+    for ( i = 0; i < 3; i++) {
       var value = (hash >> (i * 8)) & 0xFF;
       colour += ('00' + value.toString(16)).substr(-2);
     }
@@ -87,6 +97,9 @@ export default class Barbershop extends  PureComponent{
   }
 
     render(){
+      if(this.state.showComponent === false){
+        return <Navigate to='/' />
+    }
 		return(
             <div className='Barbershop' style={{marginLeft: 160 + 'px'}}>
                 <Typography variant="h4" align="center" gutterBottom  style={{marginBottom: 50 + 'px'}}>{this.state.barberChoosen === null ?  "Barbershop" : this.state.barberChoosen.name }</Typography>
