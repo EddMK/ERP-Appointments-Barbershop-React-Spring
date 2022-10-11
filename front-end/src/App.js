@@ -105,10 +105,6 @@ class App extends React.Component{
 		});
 	  }
 
-	  componentWillUnmount() {
-		alert('REMOVE');
-		EventBus.remove("logout");
-	  }
 
 	render(){
 		return(

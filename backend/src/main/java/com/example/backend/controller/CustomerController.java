@@ -11,6 +11,8 @@ import com.example.backend.repository.UserRepository;
 import com.example.backend.repository.ServiceRepository;
 import com.example.backend.email.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -52,7 +54,7 @@ public class CustomerController {
 
 	@CrossOrigin
 	@PostMapping(path="/add") // Map ONLY POST Requests
-	public @ResponseBody ResponseEntity<Appointment> addNewAppointment (@RequestBody AppointmentDto appointment){
+	public @ResponseBody ResponseEntity<Appointment> addNewAppointment (@RequestBody AppointmentDto appointment) throws IOException{
 		System.out.println("ARRIVE !");
 		Appointment a = new Appointment();
 		User customer = userRepository.findById(appointment.customerId).get();
@@ -60,46 +62,17 @@ public class CustomerController {
 		a.setStart(appointment.startDate);
 		a.setEnd(appointment.endDate);
 		a.setDuration(appointment.duration);
+		a.setSequence(0);
 		a.setHairdresser(userRepository.findById(appointment.hairdresserId).get());
-		System.out.println("email"+customer.getEmail());
+		System.out.println("email : "+customer.getEmail());
 		a.setCustomer(customer);
 		Appointment newAppointment = appointmentRepository.save(a);
-
-		//SEND MAIL
-		String text = this.sendTextMail(a);
-		String status = emailService.sendSimpleMail("malkekourie@hotmail.com", text, "Reservation confirmation" );
+		String text = BodyMail.bodyAddAppointment(newAppointment);
+		File obj = FileMail.fileAddAppointment(newAppointment);
+		String status = emailService.sendMailWithAttachment(a.getCustomer().getEmail(), text, "EdBarbershop - Reservation confirmation", obj );
 		System.out.println(status);
 		return new ResponseEntity<>(newAppointment, HttpStatus.OK);
   	}
-
-	public String sendTextMail(Appointment a){
-		String rep = "";
-		rep += "Dear customer";
-		rep += "\n";
-		rep += "\n";
-		rep += "Your appointment is confirmed successfully.";
-		rep += "\n";
-		rep += "Details :";
-		rep += "\n";
-		String day = (new SimpleDateFormat("EEEE")).format(a.getStart());
-		String date = (new SimpleDateFormat("dd/MM/yyyy")).format(a.getStart());
-		String from = (new SimpleDateFormat("HH:mm")).format(a.getStart());
-		String to = (new SimpleDateFormat("HH:mm")).format(a.getEnd());
-		rep += "-When ? "+day+" "+date+" from "+from+" to "+to;
-		rep += "\n";
-		rep += "-What ? "+a.getTitle();
-		rep += "\n";
-		Barbershop b = a.getHairdresser().getBarbershop();
-		rep += "-Where ? "+b.getName()+", Adresse : "+b.getAddress();
-		rep += "\n";
-		rep += "-Who ? "+a.getHairdresser().getLastName()+" "+a.getHairdresser().getFirstName();
-		rep += "\n";
-		rep += "\n";
-		rep += "See you soon !";
-		rep += "\n";
-		rep += "EdBarbershop";
-		return rep;
-	}
 
 	@CrossOrigin
 	@GetMapping(path="/hours/{id}") // Map ONLY POST Requests
@@ -139,9 +112,15 @@ public class CustomerController {
 
 	@CrossOrigin
 	@DeleteMapping(path="/delete/{id}")
-	public @ResponseBody String deleteAppointment(@PathVariable int id) {
+	public @ResponseBody String deleteAppointment(@PathVariable int id) throws IOException {
+		//LE CLIENT SUPPRIMER ENVOYER UN MAIL ET UN EVENEMENT
+		Appointment newAppointment = appointmentRepository.findById(id).get();
+		String text = BodyMail.bodyDeleteAppointment(newAppointment);
+		File obj = FileMail.fileDeleteAppointment(newAppointment);
+		//CHANGER LE MAIL DU CLIENT
+		String status = emailService.sendMailWithAttachment(newAppointment.getCustomer().getEmail(), text, "EdBarbershop - Reservation canceled", obj );
 		appointmentRepository.deleteById(id);
-		return "deleted";
+		return "deleted - "+status;
 	}
 
 }

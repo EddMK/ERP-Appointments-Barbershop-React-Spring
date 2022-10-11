@@ -1,6 +1,9 @@
 package com.example.backend.email;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.FileWriter;
+
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,33 +56,25 @@ public class EmailServiceImpl {
  
     // Method 2
     // To send an email with attachment
-    public String
-    sendMailWithAttachment(String recipient, String body, String subject)
-    {
+    public String sendMailWithAttachment(String recipient, String body, String subject, File event) throws IOException {
         // Creating a mime message
         MimeMessage mimeMessage
             = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper;
  
         try {
- 
-            // Setting multipart as true for attachments to
-            // be send
-            mimeMessageHelper
-                = new MimeMessageHelper(mimeMessage, true);
+            mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
             mimeMessageHelper.setFrom(sender);
             mimeMessageHelper.setTo(recipient);
             mimeMessageHelper.setText(body);
             mimeMessageHelper.setSubject( subject);
- 
             // Adding the attachment
-            FileSystemResource file = new FileSystemResource( new File("chemin"));//CREER UN CHEMIN
- 
-            mimeMessageHelper.addAttachment(
-                file.getFilename(), file);
- 
+            FileSystemResource file = new FileSystemResource(event);//CREER UN CHEMIN
+            mimeMessageHelper.addAttachment(file.getFilename(), file);
             // Sending the mail
             javaMailSender.send(mimeMessage);
+            //DELETE FILE
+            event.delete();
             return "Mail sent Successfully";
         }
  

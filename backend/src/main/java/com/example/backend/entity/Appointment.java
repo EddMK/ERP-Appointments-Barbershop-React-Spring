@@ -23,6 +23,8 @@ public class Appointment {
   private String title;
 
   private Integer duration;
+
+  private Integer sequence;
  
   @ManyToOne
   @JoinColumn(name = "customer_id", nullable = true)
@@ -41,9 +43,7 @@ public class Appointment {
     this.duration = duree;
   }
 
-  public Appointment(){
-
-  }
+  public Appointment(){  }
 
   public Integer getId() {
     return id;
@@ -77,6 +77,14 @@ public class Appointment {
 
   public void setDuration (Integer dur){
     this.duration = dur;
+  }
+
+  public Integer getSequence() {
+    return sequence;
+  }
+
+  public void setSequence(Integer seq) {
+    this.sequence = seq;
   }
 
   @JsonProperty("title")
