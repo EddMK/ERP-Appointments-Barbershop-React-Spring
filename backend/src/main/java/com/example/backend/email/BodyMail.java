@@ -1,4 +1,4 @@
-package com.example.backend.controller;
+package com.example.backend.email;
 
 import java.text.SimpleDateFormat;
 
@@ -37,6 +37,71 @@ public class BodyMail {
 		rep += "\n";
         rep += "Please click attachment file in order to take the event off your calendar";
         rep += "\n";
+		rep += "See you soon !";
+		rep += "\n";
+		rep += "EdBarbershop";
+		return rep;
+	}
+
+	public static String bodyAbsenceHairdresser(Appointment a){
+		String rep = "";
+		rep += "Dear customer";
+		rep += "\n";
+		rep += "\n";
+		rep += "Your appointment is cancelled because your hairdresser can not be present.";
+		rep += "\n";
+		rep += detailsAppointment(a);
+		rep += "\n";
+		rep += "\n";
+        rep += "Please click attachment file in order to take the event off your calendar";
+        rep += "\n";
+		rep += "See you soon !";
+		rep += "\n";
+		rep += "EdBarbershop";
+		return rep;
+	}
+
+	public static String notificateAbsenceHairdresser(String message){
+		String rep = "";
+		rep += "Dear customer";
+		rep += "\n";
+		rep += "\n";
+		rep += message;
+		rep += "\n";
+        rep += "\n";
+		rep += "See you soon !";
+		rep += "\n";
+		rep += "EdBarbershop";
+		return rep;
+	}
+
+	public static String notificateAbsenceCustomer(String message){
+		String rep = "";
+		rep += "Dear customer";
+		rep += "\n";
+		rep += "\n";
+		rep += message;
+		rep += "\n";
+        rep += "\n";
+		rep += "Warning at the third time your account will be blocked";
+		rep += "\n";
+		rep += "See you soon !";
+		rep += "\n";
+		rep += "EdBarbershop";
+		return rep;
+	}
+
+	public static String bodyDelay(Appointment a, int delay){
+		String rep = "";
+		rep += "Dear customer";
+		rep += "\n";
+		rep += "\n";
+		rep += "Your appointment has been shifted by "+delay+" minutes because of your hairdresser's delay.";
+		rep += "\n";
+		rep += detailsAppointment(a);
+		rep += "\n";
+		rep += "Please excuse us for the inconvenience.";
+		rep += "\n";
 		rep += "See you soon !";
 		rep += "\n";
 		rep += "EdBarbershop";

@@ -1,16 +1,13 @@
 import * as React from "react";
 import './Employee.css';
-import AddDaysOff from './AddDaysOff';
 import Absence from './Absence';
 import Delay from './Delay';
 import { ViewState } from '@devexpress/dx-react-scheduler';
 import { Scheduler, Resources, AppointmentTooltip,WeekView, CurrentTimeIndicator, Toolbar, DateNavigator, Appointments, TodayButton, } from '@devexpress/dx-react-scheduler-material-ui';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
-import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
-import {Dialog,Alert, DialogContent, Grid, Button, IconButton, CircularProgress} from '@mui/material/';
+import {Dialog,Alert, DialogContent, Grid, Button, IconButton} from '@mui/material/';
 import { styled, alpha } from '@mui/material/styles';
-import Forward10Icon from '@mui/icons-material/Forward10';
 import LinearProgress from '@mui/material/LinearProgress';
 import AuthService from "../services/AuthService";
 import moment from "moment";
@@ -137,6 +134,7 @@ class Employee extends React.Component{
       ));
 
     handleErrorButton(id){
+        //SUPPRIMER A LA PLACE DE LE METTRE EN COULEUR
         const newData = this.state.data.slice() 
         const ind = newData.findIndex(obj => obj.id === id);
         newData[ind].type="absent";
@@ -144,8 +142,8 @@ class Employee extends React.Component{
         fetch('http://localhost:8080/hairdresser/absencecustomer/'+id, { method: 'DELETE' }).then(() => console.log("success"));
     }
 
+    // PAS UTILISER
     handleSuccesButton(id){
-        // PAS UTILISER
         console.log(id);
         const newData = this.state.data.slice() //copy the array
         const ind = newData.findIndex(obj => obj.id === id);
@@ -243,7 +241,7 @@ class Employee extends React.Component{
     deleteAppointmentBackend(array, absence){
         if(array.length !== 0){
             array.forEach( (e)  =>{
-                fetch('http://localhost:8080/appointment/delete/'+e.id, { method: 'DELETE'})
+                fetch('http://localhost:8080/hairdresser/delete/'+e.id, { method: 'DELETE'})
                 this.addNotificationBackend(e, absence);
             })
         }
@@ -252,10 +250,10 @@ class Employee extends React.Component{
     async addNotificationBackend(e, absence){
         console.log("ABSENCE ASYNC", e);
         var json =  JSON.stringify({"sender": this.state.hairdresserId, "receiver": e.customer_id.id, 
-        "message": "Your hairdresser will be absent on "+ absence.startDate.format('dddd') +" from "+absence.startDate.format('HH:mm')
-        +" to "+absence.endDate.format('HH:mm')+". Cause : "+absence.reason});
+        "message": "Your hairdresser will be absent on "+ moment(absence.startDate).format('dddd') +" from "+moment(absence.startDate).format('HH:mm')
+        +" to "+moment(absence.endDate).format('HH:mm')+". Cause : "+absence.reason});
         const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
-        const response = await fetch( 'http://localhost:8080/notification/add',requestOptions);
+        const response = await fetch( 'http://localhost:8080/hairdresser/notificateAbsence',requestOptions);
         const data = await response.text();
     }
 
@@ -271,34 +269,69 @@ class Employee extends React.Component{
     handleDelay(e){
         var delay = parseInt(e.delay)
         var arrayBackend = this.findAppointmentDay(e.date, delay)
-        this.addDelayBackend(arrayBackend.map((e) => e.id), delay )
+        arrayBackend.forEach( (element) =>{
+            console.log(element);
+            this.putDelayAppointment(element, delay);
+        })
+    }
+
+    putDelayAppointment(appointment,delay){
+        const requestOptions = { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(appointment)};
+        fetch('http://localhost:8080/hairdresser/putDelay/'+delay, requestOptions).then(response => response.text()).then(data => console.log(data));
     }
 
     findAppointmentDay(date, delayMinute){
         var array = []
         var arrayBackend = []
-        this.state.data.forEach( a =>{
-            if(moment(a.startDate).format('L') === date.format('L')){
-                var nv = a;
-                nv.startDate = moment(nv.startDate).add(delayMinute, 'minutes');
-                nv.endDate = moment(nv.endDate).add(delayMinute, 'minutes');
-                array.push(nv)
-                arrayBackend.push(nv)
+        var data = this.state.data;
+        var absenceOfDay = this.findAbsenceDay(date);
+        data.sort(function(a,b){ return moment(a) - moment(b);  });
+        data.forEach( (element, index)  =>{
+            if(moment(element.startDate).format('L') === date.format('L')){
+                if(moment(absenceOfDay).isValid() && moment(absenceOfDay)<moment(element.startDate)){
+                    array.push(element)
+                }else{
+                    var deleteAppoitment = false;
+                    var next = data[index+1];
+                    if(next !== undefined){
+                        if(next.title === "absence"){
+                            if(  moment(element.endDate).add(delayMinute, 'minutes') > moment(next.startDate) ){
+                                deleteAppoitment = true;
+                                fetch('http://localhost:8080/hairdresser/delete/'+element.id, { method: 'DELETE'})
+                                this.addNotificationBackend(element, next);
+                            }
+                        }
+                    }
+                    if(deleteAppoitment === false){
+                        if(element.title !== "absence"){
+                            var nv = element;
+                            nv.startDate = moment(nv.startDate).add(delayMinute, 'minutes');
+                            nv.endDate = moment(nv.endDate).add(delayMinute, 'minutes');
+                            array.push(nv)
+                            arrayBackend.push(nv)
+                        }else{
+                            array.push(element)
+                        }
+                    }
+                }
             }else{
-                array.push(a)
+                array.push(element)
             }
         })
         this.setState({ data : array})
-        //array.sort(function(a, b){return(moment(a.startDate)-moment(b.startDate))});
-        //adapter avec l absence
         return arrayBackend
     }
 
-    addDelayBackend(array, delay){
-        //console.log(array);
-        if(array.length !== 0){
-            fetch('http://localhost:8080/appointment/delay/'+delay+'/?ids='+array, { method: 'DELETE' });
-        }
+    findAbsenceDay(date){
+        var absence = null;
+        this.state.data.forEach( (element)  =>{
+            if(moment(element.startDate).format('L') === date.format('L')){
+                if(element.title==="absence"){
+                    absence = element.startDate;
+                }
+            }
+        })
+        return absence;
     }
 
     //utiliser la fonction .diff() pour comparer

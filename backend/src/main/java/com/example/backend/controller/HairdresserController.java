@@ -3,6 +3,10 @@ package com.example.backend.controller;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.dto.AppointmentDto;
+import com.example.backend.dto.NotificationDto;
+import com.example.backend.email.BodyMail;
+import com.example.backend.email.EmailServiceImpl;
+import com.example.backend.email.FileMail;
 import com.example.backend.entity.Appointment;
 import com.example.backend.entity.Availability;
 import com.example.backend.repository.UserRepository;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -40,6 +45,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -69,6 +76,9 @@ public class HairdresserController {
 
   @Autowired 
   private NotificationRepository notificationRepository;
+
+  @Autowired 
+	private EmailServiceImpl emailService;
 
   @CrossOrigin
   @GetMapping(path="/availibility/{id}")
@@ -119,10 +129,51 @@ public class HairdresserController {
 
     @CrossOrigin
     @DeleteMapping(path="/delete/{id}")
-    public @ResponseBody String deleteAppointment(@PathVariable int id) {
+    public @ResponseBody String deleteAppointment(@PathVariable int id) throws IOException {
+      //ENVOYER MAIL 
+      //LE CLIENT SUPPRIMER ENVOYER UN MAIL ET UN EVENEMENT
+      Appointment newAppointment = appointmentRepository.findById(id).get();
+      String text = BodyMail.bodyAbsenceHairdresser(newAppointment);
+      File obj = FileMail.fileDeleteAppointment(newAppointment);
+      //CHANGER LE MAIL DU CLIENT
+      String status = emailService.sendMailWithAttachment(newAppointment.getCustomer().getEmail(), text, "EdBarbershop - Reservation canceled", obj );
       appointmentRepository.deleteById(id);
-      return "deleted";
+      return "deleted - "+status;
     }
+
+    @CrossOrigin
+    @PostMapping(path="/notificateAbsence") // Map ONLY POST Requests
+    public @ResponseBody String addNewNotification (@RequestBody NotificationDto notification){
+      Notification n = new Notification();
+      User customer = userRepository.findById(notification.receiver).get();
+      n.setReceiver(userRepository.findById(notification.receiver).get());
+      n.setSender(userRepository.findById(notification.sender).get());
+      n.setMessage(notification.message);
+      //CUSTOMER !!
+      notificationRepository.save(n);
+      //ENVOYER MAIL AU BNEDIM
+      String text = BodyMail.notificateAbsenceHairdresser(notification.message);
+      String status = emailService.sendSimpleMail(customer.getEmail(), text, "EdBarbershop - Notification");
+      return "Saved "+status;
+    }
+
+    @CrossOrigin
+    @PutMapping(path="/putDelay/{delay}") // Map ONLY POST Requests
+    public @ResponseBody String putDelay (@RequestBody Appointment appointment, @PathVariable int delay) throws IOException{
+      //IL RESTE A ENVOYER LE MAIL ET LE ICS + ESSAYER D AVOIR LES MINUTES POUR indiquer au type
+      System.out.println(appointment.getId());
+      Appointment oldAppointment = appointmentRepository.findById(appointment.getId()).get();
+      oldAppointment.setEnd(appointment.getEnd());
+      oldAppointment.setStart(appointment.getStart());
+      oldAppointment.setSequence(appointment.getSequence()+1);
+      appointmentRepository.save(oldAppointment);
+      String text = BodyMail.bodyDelay(oldAppointment, delay);
+      File obj = FileMail.fileRescheduleAppointment(oldAppointment);
+      String status = emailService.sendMailWithAttachment(oldAppointment.getCustomer().getEmail(), text, "EdBarbershop - Reservation reschedule", obj );
+      return "Updated "+status;
+    }
+
+
 
     @CrossOrigin
     @PostMapping(path="/addDayOff") // Map ONLY POST Requests
@@ -166,9 +217,12 @@ public class HairdresserController {
       Timestamp ts = app.getStart();
       String day = (new SimpleDateFormat("EEEE", Locale.ENGLISH)).format(ts.getTime());
       String hour = (new SimpleDateFormat("HH:mm")).format(ts.getTime());
-      Notification n = new Notification(app.getHairdresser(),app.getCustomer(), 
-      "You were not present for your appointment on "+day+" at "+hour+".");
+      String message = "You were not present for your appointment on "+day+" at "+hour+".";
+      Notification n = new Notification(app.getHairdresser(),u, message);
       notificationRepository.save(n);
+      //ENVOYER MAIL AU BNEDIM
+      String text = BodyMail.notificateAbsenceCustomer(message);
+      String status = emailService.sendSimpleMail( u.getEmail(), text, "EdBarbershop - Notification");
       //supprimer le rendez-vous
       appointmentRepository.deleteById(appointmentId);
       return "Deleted";
