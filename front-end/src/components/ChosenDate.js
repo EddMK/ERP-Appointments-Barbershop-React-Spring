@@ -137,7 +137,6 @@ class ChosenDate extends React.Component{
 		return (
 			<CustomPickersDay
 				{...pickersDayProps}
-				//disableMargin
 				free = {free}
 				halfFilled = {halfFilled}
 				full = {full}

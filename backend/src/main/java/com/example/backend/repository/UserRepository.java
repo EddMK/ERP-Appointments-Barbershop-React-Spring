@@ -16,6 +16,8 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     Optional<User>  findByEmail(String email);
 
+    Boolean existsByEmail(String email);
+
     User findById(Long Id);
 
     @Query(value = "SELECT * FROM user WHERE  barbershop_id IS NOT NULL " ,nativeQuery = true)

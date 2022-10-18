@@ -54,12 +54,8 @@ public class EmailServiceImpl {
         }
     }
  
-    // Method 2
-    // To send an email with attachment
     public String sendMailWithAttachment(String recipient, String body, String subject, File event) throws IOException {
-        // Creating a mime message
-        MimeMessage mimeMessage
-            = javaMailSender.createMimeMessage();
+        MimeMessage mimeMessage  = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper;
  
         try {
@@ -68,20 +64,14 @@ public class EmailServiceImpl {
             mimeMessageHelper.setTo(recipient);
             mimeMessageHelper.setText(body);
             mimeMessageHelper.setSubject( subject);
-            // Adding the attachment
-            FileSystemResource file = new FileSystemResource(event);//CREER UN CHEMIN
+            FileSystemResource file = new FileSystemResource(event);
             mimeMessageHelper.addAttachment(file.getFilename(), file);
-            // Sending the mail
             javaMailSender.send(mimeMessage);
-            //DELETE FILE
             event.delete();
             return "Mail sent Successfully";
         }
  
-        // Catch block to handle MessagingException
         catch (MessagingException e) {
- 
-            // Display message when exception occurred
             return "Error while sending mail!!!";
         }
     }

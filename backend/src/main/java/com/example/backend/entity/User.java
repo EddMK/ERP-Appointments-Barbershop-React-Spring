@@ -14,6 +14,7 @@ import javax.persistence.OneToOne;
 
 import org.springframework.security.core.GrantedAuthority;
 //import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -64,6 +65,16 @@ public class User{
         this.role = role;
         this.barbershop = barbershop;
         this.start = start;
+    } 
+
+    public User(String lastName, String firstName, String email, String phoneNumber, String password){
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        this.password = passwordEncoder.encode(password);
+        this.role = Role.CUSTOMER;
     } 
     
     public User(){

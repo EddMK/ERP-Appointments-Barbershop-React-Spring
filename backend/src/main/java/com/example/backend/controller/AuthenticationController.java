@@ -15,9 +15,13 @@ import javax.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
+
+import com.example.backend.entity.User;
+import com.example.backend.repository.UserRepository;
 import com.example.backend.security.AuthRequest;
 import com.example.backend.security.AuthResponse;
 import com.example.backend.security.JwtTokenUtil;
+import com.example.backend.security.SignupRequest;
 import com.example.backend.security.UserDetail;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -25,8 +29,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @Controller 
 @RequestMapping(path="/authentication") 
 public class AuthenticationController {
-    @Autowired AuthenticationManager authManager;
-    @Autowired JwtTokenUtil jwtUtil;
+    @Autowired 
+    AuthenticationManager authManager;
+    @Autowired 
+    JwtTokenUtil jwtUtil;
+    
+    @Autowired 
+    private UserRepository userRepository;
 
     @PostMapping(path="/login") 
     public ResponseEntity<?> login(@RequestBody @Valid AuthRequest request) {
@@ -54,5 +63,36 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> registerCustomer(@Valid @RequestBody SignupRequest signUpRequest) {
+        if (userRepository.existsByEmail(signUpRequest.email)) {
+            return ResponseEntity.badRequest().body(new MessageError("Error: Email is already in use!"));//
+        }
+        User customer = new User(signUpRequest.lastName, signUpRequest.firstName, signUpRequest.email, signUpRequest.phone, signUpRequest.password);  
+        userRepository.save(customer);
+        Authentication authentication = authManager.authenticate( new UsernamePasswordAuthenticationToken( signUpRequest.email, signUpRequest.password) );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetail user = (UserDetail) authentication.getPrincipal();
+        List<String> roles = user.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toList());
+        System.out.println("Roles"+roles);
+        String accessToken = jwtUtil.generateAccessToken(user);
+        //AuthResponse response = new AuthResponse(user.getUsername(), accessToken);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, accessToken).body(new AuthResponse(user.renvoieid(), user.getUsername(), roles, accessToken));
+    }
+
+    static class MessageError{
+        public String body;
+
+        MessageError(String body){
+            this.body= body;
+        }
+
+        public void setBody(String mess){
+            this.body = mess;
+        }
+    }
     
 }
+
