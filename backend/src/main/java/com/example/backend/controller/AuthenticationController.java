@@ -41,24 +41,20 @@ public class AuthenticationController {
     public ResponseEntity<?> login(@RequestBody @Valid AuthRequest request) {
         System.out.println(request.getEmail());
         System.out.println(request.getPassword());
+        if (userRepository.existsByEmail(request.getEmail())) {
+            if(userRepository.findByEmail(request.getEmail()).get().getAbsence() >= 3){
+                return ResponseEntity.badRequest().body(new MessageError("Error: Your account has been blocked because you did not warn your absence 3 times."));//
+            }
+        }
         try {
-            Authentication authentication = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(), request.getPassword())
-            );
+            Authentication authentication = authManager.authenticate( new UsernamePasswordAuthenticationToken( request.getEmail(), request.getPassword()) );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             UserDetail user = (UserDetail) authentication.getPrincipal();
             List<String> roles = user.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
-            System.out.println("Roles"+roles);
             String accessToken = jwtUtil.generateAccessToken(user);
-            //AuthResponse response = new AuthResponse(user.getUsername(), accessToken);
-
-            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, accessToken)
-        .body(new AuthResponse(user.renvoieid(), user.getUsername(), roles, accessToken));
-            //return ResponseEntity.ok().body(response);
-             
+            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, accessToken).body(new AuthResponse(user.renvoieid(), user.getUsername(), roles, accessToken));             
         } catch (BadCredentialsException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

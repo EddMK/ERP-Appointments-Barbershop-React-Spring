@@ -11,6 +11,8 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 import PickersDay, { PickersDayProps, pickersDayClasses } from "@mui/lab/PickersDay";
+import AuthService from "../services/AuthService";
+
 
 
 const CustomPickersDay = styled(PickersDay, {
@@ -44,7 +46,8 @@ class ChosenDate extends React.Component{
 			barbershops : [],
 			hairdressers : [],
 			dayoffHairdresser : [],
-			showDialogConfirm : false
+			showDialogConfirm : false,
+			user : AuthService.getCurrentUser()
 		};
 		this.handleHairdressChange = this.handleHairdressChange.bind(this);
 		this.handleBarbershopChange = this.handleBarbershopChange.bind(this);
@@ -70,7 +73,6 @@ class ChosenDate extends React.Component{
 	}
 
 	setHairdresserList(id){
-		//console.log("GET THE HAIRDRESSERS FROM ");
 		fetch('http://localhost:8080/customer/hairdressByBarbershop/'+id)
         .then(response => response.json())
         .then(data => this.setState({hairdressers : data}));
@@ -78,9 +80,7 @@ class ChosenDate extends React.Component{
 
     handleHairdressChange(value) {
 		this.setState({ employee: value });
-		console.log("coiffeur : ",value);
 		if(value !== null){
-			//ON CHECK DANS LA BASE DE DONNEES
 			fetch('http://localhost:8080/customer/hours/'+value.id).then(response => response.json()).then(data => this.setState({hoursByDay : data}));//array1.map(x => x * 2);
 			fetch('http://localhost:8080/customer/dayoff/'+value.id).then(response => response.json()).then(data => this.setState({dayoffHairdresser : data.map(d => moment(d).locale('en').format('L')) }));//this.setState({dayoffHairdresser : data})
 		}

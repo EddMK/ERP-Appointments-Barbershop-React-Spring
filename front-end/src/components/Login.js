@@ -15,7 +15,7 @@ Atention mots de passe compris entre 5 et 10 caractères
 		this.state={
 			username : "",
 			password : "",
-			errorAuto : false,
+			errorAuto : "",
 		}	
 		this.handleConfirm = this.handleConfirm.bind(this);
 	}
@@ -23,27 +23,32 @@ Atention mots de passe compris entre 5 et 10 caractères
 	async handleConfirm(){
 		const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({	email : this.state.username.trim(), password : this.state.password.trim()})};
 		await fetch( 'http://localhost:8080/authentication/login',requestOptions)
-		.then((response) => response.status === 200 ? response.json() : response  )
+		.then((response) => response.status === 200 ||  response.status === 400 ? response.json() : response  )
 		.then((data) => {
 			console.log(data);
-			if (data.accessToken) {
-				localStorage.setItem("user", JSON.stringify(data));
-				if(data.role.includes("ADMIN")){
-					this.props.router.navigate("/admin");
-					window.location.reload();
-				}
-				if(data.role.includes("EMPLOYEE")){
-					this.props.router.navigate("/employee");
-					window.location.reload();
-				}
-				if(data.role.includes("CUSTOMER")){
-					this.props.router.navigate("/agenda");
-					window.location.reload();
-				}
-			}else{
+			if(data.status===401){
 				console.log("ERREUR");
-				this.setState({errorAuto : true})
-			}
+				this.setState({errorAuto : "Username or password is not correct"})
+			}else{
+				if (data.accessToken) {
+					localStorage.setItem("user", JSON.stringify(data));
+					if(data.role.includes("ADMIN")){
+						this.props.router.navigate("/admin");
+						window.location.reload();
+					}
+					if(data.role.includes("EMPLOYEE")){
+						this.props.router.navigate("/employee");
+						window.location.reload();
+					}
+					if(data.role.includes("CUSTOMER")){
+						this.props.router.navigate("/agenda");
+						window.location.reload();
+					}
+				}else{
+					console.log("ERREUR TROP ABSENT");
+					this.setState({errorAuto : data.body})
+				}
+			} 
 		});
 	}
 
@@ -80,7 +85,7 @@ Atention mots de passe compris entre 5 et 10 caractères
 						variant="outlined"
 						onChange={(event) => this.setState({password : event.target.value})}/> 
 				</div>
-				{this.state.errorAuto ? <Typography variant="body2" color="red" gutterBottom>Username or password is not correct</Typography> : null }
+				{this.state.errorAuto !== "" ? <Typography variant="body2" color="red" gutterBottom>{this.state.errorAuto}</Typography> : null }
 				<div className="bouton">
 					<Button variant="contained" disabled={this.validEmailTest(this.state.username) || this.state.username.trim()==="" || this.state.password.trim()==="" } onClick={() => { this.handleConfirm() ;}}>Log In</Button>
 				</div>
