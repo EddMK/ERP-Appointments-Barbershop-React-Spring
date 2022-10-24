@@ -16,6 +16,7 @@ import org.springframework.http.*;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 
+import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.security.AuthRequest;
@@ -42,8 +43,11 @@ public class AuthenticationController {
         System.out.println(request.getEmail());
         System.out.println(request.getPassword());
         if (userRepository.existsByEmail(request.getEmail())) {
-            if(userRepository.findByEmail(request.getEmail()).get().getAbsence() >= 3){
-                return ResponseEntity.badRequest().body(new MessageError("Error: Your account has been blocked because you did not warn your absence 3 times."));//
+            User utilisateur = userRepository.findByEmail(request.getEmail()).get();
+            if(utilisateur.getRole() == Role.CUSTOMER.toString()){
+                if(utilisateur.getAbsence() >= 3){
+                    return ResponseEntity.badRequest().body(new MessageError("Error: Your account has been blocked because you did not warn your absence 3 times."));//
+                }
             }
         }
         try {

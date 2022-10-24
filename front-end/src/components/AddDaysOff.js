@@ -83,7 +83,6 @@ export default class AddDaysOff extends React.Component{
         this.betweenTwoDates = this.betweenTwoDates.bind(this);
         this.addDayOffBackend = this.addDayOffBackend.bind(this);
         this.handleColorAgenda = this.handleColorAgenda.bind(this);
-        this.addArrayFrontend =this.addArrayFrontend.bind(this);
         this.notValidDayoff = this.notValidDayoff.bind(this);
         this.handleClickAgenda = this.handleClickAgenda.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
@@ -94,9 +93,9 @@ export default class AddDaysOff extends React.Component{
         var dayoff = this.state.database.find(e => e.title==='day off' && e.hairdresser_id.id === this.state.hairdresserId && moment(e.startDate).format('L') === str)
         this.setState({ database: this.state.database.filter( data => data !== dayoff) , 
             dayoffCount: this.state.dayoffCount.filter( data => data !== str), showButton : false});
-        fetch('http://localhost:8080/hairdresser/delete/'+dayoff.id, { method: 'DELETE' });
+        fetch('http://localhost:8080/hairdresser/deleteDayoff/'+dayoff.id, { method: 'DELETE' });
     }
-
+ 
     componentDidMount(){
         var user = AuthService.getCurrentUser();
 		if(user !== null){
@@ -223,65 +222,36 @@ export default class AddDaysOff extends React.Component{
         this.setState({checked : bool, lastDate : this.state.from });
     }
 
-    handleConfirm(){
+    async handleConfirm(){
         if(this.state.checked){
-            var start = {};
-            start.title = 'day off'; 
-            start.startDate = moment(this.state.from).set({hour:0,minute:0,second:0,millisecond:0});
-            start.hairdresser_id = {};
-            start.hairdresser_id.id = this.state.hairdresserId;
-            this.setState({database: [...this.state.database, start], dayoffCount : [...this.state.dayoffCount, moment(start.startDate).format('L')]  });
+            this.addDayOffBackend(this.state.from)
+            .then((response) => response.json())
+            .then((data) => { 
+                this.setState({database: [...this.state.database, data], dayoffCount : [...this.state.dayoffCount, moment(data.startDate).format('L')]  });
+            });
         }else{
-            this.addArrayFrontend();
+            var arrayDates = this.state.btwTwoDates;
+            Promise.all(arrayDates.map(e => 
+                this.addDayOffBackend(moment(e).startOf('day'))
+            )).then(responses =>
+                Promise.all(responses.map(res => res.json()))
+            ).then(texts => {
+                var newArrayFormat = texts.map(x => moment(x.startDate).format('L'));
+                this.setState({database: [...this.state.database, ...texts], dayoffCount : [...this.state.dayoffCount, ...newArrayFormat]})
+            })
         }
-        this.addDayOffBackend();
-        console.log(this.state.dayoffCount)
     }
 
-    addArrayFrontend(){
-        var newArray = []
-        var newArrayFormat = []
-        this.state.btwTwoDates.forEach(e => {
-            var start = {};
-            start.title = 'day off'; 
-            start.startDate = moment(e);
-            start.hairdresser_id = {};
-            start.hairdresser_id.id = this.state.hairdresserId;
-            newArray.push(start);
-            newArrayFormat.push(moment(e).format('L'))
-        })
-        this.setState({database: [...this.state.database, ...newArray], 
-            dayoffCount : [...this.state.dayoffCount, ...newArrayFormat] });
-    }
-
-    async addDayOffBackend(){
-        //title = day off
-        //start and end depend on day choosen
-        //customer ==> null
-        //hairdresser ==> id
+    async addDayOffBackend(from){
         var a;
         var b;
-        if(this.state.checked){
-            a = moment(this.state.from);
-            b = moment(a);
-            a.set({hour:23,minute:59,second:0,millisecond:0})
-        }else{
-            b = moment(this.state.from);
-            a = moment(this.state.lastDate);
-        }
-        var json =  JSON.stringify({ title : "day off", startDate : b, endDate : a});
-        const requestOptions = {
-          method: 'POST',
-          headers: { 
-            'Accept': 'application/json',
-            'Content-Type': 'application/json' 
-          },
-          body: json
-        };
-        const response = await fetch( 'http://localhost:8080/hairdresser/addDayOff',requestOptions);
-        const data = await response.text();
-        console.log('data add backend : '+data)
-        //AFFICHER LA REPONSE
+        a = moment(from);
+        b = moment(a);
+        a.set({hour:23,minute:59,second:0,millisecond:0})
+        var json =  JSON.stringify({ title : "day off", startDate : b, endDate : a, hairdresserId : this.state.hairdresserId});
+        const requestOptions = { method: 'POST', headers: {'Accept': 'application/json','Content-Type': 'application/json'}, body: json  };
+        const reponse = await fetch( 'http://localhost:8080/hairdresser/addDayOffTwo',requestOptions)
+        return reponse;
     }
 
     render(){

@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.dto.AppointmentDto;
+import com.example.backend.dto.DayoffDto;
 import com.example.backend.dto.NotificationDto;
 import com.example.backend.email.BodyMail;
 import com.example.backend.email.EmailServiceImpl;
@@ -142,6 +143,13 @@ public class HairdresserController {
     }
 
     @CrossOrigin
+    @DeleteMapping(path="/deleteDayoff/{id}")
+    public @ResponseBody String deleteDayoff(@PathVariable int id) throws IOException {
+      appointmentRepository.deleteById(id);
+      return "deleted day off";
+    }
+
+    @CrossOrigin
     @PostMapping(path="/notificateAbsence") // Map ONLY POST Requests
     public @ResponseBody String addNewNotification (@RequestBody NotificationDto notification){
       Notification n = new Notification();
@@ -156,7 +164,7 @@ public class HairdresserController {
       String status = emailService.sendSimpleMail(customer.getEmail(), text, "EdBarbershop - Notification");
       return "Saved "+status;
     }
-
+ 
     @CrossOrigin
     @PutMapping(path="/putDelay/{delay}") // Map ONLY POST Requests
     public @ResponseBody String putDelay (@RequestBody Appointment appointment, @PathVariable int delay) throws IOException{
@@ -173,7 +181,17 @@ public class HairdresserController {
       return "Updated "+status;
     }
 
-
+    @CrossOrigin
+    @PostMapping(path="/addDayOffTwo") // Map ONLY POST Requests
+    public @ResponseBody ResponseEntity<Appointment> addDayOffTwo (@RequestBody DayoffDto appointment){
+      Appointment a = new Appointment();
+      a.setTitle("day off");
+      a.setStart(appointment.startDate);
+      a.setEnd(appointment.endDate);
+      a.setHairdresser(userRepository.findById(appointment.hairdresserId).get());
+      Appointment newAppointment = appointmentRepository.save(a);
+      return new ResponseEntity<>(newAppointment, HttpStatus.OK);
+    }
 
     @CrossOrigin
     @PostMapping(path="/addDayOff") // Map ONLY POST Requests
