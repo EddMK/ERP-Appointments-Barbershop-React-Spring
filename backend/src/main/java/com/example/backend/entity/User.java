@@ -75,6 +75,7 @@ public class User{
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         this.password = passwordEncoder.encode(password);
         this.role = Role.CUSTOMER;
+        this.absence = 0;
     } 
     
     public User(){

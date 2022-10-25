@@ -194,43 +194,10 @@ public class HairdresserController {
     }
 
     @CrossOrigin
-    @PostMapping(path="/addDayOff") // Map ONLY POST Requests
-    public @ResponseBody String addDayOff (@RequestBody Appointment appointment){
-      LocalDate st = appointment.getStart().toLocalDateTime().toLocalDate();
-      LocalDate ed = appointment.getEnd().toLocalDateTime().toLocalDate();
-      int idHairdresser = 250;
-      Optional<User> hairdresser  = userRepository.findById(idHairdresser);
-      if(!st.isEqual(ed)){
-        List<LocalDate> listes = st.datesUntil(ed).collect(Collectors.toList());
-        listes.add(ed);
-        for (LocalDate temp : listes) {
-          Appointment a = new Appointment();
-          a.setTitle("day off");
-          a.setStart(Timestamp.valueOf(temp.atStartOfDay()));
-          a.setEnd(Timestamp.valueOf(temp.atTime(23, 59)));
-          a.setHairdresser(hairdresser.get());
-          appointmentRepository.save(a);
-        }
-      }else{
-        Appointment a = new Appointment();
-        a.setTitle("day off");
-        a.setStart(appointment.getStart());
-        a.setEnd(appointment.getEnd());
-        a.setHairdresser(hairdresser.get());
-        appointmentRepository.save(a);
-      }
-      return "Saved";
-    }
-
-    @CrossOrigin
     @DeleteMapping(path="/absencecustomer/{appointmentId}") 
     public @ResponseBody String customerAbsence (@PathVariable Integer appointmentId){
       Appointment app = appointmentRepository.findById(appointmentId).get();
-      //ajouter une absence au client
       User u = app.getCustomer();
-      u.setAbsence(u.getAbsence()+1);
-      userRepository.save(u);
-      //envoyer une notification
       app.getStart();
       Timestamp ts = app.getStart();
       String day = (new SimpleDateFormat("EEEE", Locale.ENGLISH)).format(ts.getTime());
@@ -238,12 +205,24 @@ public class HairdresserController {
       String message = "You were not present for your appointment on "+day+" at "+hour+".";
       Notification n = new Notification(app.getHairdresser(),u, message);
       notificationRepository.save(n);
-      //ENVOYER MAIL AU BNEDIM
-      String text = BodyMail.notificateAbsenceCustomer(message);
-      String status = emailService.sendSimpleMail( u.getEmail(), text, "EdBarbershop - Notification");
-      //supprimer le rendez-vous
-      appointmentRepository.deleteById(appointmentId);
-      return "Deleted";
+      //DANS LE CAS OU IL SERA BLOQUE
+      String status;
+      if(u.getAbsence() == 2){
+        //envoyer un mail pour prévenir le blocage
+        String text = BodyMail.notificateBlockCustomer(message);
+        status = emailService.sendSimpleMail( u.getEmail(), text, "EdBarbershop - Notification");
+        //supprimer les rendez-vous à venir
+        appointmentRepository.blockUser(u.getId());
+      }else{
+        //ENVOYER MAIL AU CLIENT
+        String text = BodyMail.notificateAbsenceCustomer(message);
+        status = emailService.sendSimpleMail( u.getEmail(), text, "EdBarbershop - Notification");
+        //supprimer le rendez-vous
+        appointmentRepository.deleteById(appointmentId);
+      }
+      u.setAbsence(u.getAbsence()+1);
+      userRepository.save(u);
+      return "Deleted - "+status;
     }
 
 }

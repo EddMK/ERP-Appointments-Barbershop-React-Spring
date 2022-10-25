@@ -91,6 +91,22 @@ public class BodyMail {
 		return rep;
 	}
 
+	public static String notificateBlockCustomer(String message){
+		String rep = "";
+		rep += "Dear customer";
+		rep += "\n";
+		rep += "\n";
+		rep += message;
+		rep += "\n";
+        rep += "\n";
+		rep += "Yout account has been blocked !";
+		rep += "\n";
+		rep += "See you soon !";
+		rep += "\n";
+		rep += "EdBarbershop";
+		return rep;
+	}
+
 	public static String bodyDelay(Appointment a, int delay){
 		String rep = "";
 		rep += "Dear customer";

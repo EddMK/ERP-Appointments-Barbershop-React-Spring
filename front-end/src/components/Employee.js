@@ -135,9 +135,14 @@ class Employee extends React.Component{
 
     handleErrorButton(id){
         //SUPPRIMER A LA PLACE DE LE METTRE EN COULEUR
-        const newData = this.state.data.slice() 
+        var newData = this.state.data.slice() 
         const ind = newData.findIndex(obj => obj.id === id);
         newData[ind].type="absent";
+        console.log(newData[ind].customer_id.absence)
+        if(newData[ind].customer_id.absence === 2){
+            var idDelete = newData[ind].customer_id.id
+            newData = newData.filter(d =>  !(d.customer_id.id === idDelete && moment(d.startDate)>moment())   )//!(d.customer_id.id === idDelete && moment(d.customer_id.startDate)>moment())
+        }
         this.setState({data: newData}) 
         fetch('http://localhost:8080/hairdresser/absencecustomer/'+id, { method: 'DELETE' }).then(() => console.log("success"));
     }
@@ -253,8 +258,7 @@ class Employee extends React.Component{
         "message": "Your hairdresser will be absent on "+ moment(absence.startDate).format('dddd') +" from "+moment(absence.startDate).format('HH:mm')
         +" to "+moment(absence.endDate).format('HH:mm')+". Cause : "+absence.reason});
         const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
-        const response = await fetch( 'http://localhost:8080/hairdresser/notificateAbsence',requestOptions);
-        const data = await response.text();
+        await fetch( 'http://localhost:8080/hairdresser/notificateAbsence',requestOptions);
     }
 
     async addAbsenceBackend(e){
@@ -262,8 +266,7 @@ class Employee extends React.Component{
         e.hairdresser_id = this.state.hairdresserId;
         var json =  JSON.stringify(e);
         const requestOptions = { method: 'POST', headers: {  'Accept': 'application/json', 'Content-Type': 'application/json' }, body: json };
-        const response = await fetch( 'http://localhost:8080/hairdresser/addAbsence',requestOptions);
-        const data = await response.text();
+        await fetch( 'http://localhost:8080/hairdresser/addAbsence',requestOptions);
     }
     
     handleDelay(e){
@@ -377,8 +380,6 @@ class Employee extends React.Component{
     timeTableCell(props){
         var unavailable;
         const { startDate } = props;
-        const date = new Date(startDate);
-
         var start_date = moment(props.startDate, 'HH:mm')
         const dateStr = moment(props.startDate).locale("en").format('dddd').toLowerCase();//email.toLowerCase();
         var minAndMax = this.state.availability[dateStr];

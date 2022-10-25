@@ -5,10 +5,11 @@ import com.example.backend.entity.Appointment;
 import java.util.List;
 import java.sql.Timestamp;
 
-
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 //import com.example.backend.Appointment;
 
@@ -55,4 +56,9 @@ public interface AppointmentRepository extends CrudRepository<Appointment, Integ
 
     @Query(value = "SELECT * FROM EdBarbershop.appointment WHERE customer_id = :hairdresserId AND now()<start_date ORDER BY start_date ASC ;" ,nativeQuery = true)
     List<Appointment> findOwnAppointment(@Param("hairdresserId") int hairdresserId );
+
+    @Transactional
+    @Modifying
+    @Query(value = "DELETE FROM appointment WHERE customer_id = :hairdresserId AND DATE(now()) <=DATE(start_date)" ,nativeQuery = true)
+    void blockUser(@Param("hairdresserId") int hairdresserId );
 }
