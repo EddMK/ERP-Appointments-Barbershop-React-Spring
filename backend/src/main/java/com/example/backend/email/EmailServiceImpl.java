@@ -68,6 +68,7 @@ public class EmailServiceImpl {
             mimeMessageHelper.addAttachment(file.getFilename(), file);
             javaMailSender.send(mimeMessage);
             event.delete();
+            System.out.println(mimeMessage);
             return "Mail sent Successfully";
         }
  

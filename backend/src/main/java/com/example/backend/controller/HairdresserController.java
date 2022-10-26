@@ -131,6 +131,7 @@ public class HairdresserController {
     @CrossOrigin
     @DeleteMapping(path="/delete/{id}")
     public @ResponseBody String deleteAppointment(@PathVariable int id) throws IOException {
+      System.out.println("SUPPRIMER DELETE APPOINTMENT");
       //ENVOYER MAIL 
       //LE CLIENT SUPPRIMER ENVOYER UN MAIL ET UN EVENEMENT
       Appointment newAppointment = appointmentRepository.findById(id).get();
@@ -138,6 +139,7 @@ public class HairdresserController {
       File obj = FileMail.fileDeleteAppointment(newAppointment);
       //CHANGER LE MAIL DU CLIENT
       String status = emailService.sendMailWithAttachment(newAppointment.getCustomer().getEmail(), text, "EdBarbershop - Reservation canceled", obj );
+      System.out.println(status);
       appointmentRepository.deleteById(id);
       return "deleted - "+status;
     }

@@ -147,6 +147,7 @@ export default class ListExpense extends  PureComponent{
                             label="Year and Month"
                             value={this.state.monthChoosen}
                             minDate = {this.state.dateMin}
+                            maxDate = {moment()}
                             onChange={(newValue) => { this.handleDate(newValue) }}
                             renderInput={(params) => <TextField {...params} helperText={null} />}
                         />

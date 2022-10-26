@@ -42,9 +42,9 @@ export default class Absence extends React.Component{
         this.state = {
             showDialog : true,
             availability : {},
-            date : moment(this.props.date),
-            from : moment(this.props.date),
-            to : moment(this.props.date),
+            date : moment(this.props.date).set({ millisecond : 0 }),
+            from : moment(this.props.date).set({ millisecond : 0 }),
+            to : moment(this.props.date).set({ millisecond : 0 }),
             min : moment() > moment(this.props.date).startOf('week') ? moment() : moment(this.props.date).startOf('week') ,
             max : moment(this.props.date).endOf('week'),
             fromHour : "",

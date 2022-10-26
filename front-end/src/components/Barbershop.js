@@ -79,9 +79,9 @@ export default class Barbershop extends  PureComponent{
 
   handleFillGraph(id){
     fetch('http://localhost:8080/user/hairdressByBarbershop/'+id).then(response => response.json()).then(data => this.setState({hairdressers : data}));
-    fetch("http://localhost:8080/admin/evolutionExpenseBarbershop/"+id).then((res) => res.json()).then( (json) => this.changeJsonData(json));
+    fetch("http://localhost:8080/admin/evolutionExpenseBarbershop/"+id).then((res) => res.json()).then( (json) =>{ console.log(json); this.changeJsonData(json) });
     fetch("http://localhost:8080/admin/evolutionTurnoverBarbershopHairdresser/"+id).then((res) => res.json()).then( (json) => this.changeJsonDataSecond(json));
-  }
+  } 
 
   stringToColor(str) {
     var hash = 0;

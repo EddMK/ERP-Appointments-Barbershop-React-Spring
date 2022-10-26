@@ -248,7 +248,7 @@ class Employee extends React.Component{
             array.forEach( (e)  =>{
                 fetch('http://localhost:8080/hairdresser/delete/'+e.id, { method: 'DELETE'})
                 this.addNotificationBackend(e, absence);
-            })
+            }) 
         }
     }
 
@@ -288,7 +288,8 @@ class Employee extends React.Component{
         var arrayBackend = []
         var data = this.state.data;
         var absenceOfDay = this.findAbsenceDay(date);
-        data.sort(function(a,b){ return moment(a) - moment(b);  });
+        console.log(data);
+        console.log(data.sort(function(a,b){ return moment(a.startDate) - moment(b.startDate);  }));
         data.forEach( (element, index)  =>{
             if(moment(element.startDate).format('L') === date.format('L')){
                 if(moment(absenceOfDay).isValid() && moment(absenceOfDay)<moment(element.startDate)){

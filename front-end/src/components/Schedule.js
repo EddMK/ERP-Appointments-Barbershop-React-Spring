@@ -154,10 +154,12 @@ class Schedule extends React.Component{
       st.set({ hour: startHour.hour() , minute: startHour.minute()});
       var en = moment(this.state.date.locale('en').format('L'));
       en.set({ hour: endHour.hour() , minute: endHour.minute()});
+      console.log("en",en)
       while(st < en){
         var test = moment(st);
         var testEnd = moment(test).add(duration, 'minutes');
-        if(this.verificationCreneau(test, testEnd) && st > moment() && testEnd<en){
+        console.log("testEnd",testEnd)
+        if(this.verificationCreneau(test, testEnd) && st > moment() && testEnd<=en){
           unavailable.push(st.format('HH:mm'))
         }
         st.add(duration, 'minutes')

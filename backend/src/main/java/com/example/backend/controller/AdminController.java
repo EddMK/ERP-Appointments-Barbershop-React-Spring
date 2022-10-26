@@ -188,7 +188,6 @@ public class AdminController {
     return res;
   }
 
-
   @CrossOrigin
   @GetMapping(path="/evolutionExpenseBarbershop/{id}")
   public @ResponseBody List<Object>  getEvolutionExpenseByBarbershop(@PathVariable int id ) { 
@@ -198,14 +197,25 @@ public class AdminController {
       List<Object> barber = new ArrayList<Object>();
       date = date.minusMonths(1);
       barber.add(Month.of(date.getMonthValue()).name());
-      List<List<String>>  s = expenseRepository.getExpenseByBarbershop(date.getMonthValue(), date.getYear(), id);
+      List<String> taxes =  new ArrayList<String>();
+      taxes.add("Taxes");
+      taxes.add(String.valueOf(expenseRepository.getExpenseTaxesByBarbershop(date.getMonthValue(), date.getYear(), id)));
+      List<String> charges =  new ArrayList<String>();
+      charges.add("Charges");
+      charges.add(String.valueOf(expenseRepository.getExpenseChargesByBarbershop(date.getMonthValue(), date.getYear(), id)));
+      List<String> matos =  new ArrayList<String>();
+      matos.add("Materiel");
+      matos.add(String.valueOf(expenseRepository.getExpenseMaterielByBarbershop(date.getMonthValue(), date.getYear(), id)));
+      List<List<String>>  s = new ArrayList<List<String>>();
+      s.add(taxes);
+      s.add(charges);
+      s.add(matos);
+      //System.out.println(s);
       barber.add(s);
       res.add(barber);
     }
     return res;
   }
-
-
 
   @CrossOrigin
   @GetMapping(path="/barChart/{month}/{year}")
@@ -263,7 +273,7 @@ public class AdminController {
   public @ResponseBody Iterable<Expense> getAllExpenses() {
     return expenseRepository.findAll();//PAR ORDRE CHRONOLOGIQUE
   }
-
+ 
   @CrossOrigin
   @GetMapping(path="/availability/{id}")
   public @ResponseBody List<Object> getAvailability(@PathVariable int id) {

@@ -68,7 +68,7 @@ export default class Invoice extends  PureComponent{
           body: json
         };
         console.log(requestOptions);
-        //const response = await fetch( 'http://localhost:8080/admin/addExpense',requestOptions);
+        await fetch( 'http://localhost:8080/admin/addExpense',requestOptions);
         this.setState({price : "", name : "", type:null, barber : null})
         
     }
@@ -86,7 +86,7 @@ export default class Invoice extends  PureComponent{
                             value={this.state.type} 
                             onChange={(event, newInputValue) => { this.setState({type : newInputValue})     }}    
  
-                            options={['Charges', 'Taxes', 'Matériaux']} 
+                            options={['Charges', 'Taxes', 'Materiel']} 
                             sx={{ marginBottom: 2 }} 
                             renderInput={(params) => <TextField {...params} 
                             label="Type" />} 
